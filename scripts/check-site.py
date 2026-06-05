@@ -55,6 +55,12 @@ def main() -> int:
         parser.feed(path.read_text(encoding="utf-8"))
         parser.close()
         for attr, raw in parser.refs:
+            parsed = urllib.parse.urlparse(raw)
+            if not parsed.scheme and not parsed.netloc and parsed.path.startswith("/"):
+                rel = path.relative_to(ROOT)
+                errors.append(
+                    f"{rel}: root-absolute {attr} target {raw!r} breaks GitHub Pages project staging"
+                )
             target = local_target(path, raw)
             if target is not None and not exists(target):
                 rel = path.relative_to(ROOT)
@@ -70,4 +76,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

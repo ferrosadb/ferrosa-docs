@@ -11,6 +11,14 @@ Current staging URL: <https://ferrosadb.github.io/ferrosa-docs/>
 Production cutover to `www.ferrosadb.com` is a separate operation because the
 domain is currently configured on the legacy `ferrosadb/ferrosa` Pages site.
 
+## QA URLs
+
+- Suite docs: <https://ferrosadb.github.io/ferrosa-docs/>
+- Database docs: <https://ferrosadb.github.io/ferrosa-docs/database/>
+- Database examples: <https://ferrosadb.github.io/ferrosa-docs/database/examples/>
+- Memory docs: <https://ferrosadb.github.io/ferrosa-docs/ferrosa-memory/>
+- Memory repo alias: <https://ferrosadb.github.io/ferrosa-memory/>
+
 ## Layout
 
 ```text

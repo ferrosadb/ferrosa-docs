@@ -1,14 +1,17 @@
 # Docs Repository Migration
 
 > Last updated: 2026-06-05
-> Status: Draft
+> Status: Staging live
 
 ## Overview
 
 Ferrosa's public website used to live inside the Ferrosa engine repository under
 `docs/`. That coupled website updates to storage, CQL, cluster, and release CI.
 The standalone docs repository owns the deployable static site and docs-only CI,
-so documentation can ship without waiting for unrelated engine tests.
+so documentation can ship without waiting for unrelated engine tests. It is
+currently live at `https://ferrosadb.github.io/ferrosa-docs/`; production domain
+cutover is tracked separately because `www.ferrosadb.com` is still configured on
+the legacy `ferrosadb/ferrosa` Pages site.
 
 The repository still preserves generated example documentation. The checked-in
 `sources/ferrosa/examples/**/*.adoc` tree mirrors Ferrosa examples and CI
@@ -64,10 +67,11 @@ flowchart TD
 
 ## Open Questions
 
+- [ ] Should production cutover happen immediately after the Ferrosa 0.13
+      release, or after one staging deploy cycle?
 - [ ] Should Ferrosa release workflows dispatch `sync-ferrosa.yml` automatically
       after tag builds complete?
 - [ ] Should Ferrosa Memory get a matching sync workflow if it grows first-class
       website source files outside this repo?
 - [ ] Should `docs/LATEST` updates be gated by checking that both Ferrosa and
       Ferrosa Memory release assets exist?
-

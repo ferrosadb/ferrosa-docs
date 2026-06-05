@@ -2,9 +2,14 @@
 
 Standalone website and documentation repository for Ferrosa Database and Ferrosa Memory.
 
-This repository owns the deployable `ferrosadb.com` static site under `docs/`.
+This repository owns the standalone deployable static site under `docs/`.
 It is intentionally separate from the Ferrosa engine repositories so website
 updates are not blocked by unrelated storage, cluster, or CQL CI failures.
+
+Current staging URL: <https://ferrosadb.github.io/ferrosa-docs/>
+
+Production cutover to `www.ferrosadb.com` is a separate operation because the
+domain is currently configured on the legacy `ferrosadb/ferrosa` Pages site.
 
 ## Layout
 
@@ -55,3 +60,14 @@ Release pointer files such as `docs/LATEST`, `docs/setup.sh`, and
 `docs/setup-memory.sh` are website-owned here, so release documentation and
 installer pointers can ship independently from engine CI.
 
+## Production Cutover
+
+When ready to move production traffic:
+
+1. Confirm the latest `Deploy Docs` workflow is green in this repository.
+2. Disable or remove the `www.ferrosadb.com` Pages custom domain from
+   `ferrosadb/ferrosa`.
+3. Configure this repository's Pages custom domain as `www.ferrosadb.com`.
+4. Confirm GitHub Pages reports the certificate as approved and HTTPS enforced.
+5. Keep `ferrosadb/ferrosa` docs workflows limited to source generation or sync
+   dispatches, not production deployment.

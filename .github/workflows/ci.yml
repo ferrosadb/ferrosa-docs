@@ -1,0 +1,46 @@
+name: Docs CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    name: Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install Asciidoctor
+        run: sudo gem install asciidoctor -v 2.0.20 --no-document
+
+      - name: Regenerate example docs
+        run: scripts/generate-example-docs.sh
+
+      - name: Check generated HTML is in sync
+        run: |
+          drift=$(git diff -- docs/database/examples/ \
+            | grep -E '^[+-]' \
+            | grep -vE '^[+-][+-]' \
+            | grep -vE 'name="generator"|Last updated' \
+            | grep -c . || true)
+          if [ "$drift" -gt 0 ]; then
+            echo "::error::Generated example HTML is out of date. Run scripts/generate-example-docs.sh and commit docs/database/examples/."
+            git diff -- docs/database/examples/ \
+              | grep -vE 'name="generator"|Last updated' | head -120
+            exit 1
+          fi
+          echo "Generated HTML is in sync with AsciiDoc sources."
+
+      - name: Parse HTML and check local links
+        run: scripts/check-site.py
+
+      - name: Check whitespace
+        run: git diff --check
+

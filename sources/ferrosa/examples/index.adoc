@@ -1,0 +1,90 @@
+= Tutorials & Examples
+:stylesheet: theme/ferrosa.css
+:linkcss:
+:icons: font
+:source-highlighter: rouge
+:docinfo: shared
+:nofooter:
+
+Step-by-step tutorials that take you from zero to a running workload on a 3-node Ferrosa cluster. Each guide starts from `docker compose up` and ends with live queries.
+
+NOTE: *Before you begin:* Every tutorial in this collection uses the same 3-node Docker cluster. If you haven't set one up yet, start with the link:cluster-setup.html[3-Node Cluster Setup] guide. It takes about 5 minutes.
+
+== Getting Started
+
+link:cluster-setup.html[*3-Node Cluster Setup*]::
+Install Docker and launch a production-like Ferrosa cluster in 5 minutes.
+ The directory also includes `docker-compose.mixed-clients.yml` for deployments that need host/public CQL addresses and separate in-network/internal addresses from the same cluster.
+
+link:cluster-scaling.html[*Cluster Scaling: Development to Production*] _New!_::
+Watch Ferrosa scale from a single development node to a 3-node preview cluster while writes and schema changes continue during each transition.
+
+== Data-Intensive Workloads
+
+link:iot-sensor-data.html[*IoT Sensor Data*]::
+Ingest millions of sensor readings with time-series tables.
+
+link:time-series-analytics.html[*Real-Time Analytics*]::
+Aggregate financial market data for dashboards.
+
+link:timeseries-rrd.html[*RRD Time-Series Aggregation*] _New!_::
+Roll up high-frequency sensor readings into time-window summaries (min/max/avg) automatically -- RRD-style consolidation with streaming built-ins and optional WebAssembly aggregates.
+
+link:advanced-aggregation.html[*Advanced Aggregation*]::
+Group-by aggregates with built-in functions and WebAssembly user-defined aggregates -- including writing scalar UDFs as link:advanced-aggregation.html#_alternative_inline_assemblyscript[inline AssemblyScript] that the server compiles at definition time.
+
+link:ecommerce.html[*E-Commerce*]::
+Product catalog, shopping cart, and order processing.
+
+link:messaging-chat.html[*Messaging & Chat*]::
+Store and retrieve conversation history at scale.
+
+== Security & Compliance
+
+link:fraud-detection.html[*Fraud Detection*]::
+Score transactions in real time with pattern matching.
+
+link:cybersecurity.html[*Cybersecurity Monitoring*]::
+SIEM-style event logs with fast threat lookup.
+
+link:healthcare.html[*Healthcare Records*]::
+Patient timelines with temporal versioning.
+
+== Industry-Specific
+
+link:content-personalization.html[*Content Personalization*]::
+Recommendation engine with user preference tracking.
+
+link:telecom.html[*Telecommunications*]::
+Call detail records and real-time billing.
+
+link:gaming-leaderboards.html[*Gaming Leaderboards*]::
+Player stats, rankings, and match history.
+
+== Vector Search & AI
+
+link:vector-indexes.html[*Vector Indexes: HNSW and HVQ*] _New!_::
+Semantic similarity search over embeddings, comparing the full-precision HNSW index with the quantized HVQ index -- plus a BTree secondary index -- all from plain CQL.
+
+== Multi-Model Search
+
+The lens that makes Ferrosa _not just Cassandra_: one dataset queried five ways -- keyword (LIKE), meaning (vector ANN), fuzzy name (phonetic), trending (RRD), and influence (graph) -- and the results fused into one ranked list. No five-system stack, no ETL.
+
+link:scholarly-search.html[*Multi-Model Scholarly Search*] _New!_::
+A paper search engine over one corpus: keyword (LIKE) + vector ANN over real `nomic-embed-text-v2-moe` embeddings, phonetic author lookup, RRD citation-trend rollups, and a Cypher citation graph -- composed with reciprocal-rank fusion.
+
+link:threat-hunting.html[*Multi-Model Threat Hunting*] _New!_::
+A threat-intel workbench over one indicator corpus: keyword over IOC notes, vector ANN over real behaviour embeddings, phonetic actor-name lookup, RRD activity-spike rollups, and a Cypher attack-infrastructure graph -- fused into a single triage order.
+
+== Ferrosa-Exclusive: Graph + CQL
+
+link:graph-joins.html[*Graph Joins & Traversals*]::
+Relationship queries that traditional Cassandra can't do -- using Ferrosa's built-in graph engine.
+
+link:knowledge-graph.html[*Research Knowledge Graph*]::
+Academic papers, citations, authors, institutions, and funding -- a full knowledge graph with 42 Cypher queries.
+
+== Compatibility & Reference
+
+link:cql-comprehensive.html[*CQL Comprehensive Compatibility*]::
+Systematic test of every CQL feature: all data types, collections, UDTs, tuples, counters, static columns, LWT, batch, TTL, TIMESTAMP, secondary indexes, and more.

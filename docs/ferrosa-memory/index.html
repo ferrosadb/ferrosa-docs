@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<!-- ferrosadb.com marketing site -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ferrosa Memory — Long-Context Linked Memory for Agents</title>
+  <meta name="description" content="Ferrosa Memory is a developer-preview memory system for agents with temporal facts, graph links, Datalog-style derived facts, query workbench, and visualization UI.">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #111118;
+      --bg-card: #16161f;
+      --bg-card-hover: #1c1c28;
+      --text-primary: #e8e8ed;
+      --text-secondary: #9494a3;
+      --text-muted: #6b6b7a;
+      --accent: #e2725b;
+      --accent-glow: rgba(226, 114, 91, 0.15);
+      --accent-secondary: #f4a261;
+      --accent-cool: #7c9cf5;
+      --accent-green: #6bc9a0;
+      --border: #1e1e2a;
+      --border-hover: #2e2e3e;
+      --code-bg: #0d0d14;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Navigation ── */
+    nav {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 100;
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+    }
+
+    nav .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+
+    nav .logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    nav .logo span { color: var(--accent); }
+
+    nav .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    nav .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    nav .nav-links a:hover { color: var(--text-primary); }
+
+    nav .nav-cta {
+      background: var(--accent);
+      color: #fff;
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: opacity 0.2s;
+    }
+
+    nav .nav-cta:hover { opacity: 0.9; }
+
+    nav .nav-toggle {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      cursor: pointer;
+    }
+
+    nav .nav-toggle span,
+    nav .nav-toggle span::before,
+    nav .nav-toggle span::after {
+      display: block;
+      width: 1.1rem;
+      height: 2px;
+      border-radius: 2px;
+      background: currentColor;
+      content: '';
+      transition: transform 0.2s, opacity 0.2s;
+    }
+
+    nav .nav-toggle span { position: relative; }
+    nav .nav-toggle span::before { position: absolute; transform: translateY(-6px); }
+    nav .nav-toggle span::after { position: absolute; transform: translateY(6px); }
+
+    nav.nav-open .nav-toggle span { background: transparent; }
+    nav.nav-open .nav-toggle span::before { background: var(--text-primary); transform: rotate(45deg); }
+    nav.nav-open .nav-toggle span::after { background: var(--text-primary); transform: rotate(-45deg); }
+
+    /* ── Sections ── */
+    section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 6rem 2rem;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding-top: 11rem;
+      padding-bottom: 6rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -60%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 0.375rem 1rem;
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+    }
+
+    .hero-badge .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .hero h1 .gradient {
+      background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      max-width: 640px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 30px var(--accent-glow);
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+      border: 1px solid var(--border);
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--border-hover);
+      background: var(--bg-card-hover);
+    }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 4rem;
+    }
+
+    .stat {
+      background: var(--bg-secondary);
+      padding: 1.75rem 1.5rem;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+
+    .stat-value .unit { color: var(--accent); }
+
+    .stat-label {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Section headers ── */
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-size: clamp(1.75rem, 4vw, 2.75rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+      line-height: 1.15;
+    }
+
+    .section-subtitle {
+      font-size: 1.125rem;
+      color: var(--text-secondary);
+      max-width: 640px;
+      line-height: 1.7;
+    }
+
+    .section-subtitle.centered {
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .section-title.centered { text-align: center; }
+    .section-label.centered { text-align: center; }
+
+    /* ── Problem section ── */
+    .problem {
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .problem section { padding: 5rem 2rem; }
+
+    .pain-points {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    .pain-card {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.75rem;
+      transition: border-color 0.2s;
+    }
+
+    .pain-card:hover { border-color: var(--border-hover); }
+
+    .pain-icon {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .pain-card h3 {
+      font-size: 1.0625rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .pain-card p {
+      font-size: 0.9375rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ── Feature grid ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.25rem;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+    }
+
+    .feature-card.highlight {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+
+    .feature-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .feature-icon.rust { background: rgba(226, 114, 91, 0.12); }
+    .feature-icon.s3 { background: rgba(244, 162, 97, 0.12); }
+    .feature-icon.cql { background: rgba(124, 156, 245, 0.12); }
+    .feature-icon.graph { background: rgba(107, 201, 160, 0.12); }
+    .feature-icon.lock { background: rgba(200, 130, 240, 0.12); }
+    .feature-icon.index { background: rgba(100, 200, 220, 0.12); }
+    .feature-icon.observe { background: rgba(240, 200, 100, 0.12); }
+
+    .feature-card h3 {
+      font-size: 1.1875rem;
+      font-weight: 700;
+      margin-bottom: 0.625rem;
+    }
+
+    .feature-card p {
+      font-size: 0.9375rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    .feature-card .metric {
+      display: inline-block;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.25rem 0.625rem;
+      font-size: 0.8125rem;
+      font-family: var(--font-mono);
+      color: var(--accent);
+      margin-top: 0.75rem;
+    }
+
+    /* ── Code demo ── */
+    .code-demo {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .code-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-tab {
+      padding: 0.75rem 1.25rem;
+      font-size: 0.8125rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+    }
+
+    .code-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .code-tab:hover { color: var(--text-secondary); }
+
+    .code-block {
+      padding: 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      line-height: 1.8;
+      overflow-x: auto;
+      display: none;
+    }
+
+    .code-block.active { display: block; }
+
+    .code-block .kw { color: #c792ea; }
+    .code-block .fn { color: #82aaff; }
+    .code-block .str { color: #c3e88d; }
+    .code-block .cm { color: #546e7a; }
+    .code-block .num { color: #f78c6c; }
+    .code-block .type { color: #ffcb6b; }
+    .code-block .op { color: #89ddff; }
+
+    /* ── Comparison table ── */
+    .comparison {
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 3rem;
+      font-size: 0.9375rem;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      text-align: left;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .comparison-table thead th {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .comparison-table thead th:first-child { color: var(--text-secondary); }
+
+    .comparison-table thead th.ferrosa-col {
+      color: var(--accent);
+    }
+
+    .comparison-table tbody td:first-child {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .comparison-table tbody td {
+      color: var(--text-secondary);
+    }
+
+    .comparison-table tbody td.ferrosa-col {
+      color: var(--accent-green);
+      font-weight: 600;
+    }
+
+    .comparison-table tbody tr:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .check { color: var(--accent-green); }
+    .cross { color: var(--text-muted); }
+
+    /* ── Architecture ── */
+    .arch-diagram {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 3rem;
+      margin-top: 3rem;
+      text-align: center;
+    }
+
+    .arch-layers {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .arch-layer {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.5rem;
+      transition: border-color 0.2s;
+    }
+
+    .arch-layer:hover { border-color: var(--accent); }
+
+    .arch-layer-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      min-width: 100px;
+    }
+
+    .arch-layer-items {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .arch-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.375rem 0.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .arch-arrow {
+      color: var(--text-muted);
+      font-size: 1.25rem;
+      text-align: center;
+    }
+
+    /* ── Use cases ── */
+    .use-cases {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    .use-case {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      transition: border-color 0.2s;
+    }
+
+    .use-case:hover { border-color: var(--border-hover); }
+
+    .use-case-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.75rem;
+    }
+
+    .use-case-label.migrate { color: var(--accent); }
+    .use-case-label.cloud { color: var(--accent-secondary); }
+    .use-case-label.graph-uc { color: var(--accent-green); }
+
+    .use-case h3 {
+      font-size: 1.125rem;
+      font-weight: 700;
+      margin-bottom: 0.625rem;
+    }
+
+    .use-case p {
+      font-size: 0.9375rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    /* ── CTA section ── */
+    .cta-section {
+      text-align: center;
+      padding: 6rem 2rem;
+    }
+
+    .cta-section h2 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+
+    .cta-section p {
+      font-size: 1.125rem;
+      color: var(--text-secondary);
+      margin-bottom: 2.5rem;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .cta-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 3rem 2rem;
+    }
+
+    footer .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    footer .footer-left {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    footer .footer-links {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+    }
+
+    footer .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: color 0.2s;
+    }
+
+    footer .footer-links a:hover { color: var(--text-secondary); }
+
+    /* ── Beta Banner ── */
+    .beta-banner {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+      padding: 0.5rem 1rem;
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      position: fixed;
+      top: 64px;
+      width: 100%;
+      z-index: 99;
+    }
+
+    .beta-tag {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 0.125rem 0.5rem;
+      border-radius: 4px;
+      margin-right: 0.375rem;
+      vertical-align: middle;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+      .feature-card.highlight {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      .features-grid { grid-template-columns: 1fr; }
+      nav { padding: 0 1rem; }
+      nav .nav-inner {
+        height: 64px;
+        min-height: 64px;
+        gap: 0.75rem;
+        padding: 0;
+        position: relative;
+      }
+      body { overflow-x: hidden; }
+      nav .logo { margin-right: auto; }
+      nav .nav-cta {
+        display: inline-flex;
+        flex-shrink: 0;
+        padding: 0.5rem 0.75rem;
+      }
+      nav .nav-toggle { display: inline-flex; }
+      nav .nav-links {
+        position: fixed;
+        top: 64px;
+        left: 0;
+        right: 0;
+        display: none;
+        flex-direction: column;
+        gap: 0;
+        padding: 0.5rem 1rem 1rem;
+        background: rgba(10, 10, 15, 0.98);
+        border-bottom: 1px solid var(--border);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+      }
+      nav.nav-open .nav-links { display: flex; }
+      nav .nav-links li { list-style: none; }
+      nav .nav-links a {
+        display: block;
+        padding: 0.75rem 0;
+        white-space: nowrap;
+      }
+      section {
+        width: 100%;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        overflow-wrap: anywhere;
+      }
+      .hero { padding-top: 11rem; }
+      .hero h1 { font-size: clamp(2rem, 11vw, 3rem); }
+      .hero p { font-size: 1rem; }
+      .hero-actions { flex-direction: column; align-items: stretch; }
+      .btn-primary,
+      .btn-secondary { width: 100%; text-align: center; }
+      .beta-banner { top: 148px; font-size: 0.75rem; }
+      .comparison-table { font-size: 0.8125rem; }
+      .comparison-table th,
+      .comparison-table td { padding: 0.75rem 0.75rem; }
+      footer .footer-inner { flex-direction: column; gap: 1rem; }
+    }
+  </style>
+
+<style>
+  .suite-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1.5rem; margin-top:2.5rem; }
+  .suite-card { background: var(--bg-card); border:1px solid var(--border); border-radius:18px; padding:2rem; text-decoration:none; transition:border-color .2s, transform .2s, background .2s; }
+  .suite-card:hover { border-color:var(--accent); transform:translateY(-2px); background:var(--bg-card-hover); }
+  .suite-card.memory:hover { border-color:var(--accent-cool); }
+  .kicker { color:var(--accent); font-size:.75rem; letter-spacing:.12em; font-weight:800; text-transform:uppercase; margin-bottom:.75rem; }
+  .memory .kicker, .cool { color:var(--accent-cool); }
+  .pill-row { display:flex; flex-wrap:wrap; gap:.5rem; margin:1.25rem 0; }
+  .pill { border:1px solid var(--border); background:var(--bg-secondary); color:var(--text-secondary); border-radius:999px; padding:.35rem .75rem; font-size:.8125rem; }
+  .doc-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:1rem; margin-top:1.5rem; }
+  .doc-card { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:1.4rem; }
+  .doc-card h3 { margin-bottom:.5rem; }
+  .doc-card p, .suite-card p { color:var(--text-secondary); }
+  .code-block { background:var(--code-bg); border:1px solid var(--border); border-radius:14px; padding:1.25rem; overflow:auto; margin:1rem 0; }
+  .code-block code, pre { font-family:var(--font-mono); font-size:.875rem; color:#d6d6e5; }
+  .note { border-left:3px solid var(--accent-cool); background:rgba(124,156,245,.08); padding:1rem 1.25rem; border-radius:0 12px 12px 0; color:var(--text-secondary); margin:1.5rem 0; }
+  .two-col { display:grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap:2rem; align-items:start; }
+
+  .screenshot-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1rem; margin-top:1.5rem; }
+  .screenshot-card { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; overflow:hidden; }
+  .screenshot-card img { display:block; width:100%; height:auto; border-bottom:1px solid var(--border); }
+  .screenshot-card div { padding:1rem 1.2rem; color:var(--text-secondary); }
+  .reference-table-wrap { margin-top:1.5rem; border:1px solid var(--border); border-radius:16px; overflow:hidden; background:rgba(255,255,255,.02); }
+  .reference-table { width:100%; border-collapse:collapse; font-size:.875rem; }
+  .reference-table caption { text-align:left; padding:1rem 1.1rem; color:var(--text-secondary); border-bottom:1px solid var(--border); }
+  .reference-table th { text-align:left; padding:.75rem 1rem; color:var(--text-muted); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; background:rgba(255,255,255,.025); border-bottom:1px solid var(--border); }
+  .reference-table td { padding:.8rem 1rem; color:var(--text-secondary); border-bottom:1px solid rgba(255,255,255,.055); vertical-align:top; }
+  .reference-table tr:last-child td { border-bottom:0; }
+  .reference-table a { color:var(--text-primary); text-decoration:none; border-bottom:1px solid rgba(124,156,245,.35); }
+  .reference-table a:hover { color:var(--accent-cool); border-bottom-color:var(--accent-cool); }
+  .reference-table .ref-id { color:var(--accent-cool); font-family:var(--font-mono); white-space:nowrap; }
+  .reference-table .ref-theme { color:var(--text-muted); white-space:nowrap; }
+  @media (max-width: 760px) { .reference-table th:nth-child(3), .reference-table td:nth-child(3) { display:none; } }
+  @media (max-width: 800px) { .two-col { grid-template-columns:1fr; } }
+</style>
+
+</head>
+<body>
+<!-- ═══════════════════ Navigation ═══════════════════ -->
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="logo" style="display:flex;align-items:center;gap:0.5rem;">
+      <img src="/favicon.svg" alt="Fe" width="28" height="28">
+      ferro<span>sa</span>
+    </a>
+    <ul class="nav-links" id="site-nav-links">
+      <li><a href="/database/">Database</a></li>
+      <li><a href="/ferrosa-memory/">Memory</a></li>
+      <li><a href="/ferrosa-memory/getting-started.html">Setup</a></li>
+      <li><a href="#examples">Examples</a></li>
+      <li><a href="https://github.com/ferrosadb" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+    </ul>
+    <a href="#get-started" class="nav-cta">Get Started</a>
+    <button class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="site-nav-links"><span></span></button>
+  </div>
+</nav>
+
+<div class="beta-banner">
+  <span class="beta-tag">Developer Preview</span> Ferrosa Memory is a 0.13.0 preview for agentic long-context memory.
+</div>
+<section class="hero">
+  <div class="hero-badge"><span class="dot"></span> Ferrosa Memory · Developer Preview</div>
+  <h1>Linked memory for <span class="gradient">long-running agents.</span></h1>
+  <p>Ferrosa Memory gives agents a developer-preview memory layer: context segments, documents, entities, temporal facts, graph edges, hybrid retrieval, feedback-aware reranking, Datalog-style derived facts, and operator UIs for query, judge configuration, and visualization.</p>
+  <div class="hero-actions">
+    <a href="getting-started.html" class="btn-primary">Quickstart</a>
+    <a href="#workbench" class="btn-secondary">Explore the UI</a>
+  </div>
+</section>
+<section id="overview">
+  <div class="section-label cool">Why it exists</div>
+  <h2>Agents need memory that is structured, explainable, and queryable.</h2>
+  <div class="doc-grid">
+    <div class="doc-card"><h3>Temporal facts</h3><p>Record what changed over time instead of overwriting history. Current facts stay easy to retrieve, while superseded facts remain inspectable for audit and debugging.</p></div>
+    <div class="doc-card"><h3>Graph links</h3><p>Entities, folds, facts, skills, and tags are connected with typed edges so an agent can follow relationships rather than only search text.</p></div>
+    <div class="doc-card"><h3>Retrieval + context windows</h3><p>Hybrid retrieval uses lexical, vector, phonetic, graph, workspace, and recency signals, then can expand around raw context or document chunks to recover neighboring evidence.</p></div>
+    <div class="doc-card"><h3>Datalog-style materialization</h3><p>Rules can derive and explain higher-level facts from graph state, making memory behavior easier to inspect than opaque summaries alone.</p></div>
+  </div>
+</section>
+<section id="release-notes">
+  <div class="section-label cool">0.13 preview highlights</div>
+  <h2>Long-recall work is now wired into the memory service.</h2>
+  <div class="doc-grid">
+    <div class="doc-card"><h3>Document retrieval plane</h3><p>Documents, sections, chunks, and adjacency links can be stored as typed memory so answers that span neighboring chunks can be traversed instead of relying on a single ranked hit.</p></div>
+    <div class="doc-card"><h3>Candidate fanout + fusion</h3><p>Hybrid search can gather candidates from exact/document IDs, BM25, semantic vectors, phonetic matches, workspace boosts, graph neighbors, and recent session context before fusion.</p></div>
+    <div class="doc-card"><h3>Task-aware decomposition</h3><p>BRIGHT-Pro-style queries can generate task-native subqueries and merge candidate pools before final ranking, improving the support-doc-closed eval slice.</p></div>
+    <div class="doc-card"><h3>Feedback learning loop</h3><p>Agents, users, and optional judge models can send compact item feedback. Abstentions are tracked separately, and future ranking can account for workspace-specific relevance.</p></div>
+  </div>
+  <div class="note">Best known 0.13 BRIGHT-Pro support-doc-closed MCP slice settings: retrieval_k=25, candidate_limit=50, fusion_profile=all, query_decomposition=llm, query_embed_variants=true, chunk_expansion=none, rerank=false. On the 200-document biology slice this measured alpha_nDCG 0.816, NDCG 0.799, aspect_recall 0.940, and recall 0.796.</div>
+</section>
+<section id="architecture">
+  <div class="section-label">Architecture</div>
+  <h2>A thin memory adapter over database, graph, and inference surfaces.</h2>
+  <div class="two-col">
+    <div>
+      <p style="color:var(--text-secondary);">Ferrosa Memory exposes an MCP-compatible memory service and an operator workbench. The memory layer owns memory semantics—entities, folds, facts, retrieval outcomes, intentions, skills, Datalog rules, explanations—while Ferrosa Database provides CQL storage, graph traversal, and query surfaces.</p>
+      <p style="color:var(--text-secondary);">The public contract is intentionally small: agents call tools to ingest, retrieve, link, and explain memory. Operators use the workbench and visualization UI to inspect what happened.</p>
+    </div>
+    <div class="code-block"><pre><code>Agent / IDE / runtime
+        │ MCP
+        ▼
+Ferrosa Memory service
+  ├─ memory tools + routing
+  ├─ temporal facts + folds
+  ├─ Datalog-derived facts
+  ├─ Workbench query UIs
+  └─ Viz graph surface
+        │
+        ▼
+Ferrosa Database storage + graph</code></pre></div>
+  </div>
+</section>
+<section id="workbench">
+  <div class="section-label cool">Workbench and visualization</div>
+  <h2>Query memory directly, then inspect what was linked.</h2>
+  <div class="doc-grid">
+    <div class="doc-card"><h3>Workbench</h3><p>The browser workbench includes Home, Viz, CQL Explorer, SPARQL Explorer, Datalog Explorer, Judge Config, Aliases, Rules, Approvals, and Explanations.</p></div>
+    <div class="doc-card"><h3>Query APIs</h3><p>Use <code>/workbench/api/cql/query</code>, <code>/workbench/api/sparql/query</code>, and <code>/workbench/api/datalog/query</code> while evaluating storage, graph, and derived-memory behavior.</p></div>
+    <div class="doc-card"><h3>Visualization</h3><p>The viz surface is served separately from the main memory API. In local developer preview, it is available at <code>http://localhost:18766/viz</code>.</p></div>
+  </div>
+  <div class="screenshot-grid">
+    <a class="screenshot-card" href="/assets/screenshots/ferrosa-memory-viz.png">
+      <img src="/assets/screenshots/ferrosa-memory-viz.png" alt="Ferrosa Memory visualization graph screenshot">
+      <div><strong>Memory visualization.</strong> Inspect linked entities and edges in the local preview graph UI.</div>
+    </a>
+    <a class="screenshot-card" href="/assets/screenshots/ferrosa-operations-console.png">
+      <img src="/assets/screenshots/ferrosa-operations-console.png" alt="Ferrosa operations console screenshot">
+      <div><strong>Operations console.</strong> Check node status, metrics, and operational views from a running Ferrosa system.</div>
+    </a>
+  </div>
+  <div class="note">In shared deployments, keep the visualization surface operator-only. The preview docs assume loopback/local use unless you explicitly configure TLS, auth, and tenant mappings.</div>
+</section>
+<section id="quickstart">
+  <div class="section-label">Quickstart</div>
+  <h2>Local developer preview configuration.</h2>
+  <p style="color:var(--text-secondary); max-width:780px;">For the shortest path, run the hosted memory setup script. It downloads the onboarding prompt, optionally clones or updates the public repositories, offers to pull <code>nomic-embed-text-v2-moe</code>, installs Hermes/Claude/Codex hooks when requested, and hands the user to an LLM harness. Minimal native mode can use local filesystem storage with no S3/MinIO; the full Compose mode adds a three-node cluster and MinIO for operator testing.</p>
+  <div class="code-block"><pre><code>curl -fsSL https://ferrosadb.com/setup-memory.sh | bash
+
+# Optional semantic/vector search layer:
+ollama pull nomic-embed-text-v2-moe
+
+# ferrosa-memory.toml — local preview shape
+[server]
+transport = "http"
+http_port = 18765
+
+[ferrosa]
+contact_points = ["127.0.0.1:19042"]
+keyspace = "agent_memory"
+
+[viz]
+enabled = true
+bind = "127.0.0.1:18766"
+
+[retrieval]
+default_limit = 10
+
+[embeddings]
+provider = "ollama"
+model = "nomic-embed-text-v2-moe"
+dimensions = 768
+
+[security]
+# For local preview only. Use TLS + auth mapping for shared deployment.
+require_tls = false</code></pre></div>
+  <div class="code-block"><pre><code># Local URLs
+MCP endpoint:      http://localhost:18765/mcp
+Workbench:         http://localhost:18765/
+Visualization:     http://localhost:18766/viz
+Viz snapshot API:  http://localhost:18766/viz/snapshot</code></pre></div>
+</section>
+<section id="examples">
+  <div class="section-label cool">Examples</div>
+  <h2>What agents can do with Ferrosa Memory.</h2>
+  <div class="doc-grid">
+    <div class="doc-card"><h3>Remember evolving project state</h3><p>Record an entity once, then write temporal facts as status changes. Ask for the current fact or inspect the supersession chain.</p></div>
+    <div class="doc-card"><h3>Link context into a graph</h3><p>Ingest raw conversation segments, extract entities, add typed edges, then retrieve adjacent memories by graph traversal.</p></div>
+    <div class="doc-card"><h3>Explain derived facts</h3><p>Use Datalog rules and explanation endpoints to show why a derived memory exists instead of treating memory as uninspectable text.</p></div>
+    <div class="doc-card"><h3>Operate the system</h3><p>Use liveness/readiness probes, metrics, query explorers, and the visualization UI to check whether memory is being recorded and linked as expected.</p></div>
+  </div>
+</section>
+<section id="research">
+  <div class="section-label">Research foundation</div>
+  <h2>Inspired by memory systems, graph retrieval, compression, and logic.</h2>
+  <p style="color:var(--text-secondary); max-width:820px;">Ferrosa Memory is product engineering, not a paper implementation, but the design is informed by recent and classic work on agent memory, virtual context, retrieval, Datalog-style inference, and memory evaluation.</p>
+  <div class="doc-grid">
+    <div class="doc-card"><h3>Agent memory systems</h3><p>The local research corpus includes papers on very-long-term conversational memory, episodic memory, cross-domain user memory, and multi-session agent tasks. These motivate temporal facts, context windows, and explicit update history.</p></div>
+    <div class="doc-card"><h3>Graph retrieval</h3><p>Graph-recall and GraphRAG work motivate making links inspectable instead of relying only on vector similarity. Ferrosa Memory borrows these ideas; it is not a direct implementation of any one paper.</p></div>
+    <div class="doc-card"><h3>Compression and evaluation</h3><p>LLMLingua-family prompt compression, long-memory benchmarks, and memory-system surveys shape how retrieval, summarization, and memory quality should be evaluated during preview.</p></div>
+    <div class="doc-card"><h3>Logic and safety</h3><p>Datalog-style derived facts and neuro-symbolic rule-evaluation work inform explainable memory operations. Preview deployments should keep memory tooling local or explicitly protected with TLS, auth, tenant isolation, and operator review.</p></div>
+  </div>
+  <div class="reference-table-wrap">
+    <table class="reference-table">
+      <caption>Selected references from the local research corpus. Links point to canonical arXiv records.</caption>
+      <thead>
+        <tr><th>Paper</th><th>arXiv</th><th>Theme</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><a href="https://arxiv.org/abs/2402.17753">LoCoMo: Evaluating Very Long-Term Conversational Memory of LLM Agents</a></td><td class="ref-id">2402.17753</td><td class="ref-theme">long-term conversational memory</td></tr>
+        <tr><td><a href="https://arxiv.org/abs/2410.10813">LongMemEval: Benchmarking Chat Assistants on Long-Term Interactive Memory</a></td><td class="ref-id">2410.10813</td><td class="ref-theme">memory evaluation</td></tr>
+        <tr><td><a href="https://arxiv.org/abs/2509.18868">Memory in Large Language Models: Mechanisms, Evaluation and Evolution</a></td><td class="ref-id">2509.18868</td><td class="ref-theme">memory taxonomy</td></tr>
+        <tr><td><a href="https://arxiv.org/abs/2603.25973">MemoryCD: Benchmarking Long-Context User Memory for Lifelong Cross-Domain Personalization</a></td><td class="ref-id">2603.25973</td><td class="ref-theme">cross-domain user memory</td></tr>
+        <tr><td><a href="https://arxiv.org/abs/2502.06975">Episodic Memory is the Missing Piece for Long-Term LLM Agents</a></td><td class="ref-id">2502.06975</td><td class="ref-theme">episodic memory</td></tr>
+        <tr><td><a href="https://arxiv.org/abs/2602.16313">Benchmarking Agent Memory in Interdependent Multi-Session Agentic Tasks</a></td><td class="ref-id">2602.16313</td><td class="ref-theme">multi-session agents</td></tr>
+        <tr><td><a href="https://arxiv.org/abs/2402.11821">Microstructures and Accuracy of Graph Recall by Large Language Models</a></td><td class="ref-id">2402.11821</td><td class="ref-theme">graph recall</td></tr>
+        <tr><td><a href="https://arxiv.org/abs/2404.16130">From Local to Global: A Graph RAG Approach to Query-Focused Summarization</a></td><td class="ref-id">2404.16130</td><td class="ref-theme">GraphRAG</td></tr>
+        <tr><td><a href="https://arxiv.org/abs/2310.05736">LLMLingua: Compressing Prompts for Accelerated Inference of Large Language Models</a></td><td class="ref-id">2310.05736</td><td class="ref-theme">prompt compression</td></tr>
+        <tr><td><a href="https://arxiv.org/abs/2310.06839">LongLLMLingua: Accelerating and Enhancing LLMs in Long Context Scenarios via Prompt Compression</a></td><td class="ref-id">2310.06839</td><td class="ref-theme">long-context compression</td></tr>
+        <tr><td><a href="https://arxiv.org/abs/2402.04617">InfLLM: Training-Free Long-Context Extrapolation for LLMs with an Efficient Context Memory</a></td><td class="ref-id">2402.04617</td><td class="ref-theme">context memory</td></tr>
+        <tr><td><a href="https://arxiv.org/abs/2604.28087">Towards Neuro-symbolic Causal Rule Synthesis, Verification, and Evaluation Grounded in Legal and Safety Principles</a></td><td class="ref-id">2604.28087</td><td class="ref-theme">rules + verification</td></tr>
+        <tr><td><a href="https://arxiv.org/abs/2605.04018">Rethinking Reasoning-Intensive Retrieval: Evaluating and Advancing Retrievers in Agentic Search Systems</a></td><td class="ref-id">2605.04018</td><td class="ref-theme">agentic retrieval</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+<section id="get-started" class="cta-section">
+  <h2>Preview Ferrosa Memory with your agents.</h2>
+  <p>Start local, inspect memory in the workbench, and use the viz surface to check how context is becoming linked memory.</p>
+  <div class="hero-actions">
+    <a href="getting-started.html" class="btn-primary">Configure local preview</a>
+    <a href="../database/" class="btn-secondary">Use Ferrosa Database</a>
+  </div>
+</section>
+<footer>
+  <div style="max-width: 1200px; margin: 0 auto; padding: 3rem 2rem; border-top: 1px solid var(--border); display:flex; justify-content:space-between; gap:2rem; flex-wrap:wrap; color:var(--text-muted);">
+    <div>Ferrosa Suite <span style="color:var(--accent);">0.13.0</span> · Developer preview</div>
+    <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+      <a href="../database/" style="color:var(--text-secondary); text-decoration:none;">Database</a>
+      <a href="./" style="color:var(--text-secondary); text-decoration:none;">Memory</a>
+      <a href="../database/getting-started.html" style="color:var(--text-secondary); text-decoration:none;">DB Docs</a>
+      <a href="getting-started.html" style="color:var(--text-secondary); text-decoration:none;">Memory Setup</a>
+      <a href="#examples" style="color:var(--text-secondary); text-decoration:none;">Memory Examples</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('nav').forEach((nav) => {
+    const toggle = nav.querySelector('.nav-toggle');
+    if (!toggle) return;
+    toggle.addEventListener('click', () => {
+      const open = nav.classList.toggle('nav-open');
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+    });
+    nav.querySelectorAll('.nav-links a').forEach((link) => {
+      link.addEventListener('click', () => {
+        nav.classList.remove('nav-open');
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.setAttribute('aria-label', 'Open navigation');
+      });
+    });
+  });
+</script>
+</body>
+</html>

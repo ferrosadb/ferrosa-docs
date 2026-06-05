@@ -1,0 +1,58 @@
+name: Sync Ferrosa Docs Sources
+
+on:
+  workflow_dispatch:
+    inputs:
+      ferrosa_ref:
+        description: "Ferrosa branch, tag, or SHA to sync"
+        required: true
+        default: "main"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    name: Sync from ferrosadb/ferrosa
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install Asciidoctor
+        run: sudo gem install asciidoctor -v 2.0.20 --no-document
+
+      - name: Sync upstream docs and examples
+        run: scripts/sync-from-ferrosa.sh --ref "${{ inputs.ferrosa_ref }}"
+
+      - name: Regenerate example docs
+        run: scripts/generate-example-docs.sh
+
+      - name: Validate site
+        run: |
+          scripts/check-site.py
+          git diff --check
+
+      - name: Open pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FERROSA_REF: ${{ inputs.ferrosa_ref }}
+        run: |
+          if git diff --quiet; then
+            echo "No docs changes from ${FERROSA_REF}."
+            exit 0
+          fi
+          safe_ref=$(printf '%s' "${FERROSA_REF}" | tr -c 'A-Za-z0-9._-' '-')
+          branch="sync/ferrosa-${safe_ref}-$(date -u +%Y%m%d%H%M%S)"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "${branch}"
+          git add docs sources/ferrosa/examples
+          git commit -m "docs: sync Ferrosa docs from ${FERROSA_REF}"
+          git push --set-upstream origin "${branch}"
+          gh pr create \
+            --title "docs: sync Ferrosa docs from ${FERROSA_REF}" \
+            --body "Syncs docs/ and AsciiDoc example sources from ferrosadb/ferrosa ${FERROSA_REF}, then regenerates docs/database/examples/." \
+            --base main \
+            --head "${branch}"
+

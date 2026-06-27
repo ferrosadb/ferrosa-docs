@@ -625,7 +625,7 @@
     <div>
       <p style="color:var(--text-secondary);">At the top, an agent, IDE, or runtime issues a small, stable set of MCP calls — ingest, retrieve, link, explain, forget. It does not know how a fact is stored, indexed, or ranked; it only knows the tool contract.</p>
       <p style="color:var(--text-secondary); margin-top:1rem;">The memory service translates those calls into <em>memory semantics</em>: entities and typed edges, bi-temporal facts, trajectory folds, context segments, intentions, and the forget journal. This is where dedup, supersession, ranking, and consolidation policy live.</p>
-      <p style="color:var(--text-secondary); margin-top:1rem;">Underneath, Ferrosa DB does the heavy lifting: CQL storage for the wide-column tables, HNSW vector indexes for semantic recall, a property graph for traversal, and S3-backed durability with hot/warm/cold tiering so memory survives restarts and scales past a single process.</p>
+      <p style="color:var(--text-secondary); margin-top:1rem;">Underneath, Ferrosa DB does the heavy lifting: CQL storage for the wide-column tables, HNSW vector indexes for semantic recall, a property graph with Bolt protocol for traversal, SPARQL and SQL query engines, and S3-backed durability with hot/warm/cold tiering so memory survives restarts and scales past a single process.</p>
     </div>
     <div>
       <div class="arch-diagram">
@@ -661,6 +661,9 @@
             <span class="arch-chip">CQL storage</span>
             <span class="arch-chip">HNSW vectors</span>
             <span class="arch-chip">property graph</span>
+            <span class="arch-chip">SPARQL</span>
+            <span class="arch-chip">SQL engine</span>
+            <span class="arch-chip">Bolt protocol</span>
             <span class="arch-chip">S3 tiering</span>
           </div>
         </div>

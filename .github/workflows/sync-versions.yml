@@ -1,0 +1,46 @@
+name: Sync doc versions
+# Keeps the marketing site's version strings (+ docs/LATEST) in step with the
+# latest STABLE releases of ferrosa and ferrosa-memory. Drop this in ferrosa-docs
+# at .github/workflows/sync-versions.yml.
+on:
+  schedule:
+    - cron: '17 7 * * *'        # daily
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+concurrency:
+  group: sync-doc-versions
+  cancel-in-progress: true
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update version strings from latest releases
+        env:
+          # If ferrosadb/ferrosa(-memory) are PRIVATE, github.token can't read
+          # their releases — set a PAT secret with `repo` (or read:releases) on
+          # both and reference it here instead: ${{ secrets.RELEASES_READ_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: scripts/update-site-versions.sh
+      - name: Open a PR if anything changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then echo "versions already current"; exit 0; fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          branch="chore/sync-doc-versions-$(date -u +%Y%m%dT%H%M)"
+          git checkout -B "$branch"
+          git add -A
+          git commit -m "chore(site): sync doc versions to latest stable releases"
+          git push origin "$branch"
+          gh pr create --base main --head "$branch" \
+            --title "chore(site): sync doc versions" \
+            --body "Auto-updates the site version strings + docs/LATEST to the latest stable ferrosa / ferrosa-memory releases (scripts/update-site-versions.sh)." \
+            --label automated 2>/dev/null || \
+          gh pr create --base main --head "$branch" \
+            --title "chore(site): sync doc versions" \
+            --body "Auto-updates site versions + docs/LATEST to latest stable releases."

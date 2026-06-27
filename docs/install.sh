@@ -2,9 +2,20 @@
 # ferrosa installer — fetches a release tarball, installs to ~/.ferrosa,
 # offers system-service registration and admin-password setup.
 #
+# It is idempotent: re-running upgrades an existing install in place. When the
+# resolved version already matches what's installed it does nothing (use
+# --force to reinstall).
+#
+# Channels:
+#   stable  (default) — the latest release a maintainer has promoted (GitHub
+#                       "latest"). Resolves via /releases/latest.
+#   nightly           — the newest published release, including the prereleases
+#                       cut automatically each night. Resolves via /releases.
+#
 # Usage:
 #   curl -fsSL https://ferrosadb.com/install.sh | bash
-#   curl -fsSL https://ferrosadb.com/install.sh | bash -s -- --version v0.12.0 --no-service
+#   curl -fsSL https://ferrosadb.com/install.sh | bash -s -- --channel nightly
+#   curl -fsSL https://ferrosadb.com/install.sh | bash -s -- --version v0.16.0 --no-service
 set -euo pipefail
 
 REPO="ferrosadb/ferrosa"
@@ -14,15 +25,26 @@ BIN_DIR="${INSTALL_ROOT}/bin"
 CONFIG_DIR="${INSTALL_ROOT}/config"
 DATA_DIR="${INSTALL_ROOT}/data"
 LOG_DIR="${INSTALL_ROOT}/logs"
+VERSION_STAMP="${INSTALL_ROOT}/.version"
 
 VERSION=""
+CHANNEL="stable"   # stable|nightly
+FORCE="no"
 WANT_SERVICE=""    # ask|yes|no
 WANT_PASSWORD=""   # ask|yes|no
+# Install from a local release tarball instead of downloading from GitHub.
+# Used by the install smoke test (and devs) to exercise THIS script against a
+# just-built binary before it is published. Honors the `FERROSA_INSTALL_TARBALL`
+# env var or the `--tarball <path>` flag; requires `--version <label>`.
+LOCAL_TARBALL="${FERROSA_INSTALL_TARBALL:-}"
 
 # ---------- arg parsing ----------
 while [ $# -gt 0 ]; do
   case "$1" in
     --version)      VERSION="$2"; shift 2 ;;
+    --channel)      CHANNEL="$2"; shift 2 ;;
+    --tarball)      LOCAL_TARBALL="$2"; shift 2 ;;
+    --force)        FORCE="yes"; shift ;;
     --no-service)   WANT_SERVICE="no"; shift ;;
     --service)      WANT_SERVICE="yes"; shift ;;
     --no-password)  WANT_PASSWORD="no"; shift ;;
@@ -30,14 +52,21 @@ while [ $# -gt 0 ]; do
     -h|--help)
       cat <<EOF
 ferrosa installer
-  --version <tag>           install a specific tag (default: latest)
-  --service / --no-service  enable or skip system-service install
+  --version <tag>            install a specific tag (overrides --channel)
+  --channel stable|nightly   release channel (default: stable)
+  --force                    reinstall even if already up to date
+  --service / --no-service   enable or skip system-service install
   --password / --no-password prompt for or skip admin-password setup
 EOF
       exit 0 ;;
     *) echo "unknown flag: $1" >&2; exit 2 ;;
   esac
 done
+
+case "$CHANNEL" in
+  stable|nightly) ;;
+  *) echo "error: --channel must be 'stable' or 'nightly'" >&2; exit 2 ;;
+esac
 
 say() { printf ':: %s\n' "$*" >&2; }
 die() { printf 'error: %s\n' "$*" >&2; exit 1; }
@@ -57,27 +86,70 @@ detect_target() {
 }
 TARGET=$(detect_target)
 
-# ---------- fetch tag ----------
+# ---------- resolve the tag to install ----------
+# stable  -> /releases/latest (only non-prerelease, maintainer-promoted)
+# nightly -> /releases (newest published, includes nightly prereleases)
+resolve_channel_tag() {
+  case "$CHANNEL" in
+    stable)
+      curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" \
+        | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p' | head -1 ;;
+    nightly)
+      curl -fsSL "https://api.github.com/repos/${REPO}/releases?per_page=1" \
+        | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p' | head -1 ;;
+  esac
+}
+
 if [ -z "$VERSION" ]; then
-  VERSION=$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" \
-              | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p' | head -1)
+  [ -z "$LOCAL_TARBALL" ] || die "--tarball requires an explicit --version <label>"
+  VERSION=$(resolve_channel_tag) || true
+  [ -n "$VERSION" ] || die "no ${CHANNEL} release found at ${RELEASE_HOST}"
+  say "resolved ${CHANNEL} channel to ${VERSION}"
 fi
-[ -n "$VERSION" ] || die "no release found at https://github.com/${REPO}/releases"
+
+# ---------- idempotency: compare against what's installed ----------
+read_installed_version() {
+  if [ -f "$VERSION_STAMP" ]; then
+    cat "$VERSION_STAMP"
+  elif [ -x "${BIN_DIR}/ferrosa-ctl" ]; then
+    # Best-effort fallback for installs predating the version stamp. The main
+    # `ferrosa` binary boots the server on any args (no --version); ferrosa-ctl
+    # has a clean --version that prints "ferrosa-ctl X.Y.Z".
+    "${BIN_DIR}/ferrosa-ctl" --version 2>/dev/null | awk 'NR==1{print "v"$NF}'
+  fi
+}
+INSTALLED_VERSION="$(read_installed_version || true)"
+IS_UPGRADE="no"; [ -n "$INSTALLED_VERSION" ] && IS_UPGRADE="yes"
+
+if [ "$INSTALLED_VERSION" = "$VERSION" ] && [ "$FORCE" = "no" ]; then
+  say "ferrosa ${VERSION} is already installed (up to date); use --force to reinstall"
+  exit 0
+fi
+
+if [ "$IS_UPGRADE" = "yes" ]; then
+  say "upgrading ferrosa ${INSTALLED_VERSION} -> ${VERSION}"
+fi
 
 TARBALL="ferrosa-${VERSION}-${TARGET}.tar.gz"
 URL="${RELEASE_HOST}/download/${VERSION}/${TARBALL}"
 SUMS_URL="${RELEASE_HOST}/download/${VERSION}/SHA256SUMS"
 
-# ---------- download + verify ----------
+# ---------- obtain the tarball (download, or use a local build) + verify ----------
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
-say "downloading $TARBALL"
-curl -fsSL --output "$TMP/$TARBALL" "$URL"
-curl -fsSL --output "$TMP/SHA256SUMS" "$SUMS_URL"
+if [ -n "$LOCAL_TARBALL" ]; then
+  [ -f "$LOCAL_TARBALL" ] || die "local tarball not found: $LOCAL_TARBALL"
+  say "installing from local tarball $LOCAL_TARBALL (skipping download + checksum)"
+  cp "$LOCAL_TARBALL" "$TMP/$TARBALL"
+else
+  say "downloading $TARBALL"
+  curl -fsSL --output "$TMP/$TARBALL" "$URL"
+  curl -fsSL --output "$TMP/SHA256SUMS" "$SUMS_URL"
 
-say "verifying SHA256"
-( cd "$TMP" && grep "$TARBALL" SHA256SUMS | shasum -a 256 -c - ) \
-  || die "checksum verification FAILED"
+  say "verifying SHA256"
+  ( cd "$TMP" && grep "$TARBALL" SHA256SUMS | shasum -a 256 -c - ) \
+    || die "checksum verification FAILED"
+fi
 
 # ---------- install layout ----------
 say "installing to $INSTALL_ROOT"
@@ -87,6 +159,9 @@ tar -xzf "$TMP/$TARBALL" -C "$TMP"
 cp "$TMP/ferrosa"     "$BIN_DIR/"
 cp "$TMP/ferrosa-ctl" "$BIN_DIR/"
 chmod +x "$BIN_DIR/ferrosa" "$BIN_DIR/ferrosa-ctl"
+
+# Record the installed version so the next run is idempotent.
+printf '%s\n' "$VERSION" > "$VERSION_STAMP"
 
 if [ ! -f "$CONFIG_DIR/ferrosa.toml" ]; then
   cp "$TMP/config/ferrosa.example.toml" "$CONFIG_DIR/ferrosa.toml"
@@ -131,11 +206,36 @@ do_service() {
   esac
 }
 
+# On upgrade, restart an already-registered service so the new binary is the
+# one actually running (the path is unchanged, so the old process keeps the
+# old inode until restarted).
+restart_service_if_present() {
+  case "$(uname -s)" in
+    Darwin)
+      local plist="$HOME/Library/LaunchAgents/com.ferrosadb.ferrosa.plist"
+      [ -f "$plist" ] || return 0
+      launchctl kickstart -k "gui/$(id -u)/com.ferrosadb.ferrosa" 2>/dev/null \
+        && say "restarted launchd service to apply the upgrade" || true ;;
+    Linux)
+      local unit="$HOME/.config/systemd/user/ferrosa.service"
+      [ -f "$unit" ] || return 0
+      systemctl --user restart ferrosa.service 2>/dev/null \
+        && say "restarted systemd --user service to apply the upgrade" || true ;;
+  esac
+}
+
+# Explicit flags always win. Otherwise: prompt on a fresh install, and on an
+# upgrade quietly restart an existing service without re-prompting.
 case "$WANT_SERVICE" in
   yes) do_service ;;
   no)  : ;;
-  "")  prompt_yes "Register ferrosa as a user service (autostart on login)?" \
-         && do_service ;;
+  "")
+    if [ "$IS_UPGRADE" = "yes" ]; then
+      restart_service_if_present
+    else
+      prompt_yes "Register ferrosa as a user service (autostart on login)?" \
+        && do_service
+    fi ;;
 esac
 
 # ---------- wait for port 9042 ----------
@@ -155,21 +255,37 @@ do_password() {
     say "run later: $BIN_DIR/ferrosa-ctl auth set-password"
     return
   fi
+  # Under `curl … | bash` this script's stdin is the pipe, not a terminal, so
+  # ferrosa-ctl's masked prompt (rpassword reads stdin) can't disable echo —
+  # the password echoes in cleartext and the read never completes (hang). Bind
+  # the controlling terminal explicitly so the prompt + confirmation work.
+  if [ ! -r /dev/tty ]; then
+    say "no controlling terminal — skipping interactive password setup"
+    say "run later from a terminal: $BIN_DIR/ferrosa-ctl auth set-password --user ferrosa_admin"
+    return
+  fi
   say "set ferrosa_admin password (current default: ferrosa_admin)"
   # Exact flag shape pinned to the auth set-password CLI from PR (Task #8 re-brief)
-  "$BIN_DIR/ferrosa-ctl" auth set-password --user ferrosa_admin
+  "$BIN_DIR/ferrosa-ctl" auth set-password --user ferrosa_admin < /dev/tty
 }
 
+# Password is a first-install concern. On upgrade we never re-prompt (the
+# admin already has a password) unless --password was passed explicitly.
 case "$WANT_PASSWORD" in
   yes) do_password ;;
   no)  : ;;
-  "")  prompt_yes "Set the ferrosa_admin password now?" && do_password ;;
+  "")
+    if [ "$IS_UPGRADE" = "yes" ]; then
+      :
+    else
+      prompt_yes "Set the ferrosa_admin password now?" && do_password
+    fi ;;
 esac
 
 # ---------- finish ----------
 cat <<EOF >&2
 
-ferrosa $VERSION installed.
+ferrosa $VERSION installed (${CHANNEL} channel).
 
   binaries: $BIN_DIR
   config:   $CONFIG_DIR/ferrosa.toml
@@ -181,6 +297,9 @@ Add to your shell profile:
 
 If you didn't register a service, run manually:
   FERROSA_CONFIG="$CONFIG_DIR/ferrosa.toml" "$BIN_DIR/ferrosa"
+
+Upgrade later by re-running this installer (idempotent):
+  curl -fsSL https://ferrosadb.com/install.sh | bash -s -- --channel ${CHANNEL}
 
 Docs: https://ferrosadb.com/database/getting-started.html
 EOF

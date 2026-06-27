@@ -484,6 +484,8 @@
   .two-col { display:grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap:2rem; align-items:stretch; }
   .two-col .feature-card { display:flex; flex-direction:column; height:100%; }
   .two-col .feature-card p:last-child { flex:1; }
+  .two-col > div:not(.feature-card):not(.arch-diagram) { display:flex; flex-direction:column; height:100%; }
+  .two-col > div:not(.feature-card):not(.arch-diagram) > *:last-child { flex:1; }
   @media (max-width: 800px) { .two-col { grid-template-columns:1fr; } }
 
   /* Loop diagram — built from existing palette tokens. */

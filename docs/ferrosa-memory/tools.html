@@ -570,6 +570,7 @@
   .tool-table tbody tr:hover { background:rgba(255,255,255,.02); }
   .tool-table td.tool-name { white-space:nowrap; width:1%; }
   .tool-table code { font-family:var(--font-mono); font-size:.84rem; color:var(--accent-cool); background:rgba(126,231,255,.08); padding:.12rem .42rem; border-radius:6px; }
+  .tool-alias { font-family:var(--font-mono); font-size:.72rem; color:var(--text-muted); opacity:.7; }
   @media (max-width: 600px) { .tool-table td.tool-name { white-space:normal; } .tool-table th, .tool-table td { padding:.55rem .7rem; } }
 </style>
 
@@ -618,8 +619,8 @@
     <h2 class="section-title">A default surface that fits in an agent's head.</h2>
     <div class="two-col">
       <div>
-        <p style="color:var(--text-secondary);">Drowning an agent in nearly 80 tool definitions is its own kind of noise: every extra tool dilutes the model's attention, inflates the prompt, and makes the wrong call more likely. So Ferrosa Memory ships a focused default surface — the everyday memory loop of ingest, recall, link, track tasks, and forget — and keeps the rest opt-in.</p>
-        <p style="color:var(--text-secondary); margin-top:1rem;">This mirrors the same recall-hygiene philosophy that runs through 0.15: <strong>prefer signal over noise</strong>. Just as recall guards and workspace filtering keep retrieval quiet unless there's real signal, tiering keeps the tool list quiet unless an operator reaches for advanced or administrative work.</p>
+        <p style="color:var(--text-secondary);">The full catalog is large, so Ferrosa Memory ships a focused default surface: the everyday memory loop of ingest, search, edge, find, and forget. The rest unlocks with <code>include_all</code> when an operator needs it.</p>
+        <p style="color:var(--text-secondary); margin-top:1rem;">This mirrors the same recall-hygiene philosophy that runs through the product: <strong>prefer signal over noise</strong>. Just as recall guards and workspace filtering keep retrieval quiet unless there's real signal, tiering keeps the tool list quiet unless an operator reaches for advanced or administrative work.</p>
         <p style="color:var(--text-secondary); margin-top:1rem;">Tier&nbsp;2 is always one flag away. Batch operations, memo and plan tracking, the full intention lifecycle, trajectory folds, bi-temporal facts, stored skills, dream-cycle consolidation, and the Datalog governance plane are there when you need them — and out of the way when you don't.</p>
       </div>
       <div>
@@ -645,10 +646,10 @@
       <table class="tool-table">
         <thead><tr><th>Tool</th><th>Purpose</th></tr></thead>
         <tbody>
-          <tr><td class="tool-name"><code>smart_ingest</code></td><td>Ingest discovered facts with dedup + confidence scoring</td></tr>
-          <tr><td class="tool-name"><code>hybrid_search</code></td><td>Multi-strategy semantic+lexical+phonetic+graph search (RRF)</td></tr>
-          <tr><td class="tool-name"><code>retrieve_entities</code></td><td>Find entities by phonetic fuzzy match or semantic ANN</td></tr>
-          <tr><td class="tool-name"><code>list_entities</code></td><td>List entities with structured equality filters</td></tr>
+          <tr><td class="tool-name"><code>ingest</code> <span class="tool-alias">smart_ingest</span></td><td>Ingest discovered facts with dedup + confidence scoring</td></tr>
+          <tr><td class="tool-name"><code>search</code> <span class="tool-alias">hybrid_search</span></td><td>Multi-strategy semantic+lexical+phonetic+graph search (RRF)</td></tr>
+          <tr><td class="tool-name"><code>find</code> <span class="tool-alias">retrieve_entities</span></td><td>Find entities by phonetic fuzzy match or semantic ANN</td></tr>
+          <tr><td class="tool-name"><code>list</code> <span class="tool-alias">list_entities</span></td><td>List entities with structured equality filters</td></tr>
         </tbody>
       </table>
     </div>
@@ -660,7 +661,7 @@
       <table class="tool-table">
         <thead><tr><th>Tool</th><th>Purpose</th></tr></thead>
         <tbody>
-          <tr><td class="tool-name"><code>create_edge</code></td><td>Build a typed graph edge</td></tr>
+          <tr><td class="tool-name"><code>edge</code> <span class="tool-alias">create_edge</span></td><td>Build a typed graph edge</td></tr>
         </tbody>
       </table>
     </div>
@@ -673,7 +674,7 @@
         <thead><tr><th>Tool</th><th>Purpose</th></tr></thead>
         <tbody>
           <tr><td class="tool-name"><code>get_chunk_context</code></td><td>Expand a document chunk via semantic prev/next links</td></tr>
-          <tr><td class="tool-name"><code>get_turn_chain</code></td><td>Walk forward through temporal next_turn edges</td></tr>
+          <tr><td class="tool-name"><code>turn_chain</code> <span class="tool-alias">get_turn_chain</span></td><td>Walk forward through temporal next_turn edges</td></tr>
         </tbody>
       </table>
     </div>
@@ -716,9 +717,9 @@
       <table class="tool-table">
         <thead><tr><th>Tool</th><th>Purpose</th></tr></thead>
         <tbody>
-          <tr><td class="tool-name"><code>record_feedback</code></td><td>Record relevance feedback on the last search result set</td></tr>
+          <tr><td class="tool-name"><code>feedback</code> <span class="tool-alias">record_feedback</span></td><td>Record relevance feedback on the last search result set</td></tr>
           <tr><td class="tool-name"><code>get_stats</code></td><td>Health stats: entity/fold/session counts, consolidation status</td></tr>
-          <tr><td class="tool-name"><code>configure</code></td><td>Read/write runtime defaults (session, retrieval limit, workspace, cwd)</td></tr>
+          <tr><td class="tool-name"><code>config</code> <span class="tool-alias">configure</span></td><td>Read/write runtime defaults (session, retrieval limit, workspace, cwd)</td></tr>
           <tr><td class="tool-name"><code>all_tools</code></td><td>Return the full tool catalog</td></tr>
         </tbody>
       </table>
@@ -754,8 +755,8 @@
         <table class="tool-table">
           <thead><tr><th>Tool</th><th>Purpose</th></tr></thead>
           <tbody>
-            <tr><td class="tool-name"><code>upsert_entity</code></td><td>Create or update a single entity directly</td></tr>
-            <tr><td class="tool-name"><code>batch_ingest</code></td><td>Ingest many facts in one call with dedup + scoring</td></tr>
+            <tr><td class="tool-name"><code>upsert</code> <span class="tool-alias">upsert_entity</span></td><td>Create or update a single entity directly</td></tr>
+            <tr><td class="tool-name"><code>ingest_batch</code> <span class="tool-alias">batch_ingest</span></td><td>Ingest many facts in one call with dedup + scoring</td></tr>
             <tr><td class="tool-name"><code>ingest_entities</code></td><td>Insert a set of explicit entities</td></tr>
             <tr><td class="tool-name"><code>count_entities_by_type</code></td><td>Count entities grouped by type</td></tr>
           </tbody>
@@ -820,7 +821,7 @@
             <tr><td class="tool-name"><code>batch_create_edges</code></td><td>Create many typed edges in one operation</td></tr>
             <tr><td class="tool-name"><code>batch_update_edges</code></td><td>Update many edges in one operation</td></tr>
             <tr><td class="tool-name"><code>batch_delete_edges</code></td><td>Delete many edges in one operation</td></tr>
-            <tr><td class="tool-name"><code>explore_connections</code></td><td>Traverse the graph outward from an entity</td></tr>
+            <tr><td class="tool-name"><code>explore</code> <span class="tool-alias">explore_connections</span></td><td>Traverse the graph outward from an entity</td></tr>
             <tr><td class="tool-name"><code>find_memory_chain</code></td><td>Find a connecting path between memories</td></tr>
           </tbody>
         </table>
@@ -833,8 +834,8 @@
         <table class="tool-table">
           <thead><tr><th>Tool</th><th>Purpose</th></tr></thead>
           <tbody>
-            <tr><td class="tool-name"><code>write_temporal_fact</code></td><td>Record a timestamped fact with supersession</td></tr>
-            <tr><td class="tool-name"><code>get_temporal_chain</code></td><td>Walk the supersession chain for a fact</td></tr>
+            <tr><td class="tool-name"><code>fact</code> <span class="tool-alias">write_temporal_fact</span></td><td>Record a timestamped fact with supersession</td></tr>
+            <tr><td class="tool-name"><code>history</code> <span class="tool-alias">get_temporal_chain</span></td><td>Walk the supersession chain for a fact</td></tr>
           </tbody>
         </table>
       </div>
@@ -861,7 +862,7 @@
         <table class="tool-table">
           <thead><tr><th>Tool</th><th>Purpose</th></tr></thead>
           <tbody>
-            <tr><td class="tool-name"><code>ingest_skill</code></td><td>Store a reusable skill</td></tr>
+            <tr><td class="tool-name"><code>skill_ingest</code> <span class="tool-alias">ingest_skill</span></td><td>Store a reusable skill</td></tr>
             <tr><td class="tool-name"><code>invoke_skill</code></td><td>Invoke a stored skill</td></tr>
             <tr><td class="tool-name"><code>verify_skill</code></td><td>Verify a skill before use</td></tr>
             <tr><td class="tool-name"><code>retrieve_skills_for_context</code></td><td>Retrieve skills relevant to the current context</td></tr>
@@ -876,8 +877,8 @@
         <table class="tool-table">
           <thead><tr><th>Tool</th><th>Purpose</th></tr></thead>
           <tbody>
-            <tr><td class="tool-name"><code>run_consolidation</code></td><td>Force a background dream-cycle consolidation pass</td></tr>
-            <tr><td class="tool-name"><code>enrich_entities</code></td><td>Enrich entities with derived attributes</td></tr>
+            <tr><td class="tool-name"><code>consolidate</code> <span class="tool-alias">run_consolidation</span></td><td>Force a background dream-cycle consolidation pass</td></tr>
+            <tr><td class="tool-name"><code>enrich</code> <span class="tool-alias">enrich_entities</span></td><td>Enrich entities with derived attributes</td></tr>
             <tr><td class="tool-name"><code>importance_score</code></td><td>Score the importance of memories</td></tr>
             <tr><td class="tool-name"><code>spread_activation</code></td><td>Activate related memories by graph spreading</td></tr>
             <tr><td class="tool-name"><code>find_duplicates</code></td><td>Find duplicate entities for merge</td></tr>
@@ -895,11 +896,11 @@
         <table class="tool-table">
           <thead><tr><th>Tool</th><th>Purpose</th></tr></thead>
           <tbody>
-            <tr><td class="tool-name"><code>manage_rules</code></td><td>Manage Datalog derivation rules</td></tr>
-            <tr><td class="tool-name"><code>manage_claims</code></td><td>Manage claims in the expert system</td></tr>
-            <tr><td class="tool-name"><code>manage_approvals</code></td><td>Manage approvals for derived knowledge</td></tr>
-            <tr><td class="tool-name"><code>manage_aliases</code></td><td>Manage entity and predicate aliases</td></tr>
-            <tr><td class="tool-name"><code>manage_authority</code></td><td>Mark sources curated/authoritative or demote clutter for ranking</td></tr>
+            <tr><td class="tool-name"><code>rules</code> <span class="tool-alias">manage_rules</span></td><td>Manage Datalog derivation rules</td></tr>
+            <tr><td class="tool-name"><code>claims</code> <span class="tool-alias">manage_claims</span></td><td>Manage claims in the expert system</td></tr>
+            <tr><td class="tool-name"><code>approvals</code> <span class="tool-alias">manage_approvals</span></td><td>Manage approvals for derived knowledge</td></tr>
+            <tr><td class="tool-name"><code>aliases</code> <span class="tool-alias">manage_aliases</span></td><td>Manage entity and predicate aliases</td></tr>
+            <tr><td class="tool-name"><code>authority</code> <span class="tool-alias">manage_authority</span></td><td>Mark sources curated/authoritative or demote clutter for ranking</td></tr>
             <tr><td class="tool-name"><code>explain_derived</code></td><td>Return a proof trace for a derived fact</td></tr>
             <tr><td class="tool-name"><code>get_effective_rule_set</code></td><td>Get the currently effective rule set</td></tr>
             <tr><td class="tool-name"><code>promote_predicate</code></td><td>Promote a predicate into the effective rule set</td></tr>
@@ -930,7 +931,7 @@
           <thead><tr><th>Tool</th><th>Purpose</th></tr></thead>
           <tbody>
             <tr><td class="tool-name"><code>ensure_parent_tag</code></td><td>Ensure a parent tag exists for grouping</td></tr>
-            <tr><td class="tool-name"><code>record_outcome</code></td><td>Record an outcome (including retrieval misses) to train ranking</td></tr>
+            <tr><td class="tool-name"><code>outcome</code> <span class="tool-alias">record_outcome</span></td><td>Record an outcome (including retrieval misses) to train ranking</td></tr>
             <tr><td class="tool-name"><code>restore_forgotten</code></td><td>Restore a reversibly retracted memory</td></tr>
             <tr><td class="tool-name"><code>predict_needed</code> <span style="color:var(--text-muted);font-size:.82rem;">(stub)</span></td><td>Predict memories likely needed next</td></tr>
           </tbody>

@@ -567,27 +567,27 @@
 <section id="loop">
   <div class="section-label cool">The core loop</div>
   <h2 class="section-title">Five verbs you'll use every session.</h2>
-  <p class="section-subtitle">Day-to-day, Ferrosa Memory comes down to a short loop. Ingest what you learn, retrieve before you do work, link facts that relate, record facts as they change, and forget deliberately when something is wrong or stale. The MCP tool names map straight onto these verbs.</p>
+  <p class="section-subtitle">Day-to-day, Ferrosa Memory comes down to a short loop. Ingest what you learn, retrieve before you do work, link facts that relate, record facts as they change, and forget deliberately when something is wrong or stale. The short MCP aliases map straight onto these verbs: <code>ingest</code> (<code>smart_ingest</code>), <code>search</code> (<code>hybrid_search</code>), <code>edge</code> (<code>create_edge</code>), <code>fact</code> (<code>write_temporal_fact</code>), and <code>history</code> (<code>get_temporal_chain</code>).</p>
 
   <div class="loop-row">
     <div class="loop-step ingest">
       <span class="loop-verb">Ingest</span>
-      <span class="loop-tool">smart_ingest</span>
+      <span class="loop-tool">ingest</span>
       <span class="loop-why">Store an insight, decision, or relationship. The server decides create / update / supersede / skip.</span>
     </div>
     <div class="loop-step retrieve">
       <span class="loop-verb">Retrieve</span>
-      <span class="loop-tool">hybrid_search</span>
+      <span class="loop-tool">search</span>
       <span class="loop-why">Ask in natural language; get a fused, ranked answer before you grep or read files.</span>
     </div>
     <div class="loop-step link">
       <span class="loop-verb">Link</span>
-      <span class="loop-tool">create_edge</span>
+      <span class="loop-tool">edge</span>
       <span class="loop-why">Connect two related facts with a typed edge. Connected facts are knowledge.</span>
     </div>
     <div class="loop-step record">
       <span class="loop-verb">Record</span>
-      <span class="loop-tool">write_temporal_fact</span>
+      <span class="loop-tool">fact</span>
       <span class="loop-why">Note a value that changes over time. The old one is superseded, not erased.</span>
     </div>
     <div class="loop-step forget">
@@ -601,18 +601,18 @@
     <div>
       <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:.5rem;">Ingest — store what you learned</h3>
       <div class="code-block"><pre><code>{
-  "tool": "smart_ingest",
+  "tool": "ingest",
   "arguments": {
     "entity_name": "Auth token rotation",
     "entity_type": "decision",
     "content": "Access tokens rotate every 15 min; refresh tokens are single-use and stored hashed."
   }
 }</code></pre></div>
-      <p style="color:var(--text-secondary); font-size:.92rem;">Store insights, decisions, relationships, and facts — not raw file contents. <code>smart_ingest</code> deduplicates against what's already there and supersedes when it recognizes an update.</p>
+      <p style="color:var(--text-secondary); font-size:.92rem;">Store insights, decisions, relationships, and facts — not raw file contents. <code>ingest</code> deduplicates against what's already there and supersedes when it recognizes an update.</p>
 
       <h3 style="font-size:1.15rem; font-weight:700; margin:1.75rem 0 .5rem;">Link — connect what relates</h3>
       <div class="code-block"><pre><code>{
-  "tool": "create_edge",
+  "tool": "edge",
   "arguments": {
     "from": "Auth token rotation",
     "to": "Session store schema",
@@ -624,23 +624,23 @@
     <div>
       <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:.5rem;">Retrieve — ask before you grep</h3>
       <div class="code-block"><pre><code>{
-  "tool": "hybrid_search",
+  "tool": "search",
   "arguments": {
     "query": "how do we rotate auth tokens",
     "limit": 5
   }
 }</code></pre></div>
-      <p style="color:var(--text-secondary); font-size:.92rem;">If <code>hybrid_search</code> returns what you need, you're done — no grep, no find, no re-reading files. For document-chunk hits, call <code>get_chunk_context</code> to expand around a match and recover the surrounding lines.</p>
+      <p style="color:var(--text-secondary); font-size:.92rem;">If <code>search</code> returns what you need, you're done — no grep, no find, no re-reading files. For document-chunk hits, call <code>get_chunk_context</code> to expand around a match and recover the surrounding lines.</p>
 
       <h3 style="font-size:1.15rem; font-weight:700; margin:1.75rem 0 .5rem;">Record — facts that evolve</h3>
       <div class="code-block"><pre><code>{
-  "tool": "write_temporal_fact",
+  "tool": "fact",
   "arguments": {
-    "entity_id": "&lt;entity UUID from smart_ingest&gt;",
+    "entity_id": "&lt;entity UUID from ingest&gt;",
     "fact_text": "Rotation window changed from 15 min to 10 min."
   }
 }</code></pre></div>
-      <p style="color:var(--text-secondary); font-size:.92rem;">Temporal facts are timestamped and superseded rather than overwritten. Retrieval returns the latest value by default; the full chain stays inspectable for audit.</p>
+      <p style="color:var(--text-secondary); font-size:.92rem;">Temporal facts are timestamped and superseded rather than overwritten. Retrieval returns the latest value by default; call <code>history</code> when you need the full audit chain.</p>
     </div>
   </div>
 
@@ -658,14 +658,14 @@
       <div class="step-num">1</div>
       <div>
         <h4>Ingest the repo and its docs — once</h4>
-        <p>Walk the source tree and feed files through <code>smart_ingest</code> (or <code>batch_ingest</code> for bulk). Documents are stored as a document → section → chunk hierarchy with semantic previous/next links, so a single hit can be expanded back into full surrounding context. Re-run only on the files that changed to keep memory fresh — you don't re-ingest the world every session.</p>
+        <p>Walk the source tree and feed files through <code>ingest</code> (or <code>batch_ingest</code> for bulk). Documents are stored as a document → section → chunk hierarchy with semantic previous/next links, so a single hit can be expanded back into full surrounding context. Re-run only on the files that changed to keep memory fresh — you don't re-ingest the world every session.</p>
       </div>
     </div>
     <div class="step-row">
       <div class="step-num">2</div>
       <div>
         <h4>Retrieve functions and files semantically</h4>
-        <p>Next session, the agent asks <code>hybrid_search</code> "where do we validate refresh tokens?" and gets the exact function back — fused from vector, lexical (BM25), phonetic, and graph signals. No directory listing, no full-file re-read to locate one symbol. When a chunk hit needs its neighbors, <code>get_chunk_context</code> pulls the adjacent chunks.</p>
+        <p>Next session, the agent asks <code>search</code> "where do we validate refresh tokens?" and gets the exact function back — fused from vector, lexical (BM25), phonetic, and graph signals. No directory listing, no full-file re-read to locate one symbol. When a chunk hit needs its neighbors, <code>get_chunk_context</code> pulls the adjacent chunks.</p>
       </div>
     </div>
     <div class="step-row">
@@ -713,7 +713,7 @@
     <div class="tier-box">
       <span class="tier-count">21</span>
       <h3>Tier 1 — default</h3>
-      <p>The everyday memory loop: <code>smart_ingest</code> and <code>hybrid_search</code>, typed edges, context expansion, triggered intentions, durable session tasks, feedback, stats, runtime config, and <code>forget</code>. This is what the agent sees first.</p>
+      <p>The everyday memory loop: <code>ingest</code> and <code>search</code>, typed edges, context expansion, triggered intentions, durable session tasks, feedback, stats, runtime config, and <code>forget</code>. This is what the agent sees first.</p>
     </div>
     <div class="tier-box">
       <span class="tier-count">58</span>
@@ -754,12 +754,12 @@
       <div class="doc-card">
         <span class="tag">coding agent</span>
         <h3>A codebase that persists across sessions</h3>
-        <p>Ingest the repo and docs once, and record decisions as they're made. Next session, the agent runs <code>check_intentions</code> and a <code>hybrid_search</code> at startup, opening with what it already knows — the codebase map, the open decisions, and where it left off — before reading a single file.</p>
+        <p>Ingest the repo and docs once, and record decisions as they're made. Next session, the agent runs <code>check_intentions</code> and <code>search</code> at startup, opening with what it already knows — the codebase map, the open decisions, and where it left off — before reading a single file.</p>
       </div>
       <div class="doc-card">
         <span class="tag">research · notes</span>
         <h3>Notes that accumulate into knowledge</h3>
-        <p>Ingest papers, articles, and your own notes as you go; link findings with <code>create_edge</code> so related ideas connect instead of piling up. Background consolidation surfaces relationships between notes that arrived separately, and <code>hybrid_search</code> recalls them by meaning later — not just by the words you happened to use.</p>
+        <p>Ingest papers, articles, and your own notes as you go; link findings with <code>edge</code> so related ideas connect instead of piling up. Background consolidation surfaces relationships between notes that arrived separately, and <code>search</code> recalls them by meaning later — not just by the words you happened to use.</p>
       </div>
       <div class="doc-card">
         <span class="tag">team · workgroup</span>
@@ -777,10 +777,10 @@
   <h2 class="section-title">Five habits that make memory pull its weight.</h2>
   <p class="section-subtitle">Memory is only as useful as the loop around it. These habits keep recall sharp and the graph trustworthy.</p>
   <ul class="habit-list">
-    <li><b>Ingest once, keep it fresh</b>Load the codebase and docs up front, then re-ingest only what changed. <code>smart_ingest</code> deduplicates and supersedes, so refreshes don't bloat the graph.</li>
-    <li><b>Let it retrieve before it greps</b>Make <code>hybrid_search</code> the first move, not a fallback. If it answers, you're done; if the first page misses, send <code>+1</code>/<code>-1</code> feedback and page on before reaching for grep.</li>
-    <li><b>Record decisions as facts</b>When something is decided or changes, write it with <code>smart_ingest</code> or <code>write_temporal_fact</code> and link it. Tomorrow's agent reasons over decisions, not just files.</li>
-    <li><b>Connect, don't isolate</b>After learning two related facts, <code>create_edge</code> between them. Connected facts are knowledge an agent can traverse; isolated facts are just data.</li>
+    <li><b>Ingest once, keep it fresh</b>Load the codebase and docs up front, then re-ingest only what changed. <code>ingest</code> deduplicates and supersedes, so refreshes don't bloat the graph.</li>
+    <li><b>Let it retrieve before it greps</b>Make <code>search</code> the first move, not a fallback. If it answers, you're done; if the first page misses, send <code>+1</code>/<code>-1</code> feedback and page on before reaching for grep.</li>
+    <li><b>Record decisions as facts</b>When something is decided or changes, write it with <code>ingest</code> or <code>fact</code> and link it. Tomorrow's agent reasons over decisions, not just files.</li>
+    <li><b>Connect, don't isolate</b>After learning two related facts, call <code>edge</code> between them. Connected facts are knowledge an agent can traverse; isolated facts are just data.</li>
     <li><b>Forget deliberately, auditably</b>Use the two-phase <code>forget</code> — propose, review blast radius, then confirm. Prefer reversible retraction; every removal is journaled, so it's a deliberate act, not a guess.</li>
   </ul>
 

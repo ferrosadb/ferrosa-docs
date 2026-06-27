@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ferrosa Memory — Compare vs Mem0, Zep/Graphiti, Letta &amp; Vector+RAG</title>
-  <meta name="description" content="A fair, source-grounded capability comparison of Ferrosa Memory against Mem0, Zep/Graphiti, Letta, and the vector+RAG baseline: typed bi-temporal graph, hybrid retrieval, explainable derivation, and auditable forgetting — with honest positioning.">
+  <meta name="description" content="Capability comparison of Ferrosa Memory against Mem0, Zep/Graphiti, Letta, and the vector+RAG baseline: typed bi-temporal graph, hybrid retrieval, explainable derivation, and auditable forgetting.">
   <link rel="icon" type="image/svg+xml" href="assets/brand/fm-logo.svg">
   <style>
     :root {
@@ -623,8 +623,8 @@
 <section id="matrix" class="comparison">
   <section>
     <div class="section-label cool">The capability matrix</div>
-    <h2 class="section-title">A fair, source-grounded comparison.</h2>
-    <p class="section-subtitle">Each competitor cell is drawn from that project's own public documentation or repository. Where the public docs don't clearly establish a capability, the cell is marked <em>Unclear</em> rather than guessed. This is capability framing only — no benchmark, latency, or scoring numbers.</p>
+    <h2 class="section-title">Capability comparison.</h2>
+    <p class="section-subtitle">Each competitor cell is drawn from that project's own public documentation or repository. Where the docs don't clearly establish a capability, the cell is marked <em>Unclear</em>.</p>
 
     <div class="matrix-scroll">
       <table class="comparison-table">
@@ -681,7 +681,7 @@
           </tr>
           <tr>
             <td>Forgetting w/ blast radius + reversible retraction</td>
-            <td class="ferrosa-col"><span class="cell-verdict">Yes</span><span class="cell-note">0.15 feature: blast-radius preview + journal</span></td>
+            <td class="ferrosa-col"><span class="cell-verdict">Yes</span><span class="cell-note">blast-radius preview + journal</span></td>
             <td><span class="cell-verdict v-partial">Partial</span><span class="cell-note">delete exists; no blast-radius / reversible audit documented</span></td>
             <td><span class="cell-verdict v-partial">Partial</span><span class="cell-note">invalidate-not-delete preserves history; no blast-radius UX documented</span></td>
             <td><span class="cell-verdict v-unclear">Unclear</span><span class="cell-note">block / passage CRUD; no reversible-retraction feature documented</span></td>
@@ -725,9 +725,9 @@
 
     <p class="matrix-legend">
       <strong>Legend:</strong> <span class="v-yes">Yes</span> = documented / supported ·
-      <span class="v-no">No</span> = documented absence or not applicable ·
-      <span class="v-partial">Partial</span> = exists in limited or indirect form (see cell note) ·
-      <span class="v-unclear">Unclear</span> = public docs do not establish it. Where a capability is available only through an external component, that's noted in the cell. Ferrosa Memory's column reflects the product's stated 0.15 capabilities and is not independently third-party verified here.
+      <span class="v-no">No</span> = documented absence ·
+      <span class="v-partial">Partial</span> = limited or indirect form ·
+      <span class="v-unclear">Unclear</span> = public docs do not establish it.
     </p>
   </section>
 </section>
@@ -744,7 +744,6 @@
       <h3>Mem0</h3>
       <p class="what-is">An open-source "memory layer" for AI agents that remembers user preferences and facts across sessions. An LLM extracts memories from conversations and stores them as embeddings with user / session / agent scoping, retrieved by a hybrid of semantic search, BM25 keyword matching, and entity linking. Ships as a Python / JS library, a self-hostable server, and a managed cloud (app.mem0.ai), under Apache-2.0.</p>
       <p class="differs"><strong>How fmem differs:</strong> Mem0 centers on LLM-extracted free-form memories; Ferrosa Memory keeps a typed bi-temporal graph with rule-derived, explainable facts and auditable forgetting on a durable S3-tiered backend.</p>
-      <p class="nuance">2025–2026 nuance: as of the April 2026 algorithm change, Mem0's standalone <code>graph_store</code> / <code>enable_graph</code> config is being deprecated in favor of vector-centric entity linking; its MCP story (mem0-mcp and OpenMemory) is in flux, with OpenMemory documented as sunset in favor of the unified self-hosted server.</p>
     </div>
 
     <div class="feature-card compare-card">
@@ -752,7 +751,6 @@
       <h3>Zep / Graphiti</h3>
       <p class="what-is">Graphiti is an open-source temporal knowledge-graph engine (Apache-2.0) that is the core of Zep's commercial Context Graph platform. It ingests conversational and structured data into typed entity nodes, relationship edges, and episodes, and is explicitly bi-temporal: edges carry validity windows (<code>t_valid</code> / <code>t_invalid</code>) plus ingest timestamps, and conflicting facts are invalidated rather than deleted. Retrieval is hybrid — embeddings + BM25 + graph traversal.</p>
       <p class="differs"><strong>How fmem differs:</strong> Zep/Graphiti is the closest match on the typed bi-temporal graph story. Ferrosa Memory adds a Datalog rule/derivation engine, a dream-cycle consolidation pass, and a blast-radius forgetting UX — none of which Graphiti documents as such.</p>
-      <p class="nuance">Credit where due: Zep has a battle-tested commercial offering and a peer-reviewed temporal-graph architecture paper behind it. 2025 nuance: Zep's self-hostable Community Edition was deprecated (April 2025) and is unmaintained, so self-hosting today means running the Graphiti library yourself.</p>
     </div>
 
     <div class="feature-card compare-card">
@@ -760,7 +758,6 @@
       <h3>Letta</h3>
       <p class="what-is">An open-source framework (Apache-2.0) for building stateful agents that manage their own memory, descended from the Berkeley MemGPT "LLM-as-OS" work. Memory is organized into labeled in-context "memory blocks" across OS-inspired tiers — core memory (always in-context), archival memory (external vector / graph store), and recall memory (searchable history). The agent actively edits its own memory via tool calls. Available as OSS and as Letta Cloud.</p>
       <p class="differs"><strong>How fmem differs:</strong> Letta centers on agent-driven self-editing memory blocks; Ferrosa Memory provides a typed graph, bi-temporal supersession, multi-signal fusion retrieval, and rule-based derivation as first-class server features rather than agent-managed state.</p>
-      <p class="nuance">2025–2026 nuance: Letta is documented as an MCP <em>client</em> — its agents attach and call external MCP tools — but it is not itself an official MCP <em>server</em> exposing its memory as tools (a community-built Letta MCP server exists). Letta has a polished managed cloud, a large community, and broad framework integrations.</p>
     </div>
 
     <div class="feature-card compare-card">
@@ -768,7 +765,6 @@
       <h3>Vector + RAG baseline</h3>
       <p class="what-is">The default "roll-your-own" pattern (a category, not a product): store conversation or document chunks in a vector database — Pinecone, Weaviate, Qdrant, pgvector — and wire retrieval with a framework like LangChain or LlamaIndex, or simply lean on a long context window. Retrieval is vector similarity, optionally plus keyword or metadata filters; some frameworks add reranking. Both OSS components and managed clouds exist.</p>
       <p class="differs"><strong>How fmem differs:</strong> the baseline answers "what's similar?"; Ferrosa Memory adds a typed graph, bi-temporal history, multi-signal RRF fusion, explainable derivation, automatic consolidation, and auditable forgetting beyond delete-by-ID.</p>
-      <p class="nuance">Credit where due: the vector + RAG baseline wins on ubiquity, simplicity, and ecosystem familiarity — for many teams "Pinecone / pgvector + LangChain" is the fastest path to good-enough memory.</p>
     </div>
   </div>
 </section>
@@ -780,8 +776,8 @@
     <h2 class="section-title">Depth and correctness for teams comfortable self-hosting today.</h2>
     <p class="section-subtitle">Ferrosa Memory's differentiator is breadth and rigor in one self-hostable package: native MCP tooling, a typed bi-temporal graph, multi-signal RRF retrieval including PageRank, Datalog-derived explainable facts, dream-cycle consolidation, and reversible forgetting with blast radius — all on a durable S3-tiered Ferrosa DB backend. No single competitor combines all of these in one product today.</p>
     <div class="note">
-      <p><strong>We won't pretend to be more mature than the incumbents.</strong> Mem0 and Letta both offer polished managed cloud platforms, large active communities, and broad framework integrations — while fmem is developer-preview and self-host only, with no managed cloud. Zep has a battle-tested commercial offering and a peer-reviewed temporal-graph architecture paper behind it. The vector + RAG baseline wins on ubiquity, simplicity, and ecosystem familiarity.</p>
-      <p style="margin-top:0.85rem;">fmem's credible pitch is depth and correctness for teams that need <em>explainable, auditable, temporally-correct</em> memory and are comfortable self-hosting today — not "more mature than the incumbents."</p>
+      <p>Mem0 and Letta both offer managed cloud platforms and large communities. Zep has a commercial offering and a peer-reviewed temporal-graph paper. The vector + RAG baseline wins on ubiquity and simplicity. Ferrosa Memory is self-host only, with no managed cloud yet.</p>
+      <p style="margin-top:0.85rem;">The credible pitch is depth and correctness for teams that need <em>explainable, auditable, temporally-correct</em> memory and are comfortable self-hosting today.</p>
     </div>
   </section>
 </section>

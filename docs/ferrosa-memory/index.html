@@ -549,6 +549,19 @@
   .reference-table .ref-theme { color:var(--text-muted); white-space:nowrap; }
   @media (max-width: 760px) { .reference-table th:nth-child(3), .reference-table td:nth-child(3) { display:none; } }
   @media (max-width: 800px) { .two-col { grid-template-columns:1fr; } }
+
+  .arch-diagram { display:flex; flex-direction:column; gap:.75rem; margin:1rem 0; }
+  .arch-layer { border:1px solid var(--border); border-radius:14px; padding:1.1rem 1.25rem; background:var(--bg-card); }
+  .arch-layer .arch-role { font-family:var(--font-mono); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--text-muted); margin-bottom:.4rem; }
+  .arch-layer .arch-name { font-weight:700; color:var(--text-primary); }
+  .arch-layer .arch-detail { color:var(--text-secondary); font-size:.9rem; margin-top:.35rem; }
+  .arch-layer.agent { border-color:var(--accent-steel); }
+  .arch-layer.mcp { border-color:var(--accent); }
+  .arch-layer.semantics { border-color:var(--accent-cool); }
+  .arch-layer.db { border-color:var(--accent-green); }
+  .arch-arrow { text-align:center; color:var(--accent-cool); font-family:var(--font-mono); font-size:1rem; line-height:1; }
+  .arch-chips { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.55rem; }
+  .arch-chip { border:1px solid var(--border); background:var(--bg-secondary); color:var(--text-secondary); border-radius:999px; padding:.25rem .6rem; font-size:.74rem; font-family:var(--font-mono); }
 </style>
 
 </head>
@@ -598,7 +611,7 @@
     <div class="doc-card"><h3>Typed entity graph</h3><p>Entities, folds, facts, skills, and tags are connected with typed edges (<code>depends_on</code>, <code>contains</code>, <code>calls</code>, <code>references</code>…) so an agent can follow relationships, not just match text.</p></div>
     <div class="doc-card"><h3>Hybrid retrieval</h3><p>Recall fuses lexical, vector, phonetic, graph, workspace, and recency signals with Reciprocal Rank Fusion, then expands around raw context or document chunks to recover neighboring evidence.</p></div>
     <div class="doc-card"><h3>Explainable derivation</h3><p>Datalog-style rules derive and <em>explain</em> higher-level facts from graph state, so memory behavior can be inspected and audited instead of trusted blindly.</p></div>
-    <div class="doc-card"><h3>Auditable forgetting</h3><p>The 0.15 <code>forget</code> flow shows the blast radius before anything changes, then retracts reversibly (or hard-deletes) with an append-only journal. Memory you can remove is memory you can trust.</p></div>
+    <div class="doc-card"><h3>Auditable forgetting</h3><p>The <code>forget</code> flow shows the blast radius before anything changes, then retracts reversibly (or hard-deletes) with an append-only journal. Memory you can remove is memory you can trust.</p></div>
     <div class="doc-card"><h3>Durable, tiered storage</h3><p>Built on Ferrosa DB: CQL storage, HNSW vector indexes, a property graph, and S3-backed durability with hot/warm/cold tiering. Memory survives restarts and scales past one process.</p></div>
   </div>
 </section>
@@ -613,21 +626,46 @@
         <p style="color:var(--text-secondary); margin-top:1rem;">Underneath, Ferrosa Database provides CQL storage, vector indexes, graph traversal, and durable S3-backed tiering. A background "dream cycle" consolidates new memories — discovering connections, scoring importance, and decaying stale recall — while you sleep.</p>
         <p style="margin-top:1.5rem;"><a href="how-it-works.html" class="btn-secondary">Read the full architecture →</a></p>
       </div>
-      <div class="code-block"><pre><code>Agent / IDE / runtime
-        │ MCP tools
-        ▼
-Ferrosa Memory service
-  ├─ entities + typed graph
-  ├─ bi-temporal facts
-  ├─ context segments + folds
-  ├─ hybrid retrieval (RRF)
-  ├─ dream-cycle consolidation
-  ├─ Datalog-derived facts
-  └─ auditable forget journal
-        │
-        ▼
-Ferrosa Database
-  CQL · HNSW vectors · graph · S3 tiering</code></pre></div>
+      <div>
+        <div class="arch-diagram">
+          <div class="arch-layer agent">
+            <div class="arch-role">Caller</div>
+            <div class="arch-name">Agent / IDE / Runtime</div>
+            <div class="arch-detail">Issues MCP tool calls; carries no storage knowledge.</div>
+          </div>
+          <div class="arch-arrow">&#9660; MCP tools</div>
+          <div class="arch-layer mcp">
+            <div class="arch-role">Interface</div>
+            <div class="arch-name">MCP tool surface</div>
+            <div class="arch-detail">ingest / retrieve / link / explain / forget</div>
+          </div>
+          <div class="arch-arrow">&#9660;</div>
+          <div class="arch-layer semantics">
+            <div class="arch-role">Memory semantics</div>
+            <div class="arch-name">Ferrosa Memory service</div>
+            <div class="arch-chips">
+              <span class="arch-chip">entities + typed graph</span>
+              <span class="arch-chip">bi-temporal facts</span>
+              <span class="arch-chip">context segments + folds</span>
+              <span class="arch-chip">hybrid retrieval (RRF)</span>
+              <span class="arch-chip">dream-cycle consolidation</span>
+              <span class="arch-chip">Datalog-derived facts</span>
+              <span class="arch-chip">auditable forget journal</span>
+            </div>
+          </div>
+          <div class="arch-arrow">&#9660;</div>
+          <div class="arch-layer db">
+            <div class="arch-role">Substrate</div>
+            <div class="arch-name">Ferrosa Database</div>
+            <div class="arch-chips">
+              <span class="arch-chip">CQL storage</span>
+              <span class="arch-chip">HNSW vectors</span>
+              <span class="arch-chip">property graph</span>
+              <span class="arch-chip">S3 tiering</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 </section>
@@ -640,7 +678,7 @@ Ferrosa Database
     <div class="feature-card">
       <div class="feature-icon steel">🧰</div>
       <h3>Tier 1 — Everyday memory (21 tools)</h3>
-      <p>Ingest and recall: <code>smart_ingest</code>, <code>hybrid_search</code>, entity lookup, typed edges, chunk &amp; turn context, intention checks, the full session-task surface, feedback, stats, <code>configure</code>, and <code>forget</code>. Everything an agent reaches for in a normal session.</p>
+      <p>Ingest and recall: <code>ingest</code>, <code>search</code>, find, edge, chunk &amp; turn context, intention checks, the full session-task surface, feedback, stats, <code>configure</code>, and <code>forget</code>. Everything an agent reaches for in a normal session.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon cyan">⚙️</div>
@@ -653,7 +691,7 @@ Ferrosa Database
 
 <section id="whats-new" class="comparison">
   <section>
-    <div class="section-label cool">What's new in 0.15</div>
+    <div class="section-label cool">Recent improvements</div>
     <h2 class="section-title">Recall you can trust, and memory you can remove.</h2>
     <div class="doc-grid">
       <div class="doc-card"><span class="tag">forget</span><h3>Auditable forgetting</h3><p>Propose candidates, see the blast radius (edges, temporal chains, derived facts), then confirm a reversible retraction or a hard delete — all recorded in an append-only forget journal with crash recovery.</p></div>
@@ -661,7 +699,7 @@ Ferrosa Database
       <div class="doc-card"><span class="tag">session</span><h3>Durable session tasks</h3><p>First-class task state — focus stack, working set, and recovery hints — survives restarts and supports multi-agent handoff, so an interrupted agent can resume where it left off.</p></div>
       <div class="doc-card"><span class="tag">hooks</span><h3>Workspace-isolated hooks</h3><p>Session-start recall derives stable, workspace-specific sessions instead of leaking process-global state, and fallback recall stays semantic/procedural — never raw episodic transcript.</p></div>
     </div>
-    <div class="note">0.15 is a developer-preview release. Run it locally or self-hosted; keep the workbench and visualization surfaces operator-only unless you configure TLS, auth, and tenant isolation.</div>
+    <div class="note">Run it locally or self-hosted; keep the workbench and visualization surfaces operator-only unless you configure TLS, auth, and tenant isolation.</div>
   </section>
 </section>
 

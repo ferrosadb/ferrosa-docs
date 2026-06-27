@@ -61,38 +61,48 @@
 <nav><div class="inner"><a href="./"><img src="assets/brand/fm-logo.svg" alt="Fm" width="24" height="24" style="border-radius:6px;vertical-align:middle;margin-right:.4rem;"><strong>Ferrosa <span style="color:var(--accent)">Memory</span></strong></a><div class="links" id="site-nav-links"><a href="./">Overview</a><a href="how-it-works.html">How it works</a><a href="tools.html">Tools</a><a href="compare.html">Compare</a><a href="getting-started.html">Setup</a><a href="how-to-use.html">How to use</a><a href="../database/">Database</a><a href="https://github.com/ferrosadb" target="_blank" rel="noopener noreferrer">GitHub</a></div><a href="#quickstart" class="nav-cta">Get Started</a><button class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="site-nav-links"><span></span></button></div></nav>
 <main>
   <section class="hero">
-    <span class="pill">Developer preview</span>
+    <span class="pill">Ferrosa Memory</span>
     <h1>Let's get Ferrosa Memory running.</h1>
     <p>Ferrosa Memory is a persistent memory layer for your AI agents. You give it your code and docs once, and your agent can <em>recall</em> exactly what it needs later — instead of re-reading files and re-discovering context every session. In a few minutes you'll have it running locally and connected to your agent.</p>
   </section>
 
-  <h2 id="steps">Three steps to memory</h2>
-  <p>That's the whole journey. The dense reference for every option is below — but most people only need these three:</p>
+  <h2 id="steps">Two paths to memory</h2>
+  <p>Most people only need one of these. Pick the one that fits how you work.</p>
   <div class="grid">
-    <div class="card"><strong>1 · Install &amp; start</strong><p>Run one setup script. You'll have Ferrosa Database and the Ferrosa Memory MCP server up locally.</p></div>
-    <div class="card"><strong>2 · Connect your agent</strong><p>Point your MCP client at the local memory server. Your agent gains memory tools instantly.</p></div>
-    <div class="card"><strong>3 · Ingest &amp; retrieve</strong><p>Feed in knowledge, then ask for it back. The agent fetches the relevant pieces semantically.</p></div>
+    <div class="card"><strong>1 · Let your agent onboard you</strong><p>Run the setup script, then point your agent at the memory server and ask it to onboard you. The agent reads the onboarding guide, configures hooks, pulls embeddings, and wires itself in.</p></div>
+    <div class="card"><strong>2 · Manual setup</strong><p>Clone the repos, build from source, configure MCP endpoints by hand. The full reference is below.</p></div>
   </div>
 
   <div class="warn">
-    <strong>Why it's worth a few minutes:</strong> ingest your whole codebase and docs once, and your agent <em>retrieves</em> the relevant pieces semantically instead of grepping, listing files, and re-reading whole files every session. That means fewer tokens and less latency — no re-grepping, no re-reading a large file just to find one function, no re-deriving context the agent already had. Memoization skips redundant LLM sub-calls, and session-restore lets the agent start <em>with</em> context instead of rebuilding it from scratch. It's still a developer preview, so run it locally and kick the tires.
+    <strong>Why it's worth a few minutes:</strong> ingest your whole codebase and docs once, and your agent <em>retrieves</em> the relevant pieces semantically instead of grepping, listing files, and re-reading whole files every session. That means fewer tokens and less latency, no re-grepping, no re-reading a large file just to find one function, no re-deriving context the agent already had. Memoization skips redundant LLM sub-calls, and session-restore lets the agent start <em>with</em> context instead of rebuilding it from scratch.
   </div>
 
-  <h2 id="quickstart">Step 1 · Fast setup</h2>
-  <p>Good news: you don't need to clone anything by hand. The hosted setup scripts do the heavy lifting for you.</p>
+  <h2 id="agent-onboarding">Option 1 · Agent-driven onboarding</h2>
+  <p>The fastest path. Run one command, then let your AI agent handle the rest.</p>
+  <pre><code># Install Ferrosa Memory and download the onboarding guide
+curl -fsSL https://ferrosadb.com/setup-memory.sh | bash</code></pre>
+  <p>Once the server is running, point your MCP client at <code>http://127.0.0.1:18765/mcp</code> and tell your agent:</p>
+  <pre><code>Onboard me using the ONBOARDING.md file that setup-memory.sh downloaded.</code></pre>
+  <p>Your agent reads the onboarding guide, configures session hooks, pulls the Nomic embedding model if Ollama is available, wires its own harness config, and verifies the tool list. You watch it work. When it finishes, memory is live and your agent is using it.</p>
+  <div class="warn">
+    Supported harnesses: Codex, Claude (Desktop and Code), Hermes, and Pi. The setup script auto-detects installed harnesses with <code>--harness auto</code>. Run <code>--harness all</code> to wire every supported harness on the machine.
+  </div>
+
+  <h2 id="quickstart">Option 2 · Manual setup</h2>
+  <p>If you prefer to control each step, or the agent-driven path hit something it couldn't resolve.</p>
   <pre><code># Ferrosa Database only
 curl -fsSL https://ferrosadb.com/install.sh | bash
 
 # Ferrosa Memory plus LLM onboarding
 curl -fsSL https://ferrosadb.com/setup-memory.sh | bash</code></pre>
-  <p><code>setup-memory.sh</code> downloads <code>ONBOARDING.md</code>, optionally clones or updates the public repos, offers to pull the Nomic embedding model, and hands the user to their selected LLM harness with <code>onboard me using ONBOARDING.md</code>.</p>
+  <p><code>setup-memory.sh</code> installs Ferrosa Database and the Ferrosa Memory MCP server, downloads the onboarding guide, optionally clones or updates the public repos, and offers to pull the Nomic embedding model. After it finishes, your agent takes over using the onboarding guide.</p>
 
   <h2>What you will run</h2>
   <div class="grid">
     <div class="card"><strong>Minimal native mode</strong><p>One Ferrosa Database process using local filesystem storage plus one Ferrosa Memory MCP/workbench process.</p></div>
     <div class="card"><strong>Full Compose mode</strong><p>Three local Ferrosa nodes plus optional MinIO/S3-compatible storage for cluster/operator testing.</p></div>
     <div class="card"><strong>Nomic embeddings</strong><p>Optional <code>nomic-embed-text-v2-moe</code> via Ollama. If skipped, semantic/vector search is degraded.</p></div>
-    <div class="card"><strong>Agent harnesses</strong><p>Use ONBOARDING.md to configure Hermes, Claude, Codex, skills, hooks, hints, and prompts.</p></div>
+    <div class="card"><strong>Agent harnesses</strong><p>Use the onboarding guide to configure Hermes, Claude, Codex, skills, and hooks.</p></div>
   </div>
 
   <table>
@@ -167,7 +177,7 @@ cargo build --release
 
 cd ~/src/ferrosa-suite/ferrosa-memory
 cargo build --release</code></pre>
-  <p>Use repository config examples or <code>setup-memory.sh</code>/<code>ONBOARDING.md</code> to choose ports, local data directories, credentials, embedding settings, skills, hooks, and harness prompts.</p>
+  <p>Use repository config examples or <code>setup-memory.sh</code> to choose ports, local data directories, credentials, embedding settings, skills, and hooks.</p>
 
   <h3>5. Full Compose development stack</h3>
   <pre><code>cd ~/src/ferrosa-suite/ferrosa
@@ -178,18 +188,18 @@ cd ~/src/ferrosa-suite/ferrosa-memory
 docker compose up -d
 # or: podman compose up -d</code></pre>
 
-  <h3>5. Verify health</h3>
+  <h3>6. Verify health</h3>
   <pre><code>curl -fsS http://127.0.0.1:18765/healthz/live && echo
 curl -fsS http://127.0.0.1:18765/healthz/ready && echo
 curl -fsS http://127.0.0.1:18766/viz | head -c 64 && echo</code></pre>
 
   <p>Expected output includes <code>ok</code>, <code>ready</code>, and an HTML doctype from the viz UI.</p>
 
-  <h2 id="connect">Step 2 · Connect an MCP client</h2>
+  <h2 id="connect">Connect an MCP client</h2>
   <p>Now hand your agent the keys. Configure an MCP HTTP server pointing at:</p>
   <pre><code>http://127.0.0.1:18765/mcp</code></pre>
   <div class="warn">
-    <strong>Your agent won't be overwhelmed.</strong> The server progressively discloses its ~80 tools across two tiers — a small, focused default set shows up first, and the fuller toolbox is revealed only as it's needed. That keeps your agent's tool context small: fewer tool schemas loaded means fewer tokens spent and less chance of the agent reaching for the wrong tool.
+    <strong>Your agent won't be overwhelmed.</strong> The server progressively discloses its tools across two tiers: a focused default set shows up first, and the fuller toolbox is revealed only when needed. That keeps your agent's tool context small: fewer tool schemas loaded means fewer tokens spent and less chance of the agent reaching for the wrong tool.
   </div>
   <p>Generic MCP server shape:</p>
   <pre><code>{
@@ -213,11 +223,11 @@ curl -sS -u ferrosa_user:ferrosa_user \
   -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"get_stats","arguments":{}}}' \
   http://127.0.0.1:18765/mcp</code></pre>
 
-  <h2 id="examples">Step 3 · Ingest and retrieve</h2>
+  <h2 id="examples">Ingest and retrieve</h2>
   <p>This is the payoff. Store a piece of knowledge once, then ask for it back in plain language — your agent gets the relevant memory without re-reading anything. Try these from your agent or the smoke-test tools above.</p>
   <h3>Ingest a memory entity</h3>
   <pre><code>{
-  "tool": "smart_ingest",
+  "tool": "ingest",
   "arguments": {
     "entity_name": "Project migration rule",
     "entity_type": "decision",
@@ -227,7 +237,7 @@ curl -sS -u ferrosa_user:ferrosa_user \
 
   <h3>Retrieve related memory</h3>
   <pre><code>{
-  "tool": "hybrid_search",
+  "tool": "search",
   "arguments": {
     "query": "what migration rule did we decide on for live memory clusters",
     "limit": 5
@@ -236,9 +246,9 @@ curl -sS -u ferrosa_user:ferrosa_user \
 
   <h3>Record an evolving fact</h3>
   <pre><code>{
-  "tool": "write_temporal_fact",
+  "tool": "fact",
   "arguments": {
-    "entity_id": "&lt;entity UUID from smart_ingest&gt;",
+    "entity_id": "&lt;entity UUID from ingest&gt;",
     "fact_text": "Current rule: prefer additive migrations for live memory clusters."
   }
 }</code></pre>
@@ -306,7 +316,7 @@ docker compose logs --tail=100 node1 node2 node3 ferrosa-memory-mcp</code></pre>
     <li>Run long-horizon evaluation scenarios before making broad reasoning claims.</li>
   </ul>
 </main>
-<footer>Ferrosa Suite · Developer preview · <a href="./">Memory overview</a> · <a href="how-to-use.html">How to use</a></footer>
+<footer>Ferrosa Memory · <a href="./">Memory overview</a> · <a href="how-to-use.html">How to use</a></footer>
 
 <script>
   document.querySelectorAll('nav').forEach((nav) => {

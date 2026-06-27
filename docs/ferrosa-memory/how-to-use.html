@@ -481,7 +481,9 @@
   .code-block { background:var(--code-bg); border:1px solid var(--border); border-radius:14px; padding:1.25rem; overflow:auto; margin:1rem 0; }
   .code-block code, pre { font-family:var(--font-mono); font-size:.875rem; color:#cfe0f5; }
   .note { border-left:3px solid var(--accent-cool); background:rgba(126,231,255,.08); padding:1rem 1.25rem; border-radius:0 12px 12px 0; color:var(--text-secondary); margin:1.5rem 0; }
-  .two-col { display:grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap:2rem; align-items:start; }
+  .two-col { display:grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap:2rem; align-items:stretch; }
+  .two-col .feature-card { display:flex; flex-direction:column; height:100%; }
+  .two-col .feature-card p:last-child { flex:1; }
   @media (max-width: 800px) { .two-col { grid-template-columns:1fr; } }
 
   /* Loop diagram — built from existing palette tokens. */

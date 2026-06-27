@@ -4,7 +4,12 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ferrosa_repo="${FERROSA_REPO_URL:-https://github.com/ferrosadb/ferrosa.git}"
 ferrosa_ref="${FERROSA_REF:-main}"
-sync_docs=true
+# The marketing site now lives HERE (this repo owns docs/ after the move off
+# ferrosadb/ferrosa). So docs/ is NOT pulled from ferrosa by default — that would
+# wipe this repo's authored site (ferrosa no longer has a docs/). Only the example
+# SOURCES still flow from ferrosa (they track the engine code). Pass --with-docs
+# for a deliberate one-off re-mirror.
+sync_docs=false
 sync_examples=true
 
 usage() {
@@ -25,6 +30,7 @@ while [[ $# -gt 0 ]]; do
     --repo) ferrosa_repo="$2"; shift 2 ;;
     --ref) ferrosa_ref="$2"; shift 2 ;;
     --skip-docs) sync_docs=false; shift ;;
+    --with-docs) sync_docs=true; shift ;;
     --skip-examples) sync_examples=false; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "unknown flag: $1" >&2; usage >&2; exit 2 ;;

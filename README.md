@@ -44,6 +44,8 @@ scripts/check-site.py
 git diff --check
 ```
 
+This repo now OWNS docs/ (the marketing site moved off ferrosadb/ferrosa). `sync-from-ferrosa.sh` no longer pulls docs/ by default — only the example SOURCES (sources/ferrosa/examples) track the engine repo. Use `--with-docs` only for a deliberate full re-mirror.
+
 `scripts/generate-example-docs.sh` regenerates `docs/database/examples/*.html`
 from `sources/ferrosa/examples/**/*.adoc`. CI fails if generated HTML drifts
 from the checked-in source.

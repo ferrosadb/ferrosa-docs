@@ -1,336 +1,302 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" data-theme="">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ferrosa Memory — Brand Guidelines</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+  <!-- Set the theme before first paint to avoid a flash. -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("fm-ds-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    })();
+  </script>
   <style>
+    /* ============================================================
+       Ferrosa Memory brand tokens — shared with the design system.
+       Dark is the brand-native theme; light is a first-class theme.
+       ============================================================ */
     :root {
-      --bg-primary: #05070c;
-      --bg-secondary: #09111f;
-      --bg-card: #0e1726;
-      --bg-card-hover: #16243a;
-      --text-primary: #e8f4ff;
-      --text-secondary: #9bb3cf;
-      --text-muted: #6b8199;
-      --accent: #348cff;
-      --accent-cyan: #7ee7ff;
-      --accent-steel: #516d92;
-      --accent-green: #6bc9a0;
-      --warn: #f4a261;
-      --danger: #e25b5b;
-      --border: #17263b;
-      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --font-serif: 'Georgia', 'Times New Roman', serif;
-      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+      --fm-cyan: #7ee7ff;
+      --fm-blue: #348cff;
+      --fm-steel: #516d92;
+
+      /* semantic — dark (default) */
+      --fm-bg: #05070c;
+      --fm-bg-2: #09111f;
+      --fm-surface: #0e1726;
+      --fm-surface-2: #16243a;
+      --fm-text: #e8f4ff;
+      --fm-text-muted: #9bb3cf;
+      --fm-text-subtle: #6b8199;
+      --fm-border: #17263b;
+      --fm-primary: #348cff;
+      --fm-primary-soft: rgba(52, 140, 255, 0.16);
+      --fm-accent: #7ee7ff;
+      --fm-success: #6bc9a0;
+      --fm-warning: #f4a261;
+      --fm-danger: #e25b5b;
+      --fm-focus-ring: rgba(126, 231, 255, 0.45);
+      /* the two showcase backgrounds are fixed regardless of page theme,
+         because the whole point is to prove the mark on each surface */
+      --fm-preview-dark: #05070c;
+      --fm-preview-light: #eef4fb;
+
+      --fm-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --fm-serif: 'Georgia', 'Times New Roman', serif;
+      --fm-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+      color-scheme: dark;
+    }
+
+    :root[data-theme="light"] {
+      --fm-bg: #f4f8fd;
+      --fm-bg-2: #eaf1f9;
+      --fm-surface: #ffffff;
+      --fm-surface-2: #e7eef7;
+      --fm-text: #0c1a2b;
+      --fm-text-muted: #44586f;
+      --fm-text-subtle: #6d8098;
+      --fm-border: #d3dfec;
+      --fm-primary: #2270d8;
+      --fm-primary-soft: rgba(34, 112, 216, 0.1);
+      --fm-accent: #0e7ea3;
+      --fm-success: #1f8a63;
+      --fm-warning: #a15c14;
+      --fm-danger: #c23b3b;
+      --fm-focus-ring: rgba(34, 112, 216, 0.35);
+      color-scheme: light;
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]):not([data-theme="light"]) {
+        --fm-bg: #f4f8fd;
+        --fm-bg-2: #eaf1f9;
+        --fm-surface: #ffffff;
+        --fm-surface-2: #e7eef7;
+        --fm-text: #0c1a2b;
+        --fm-text-muted: #44586f;
+        --fm-text-subtle: #6d8098;
+        --fm-border: #d3dfec;
+        --fm-primary: #2270d8;
+        --fm-primary-soft: rgba(34, 112, 216, 0.1);
+        --fm-accent: #0e7ea3;
+        --fm-success: #1f8a63;
+        --fm-warning: #a15c14;
+        --fm-danger: #c23b3b;
+        --fm-focus-ring: rgba(34, 112, 216, 0.35);
+        color-scheme: light;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
 
     body {
-      font-family: var(--font-sans);
-      background: var(--bg-primary);
-      color: var(--text-primary);
+      font-family: var(--fm-sans);
+      background: var(--fm-bg);
+      color: var(--fm-text);
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
     }
 
-    .container {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 6rem 2rem;
-    }
+    :focus-visible { outline: 3px solid var(--fm-focus-ring); outline-offset: 2px; }
 
-    h1 {
-      font-size: 2.5rem;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      margin-bottom: 0.5rem;
+    /* header */
+    .topbar {
+      position: sticky; top: 0; z-index: 40;
+      display: flex; align-items: center; gap: 12px;
+      height: 60px; padding: 0 1.5rem;
+      background: color-mix(in srgb, var(--fm-bg) 88%, transparent);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--fm-border);
     }
-
-    h1 span { color: var(--accent); }
-
-    .subtitle {
-      font-size: 1.125rem;
-      color: var(--text-secondary);
-      margin-bottom: 4rem;
-      max-width: 640px;
+    .topbar__brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+    .topbar__brand img { width: 28px; height: 28px; }
+    .topbar__tag { font-family: var(--fm-mono); font-size: 0.72rem; color: var(--fm-text-subtle); }
+    .topbar__spacer { flex: 1; }
+    .topbar__links { display: flex; align-items: center; gap: 6px; }
+    .topbar__links a { color: var(--fm-text-muted); text-decoration: none; font-size: 0.875rem; padding: 8px; border-radius: 6px; }
+    .topbar__links a:hover { color: var(--fm-text); }
+    .icon-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; padding: 0;
+      background: transparent; color: var(--fm-text-muted);
+      border: 1px solid var(--fm-border); border-radius: 8px; cursor: pointer;
     }
+    .icon-btn:hover { background: var(--fm-surface-2); color: var(--fm-text); }
+    .icon-btn svg { width: 18px; height: 18px; }
+
+    .container { max-width: 960px; margin: 0 auto; padding: 4rem 2rem 6rem; }
+
+    h1 { font-size: 2.5rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+    h1 span { color: var(--fm-primary); }
+
+    .subtitle { font-size: 1.125rem; color: var(--fm-text-muted); margin-bottom: 4rem; max-width: 640px; }
 
     h2 {
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--accent-cyan);
-      margin-bottom: 1.5rem;
-      margin-top: 4rem;
+      font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--fm-accent); margin-bottom: 1.5rem; margin-top: 4rem;
     }
-
-    h3 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin-bottom: 0.75rem;
-    }
-
-    p {
-      color: var(--text-secondary);
-      margin-bottom: 1rem;
-      max-width: 640px;
-      line-height: 1.7;
-    }
+    h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem; }
+    p { color: var(--fm-text-muted); margin-bottom: 1rem; max-width: 640px; line-height: 1.7; }
+    code { font-family: var(--fm-mono); font-size: 0.85em; color: var(--fm-accent); }
+    a { color: var(--fm-primary); }
 
     /* Logo display */
     .logo-showcase {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem; margin-bottom: 1.5rem;
     }
-
-    .logo-card {
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
-    }
-
-    .logo-card .preview {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 3rem 2rem;
-    }
-
-    .logo-card .preview.dark { background: var(--bg-primary); }
-    .logo-card .preview.light { background: #eef4fb; }
-
-    .logo-card .preview img,
-    .logo-card .preview svg { max-width: 100%; height: auto; }
-
+    .logo-card { border: 1px solid var(--fm-border); border-radius: 16px; overflow: hidden; }
+    .logo-card .preview { display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+    .logo-card .preview.dark { background: var(--fm-preview-dark); }
+    .logo-card .preview.light { background: var(--fm-preview-light); }
+    .logo-card .preview img, .logo-card .preview svg { max-width: 100%; height: auto; }
     .logo-card .label {
-      padding: 0.875rem 1.25rem;
-      background: var(--bg-card);
-      border-top: 1px solid var(--border);
-      font-size: 0.8125rem;
-      color: var(--text-muted);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      padding: 0.875rem 1.25rem; background: var(--fm-surface);
+      border-top: 1px solid var(--fm-border); font-size: 0.8125rem; color: var(--fm-text-subtle);
+      display: flex; justify-content: space-between; align-items: center; gap: 1rem;
     }
+    .logo-card .label code { font-size: 0.75rem; color: var(--fm-text-muted); }
 
-    .logo-card .label code {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      color: var(--text-secondary);
+    .callout {
+      display: flex; gap: 10px; padding: 14px 16px; margin-bottom: 2rem;
+      background: var(--fm-primary-soft);
+      border: 1px solid color-mix(in srgb, var(--fm-primary) 35%, transparent);
+      border-radius: 10px; font-size: 0.875rem; color: var(--fm-text-muted); max-width: none;
     }
+    .callout strong { color: var(--fm-text); }
 
     /* Color palette */
-    .palette {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    .swatch {
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    .swatch-color {
-      height: 100px;
-      display: flex;
-      align-items: flex-end;
-      padding: 0.75rem;
-    }
-
-    .swatch-info {
-      padding: 0.875rem 1rem;
-      background: var(--bg-card);
-    }
-
-    .swatch-name {
-      font-size: 0.875rem;
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-    }
-
-    .swatch-hex {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-    }
-
-    .swatch-role {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      margin-top: 0.25rem;
-    }
+    .palette { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .swatch { border: 1px solid var(--fm-border); border-radius: 12px; overflow: hidden; }
+    .swatch-color { height: 100px; display: flex; align-items: flex-end; padding: 0.75rem; }
+    .swatch-info { padding: 0.875rem 1rem; background: var(--fm-surface); }
+    .swatch-name { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem; }
+    .swatch-hex { font-family: var(--fm-mono); font-size: 0.75rem; color: var(--fm-text-muted); }
+    .swatch-role { font-size: 0.75rem; color: var(--fm-text-subtle); margin-top: 0.25rem; }
 
     /* Typography samples */
-    .type-sample {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 2rem;
-      margin-bottom: 1rem;
-    }
-
-    .type-label {
-      font-size: 0.6875rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--text-muted);
-      margin-bottom: 0.75rem;
-    }
-
-    .type-display {
-      font-size: 2rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      margin-bottom: 0.25rem;
-    }
-
-    .type-body { font-size: 1rem; color: var(--text-secondary); }
-    .type-mono { font-family: var(--font-mono); font-size: 0.875rem; color: var(--accent-cyan); }
-    .type-serif { font-family: var(--font-serif); }
+    .type-sample { background: var(--fm-surface); border: 1px solid var(--fm-border); border-radius: 12px; padding: 2rem; margin-bottom: 1rem; }
+    .type-label { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fm-text-subtle); margin-bottom: 0.75rem; }
+    .type-display { font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.25rem; }
+    .type-body { font-size: 1rem; color: var(--fm-text-muted); }
+    .type-mono { font-family: var(--fm-mono); font-size: 0.875rem; color: var(--fm-accent); }
+    .type-serif { font-family: var(--fm-serif); }
 
     /* Usage rules */
-    .rules {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-      margin-top: 1.5rem;
-    }
-
-    .rule-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.75rem;
-    }
-
-    .rule-card h4 {
-      font-size: 0.9375rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-    }
-
-    .rule-card p {
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      line-height: 1.6;
-      margin-bottom: 0;
-    }
-
-    .do { border-left: 3px solid var(--accent-green); }
-    .dont { border-left: 3px solid var(--danger); }
+    .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+    .rule-card { background: var(--fm-surface); border: 1px solid var(--fm-border); border-radius: 12px; padding: 1.75rem; }
+    .rule-card h4 { font-size: 0.9375rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .rule-card p { font-size: 0.875rem; color: var(--fm-text-muted); line-height: 1.6; margin-bottom: 0; }
+    .do { border-left: 3px solid var(--fm-success); }
+    .dont { border-left: 3px solid var(--fm-danger); }
 
     /* Voice & tone */
-    .voice-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-top: 1.5rem;
-    }
-
-    .voice-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
-      text-align: center;
-    }
-
-    .voice-card .glyph {
-      font-size: 1.25rem;
-      font-weight: 700;
-      font-family: var(--font-mono);
-      color: var(--accent-cyan);
-      margin-bottom: 0.75rem;
-    }
-
-    .voice-card h4 {
-      font-size: 0.9375rem;
-      font-weight: 700;
-      margin-bottom: 0.375rem;
-    }
-
-    .voice-card p {
-      font-size: 0.8125rem;
-      color: var(--text-muted);
-      margin: 0 auto;
-      max-width: 200px;
-    }
+    .voice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+    .voice-card { background: var(--fm-surface); border: 1px solid var(--fm-border); border-radius: 12px; padding: 1.5rem; text-align: center; }
+    .voice-card .glyph { font-size: 1.25rem; font-weight: 700; font-family: var(--fm-mono); color: var(--fm-accent); margin-bottom: 0.75rem; }
+    .voice-card h4 { font-size: 0.9375rem; font-weight: 700; margin-bottom: 0.375rem; }
+    .voice-card p { font-size: 0.8125rem; color: var(--fm-text-subtle); margin: 0 auto; max-width: 200px; }
 
     /* Favicon grid */
-    .favicon-grid {
-      display: flex;
-      align-items: center;
-      gap: 2rem;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 2rem;
-      margin-bottom: 1rem;
-    }
-
-    .favicon-grid .fav {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .favicon-grid .fav span {
-      font-size: 0.6875rem;
-      color: var(--text-muted);
-      font-family: var(--font-mono);
-    }
+    .favicon-grid { display: flex; align-items: center; gap: 2rem; background: var(--fm-surface); border: 1px solid var(--fm-border); border-radius: 12px; padding: 2rem; margin-bottom: 1rem; }
+    .favicon-grid .fav { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+    .favicon-grid .fav span { font-size: 0.6875rem; color: var(--fm-text-subtle); font-family: var(--fm-mono); }
 
     @media (max-width: 640px) {
       .logo-showcase { grid-template-columns: 1fr; }
       .palette { grid-template-columns: repeat(2, 1fr); }
+      .topbar__tag { display: none; }
     }
   </style>
 </head>
 <body>
 
+<header class="topbar">
+  <span class="topbar__brand">
+    <img id="topbar-mark" src="logo-icon.svg" alt="">
+    Ferrosa Memory
+  </span>
+  <span class="topbar__tag">Brand Guidelines</span>
+  <span class="topbar__spacer"></span>
+  <nav class="topbar__links" aria-label="Related">
+    <a href="design-system.html">Design system</a>
+    <button id="theme-toggle" class="icon-btn" type="button" aria-pressed="false" aria-label="Toggle dark mode" title="Toggle dark mode">
+      <svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg>
+    </button>
+  </nav>
+</header>
+
 <div class="container">
 
   <h1>Ferrosa Memory <span>Brand Guidelines</span></h1>
-  <p class="subtitle">Visual identity for Ferrosa Memory — the typed, durable memory layer of the Ferrosa platform. Use these assets and guidelines for the operator workbench, documentation, presentations, and community materials.</p>
+  <p class="subtitle">Visual identity for Ferrosa Memory — the typed, durable memory layer of the Ferrosa platform. Use these assets and guidelines for the operator workbench, documentation, presentations, and community materials. Toggle light or dark in the header; the logo section shows the correct mark for each surface.</p>
 
   <!-- Logo -->
   <h2>Logo</h2>
   <p>Ferrosa Memory carries the Ferrosa family grammar — a serif chemistry monogram inside a periodic-table frame with an orbital ring — but swaps "Fe / 26" for <strong>"Fm / 100"</strong> (Fermium) and adds a memory-graph motif: nodes linked by retrieval paths. The mark renders in electric blued steel, signalling a distinct subsystem while staying unmistakably part of Ferrosa.</p>
 
+  <div class="callout">
+    <div><strong>Two surface variants.</strong> The default mark is tuned for deep-field backgrounds. On light surfaces, use the <code>-light</code> variant: it deepens the cyan and swaps the wordmark to ink so the type stays legible at AA contrast. Each pairing below shows the mark on the background it is built for.</div>
+  </div>
+
+  <h3>Full logo</h3>
   <div class="logo-showcase">
     <div class="logo-card">
       <div class="preview dark">
-        <img src="logo.svg" alt="Ferrosa Memory logo" width="380">
+        <img src="logo.svg" alt="Ferrosa Memory logo on dark" width="380">
       </div>
       <div class="label">
-        Full logo — dark background
+        Dark surfaces
         <code>logo.svg</code>
       </div>
     </div>
     <div class="logo-card">
-      <div class="preview dark" style="padding: 2rem;">
-        <img src="logo-icon.svg" alt="Ferrosa Memory icon" width="80">
+      <div class="preview light">
+        <img src="logo-light.svg" alt="Ferrosa Memory logo on light" width="380">
       </div>
       <div class="label">
-        Icon mark — standalone
+        Light surfaces
+        <code>logo-light.svg</code>
+      </div>
+    </div>
+  </div>
+
+  <h3>Icon mark</h3>
+  <div class="logo-showcase">
+    <div class="logo-card">
+      <div class="preview dark" style="padding: 2.5rem;">
+        <img src="logo-icon.svg" alt="Ferrosa Memory icon on dark" width="88">
+      </div>
+      <div class="label">
+        Dark surfaces
         <code>logo-icon.svg</code>
+      </div>
+    </div>
+    <div class="logo-card">
+      <div class="preview light" style="padding: 2.5rem;">
+        <img src="logo-icon-light.svg" alt="Ferrosa Memory icon on light" width="88">
+      </div>
+      <div class="label">
+        Light surfaces
+        <code>logo-icon-light.svg</code>
       </div>
     </div>
   </div>
 
   <h3>Favicon</h3>
-  <p>The favicon is a compact version of the Fm mark optimized for small sizes. The workbench and viz UIs embed it inline.</p>
+  <p>The favicon is a compact version of the Fm mark with its own deep-field chip baked in, so it reads correctly on any browser tab — light or dark — without a variant. The workbench and viz UIs embed it inline.</p>
 
   <div class="favicon-grid">
     <div class="fav">
@@ -348,11 +314,11 @@
   </div>
 
   <h3>Discord / community assets</h3>
-  <p>For Discord avatars and community use, the source vector is <code>ferrosa-memory-discord-logo.svg</code>, with PNG exports at 1024px and 512px generated via <code>render-ferrosa-memory-logo.mjs</code>. See <code>README.md</code> in this directory.</p>
+  <p>For Discord avatars and community use, the source vector is <code>ferrosa-memory-discord-logo.svg</code>, with PNG exports at 1024px and 512px generated via <code>render-ferrosa-memory-logo.mjs</code>. See <code>README.md</code> in the brand directory.</p>
 
   <!-- Colors -->
   <h2>Color Palette</h2>
-  <p>Where the base Ferrosa palette draws on iron oxide — terracotta and copper — Memory shifts to electric blued steel: cool cyan and blue against a deep, near-black field. One accent family, locked across the whole UI.</p>
+  <p>Where the base Ferrosa palette draws on iron oxide — terracotta and copper — Memory shifts to electric blued steel: cool cyan and blue against a deep, near-black field. One accent family, locked across the whole UI. The light theme keeps the same identity, darkening Core Blue and Cyan just enough to hold contrast on white.</p>
 
   <h3>Primary</h3>
   <div class="palette">
@@ -389,7 +355,7 @@
       <div class="swatch-info">
         <div class="swatch-name">Deep Field</div>
         <div class="swatch-hex">#05070c</div>
-        <div class="swatch-role">Page background</div>
+        <div class="swatch-role">Dark page background</div>
       </div>
     </div>
     <div class="swatch">
@@ -397,7 +363,7 @@
       <div class="swatch-info">
         <div class="swatch-name">Abyss Blue</div>
         <div class="swatch-hex">#09111f</div>
-        <div class="swatch-role">Section background</div>
+        <div class="swatch-role">Dark section background</div>
       </div>
     </div>
     <div class="swatch">
@@ -405,15 +371,15 @@
       <div class="swatch-info">
         <div class="swatch-name">Slate</div>
         <div class="swatch-hex">#0e1726</div>
-        <div class="swatch-role">Cards, elevated surfaces</div>
+        <div class="swatch-role">Dark cards, elevated surfaces</div>
       </div>
     </div>
     <div class="swatch">
-      <div class="swatch-color" style="background: #17263b;"></div>
+      <div class="swatch-color" style="background: #eef4fb; border-bottom: 1px solid var(--fm-border);"></div>
       <div class="swatch-info">
-        <div class="swatch-name">Border</div>
-        <div class="swatch-hex">#17263b</div>
-        <div class="swatch-role">Borders, dividers</div>
+        <div class="swatch-name">Ice Field</div>
+        <div class="swatch-hex">#eef4fb</div>
+        <div class="swatch-role">Light page background</div>
       </div>
     </div>
     <div class="swatch">
@@ -421,7 +387,15 @@
       <div class="swatch-info">
         <div class="swatch-name">Ice</div>
         <div class="swatch-hex">#e8f4ff</div>
-        <div class="swatch-role">Primary text</div>
+        <div class="swatch-role">Primary text on dark</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background: #0c1a2b;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Ink</div>
+        <div class="swatch-hex">#0c1a2b</div>
+        <div class="swatch-role">Primary text on light</div>
       </div>
     </div>
   </div>
@@ -516,19 +490,19 @@
   <div class="rules">
     <div class="rule-card do">
       <h4>Do</h4>
-      <p>Use the full logo on deep-field backgrounds (#05070c to #0e1726). Maintain clear space equal to the height of the "Fm" mark on all sides. Use the icon mark alone when space is tight (favicons, avatars, badges).</p>
+      <p>Match the variant to the surface: <code>logo.svg</code> on deep-field backgrounds (#05070c to #0e1726), <code>logo-light.svg</code> on white to Ice Field (#eef4fb). Maintain clear space equal to the height of the "Fm" mark on all sides. Use the icon mark alone when space is tight (favicons, avatars, badges).</p>
     </div>
     <div class="rule-card dont">
       <h4>Don't</h4>
-      <p>Don't place the logo on busy or light surfaces without inverting. Don't stretch, rotate, or recolor the gradient to warm tones. Don't reuse the base Ferrosa "Fe" terracotta mark for Memory.</p>
+      <p>Don't place the dark-surface logo on a light background — the "ferrosa" wordmark is near-white and will disappear. Don't stretch, rotate, or recolor the gradient to warm tones. Don't reuse the base Ferrosa "Fe" terracotta mark for Memory.</p>
     </div>
     <div class="rule-card do">
       <h4>Minimum Size</h4>
-      <p>Full logo: 140px wide minimum. Icon mark: 24px minimum. Favicon: 16px (use favicon.svg, which is optimized for small sizes).</p>
+      <p>Full logo: 140px wide minimum. Icon mark: 24px minimum. Favicon: 16px (use favicon.svg, which has its own chip and works on any tab).</p>
     </div>
     <div class="rule-card do">
       <h4>Co-Branding</h4>
-      <p>When shown alongside base Ferrosa or other family marks, maintain equal visual weight. Separate with a 1px vertical divider (var(--border)) and 24px horizontal padding.</p>
+      <p>When shown alongside base Ferrosa or other family marks, maintain equal visual weight. Separate with a 1px vertical divider (var(--fm-border)) and 24px horizontal padding.</p>
     </div>
   </div>
 
@@ -546,6 +520,37 @@
   </div>
 
 </div>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    var toggle = document.getElementById("theme-toggle");
+    var icon = document.getElementById("theme-icon");
+    var mark = document.getElementById("topbar-mark");
+    var SUN = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4 1.4-1.4"/>';
+    var MOON = '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>';
+
+    function currentTheme() {
+      var set = root.getAttribute("data-theme");
+      if (set === "light" || set === "dark") return set;
+      return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    }
+    function sync() {
+      var dark = currentTheme() === "dark";
+      toggle.setAttribute("aria-pressed", String(dark));
+      icon.innerHTML = dark ? SUN : MOON;
+      // header mark follows the page surface so it never washes out
+      mark.setAttribute("src", dark ? "logo-icon.svg" : "logo-icon-light.svg");
+    }
+    toggle.addEventListener("click", function () {
+      var next = currentTheme() === "dark" ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      try { localStorage.setItem("fm-ds-theme", next); } catch (e) {}
+      sync();
+    });
+    sync();
+  })();
+</script>
 
 </body>
 </html>

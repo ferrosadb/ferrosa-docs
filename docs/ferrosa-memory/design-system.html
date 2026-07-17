@@ -1,0 +1,1354 @@
+<!doctype html>
+<html lang="en" data-theme="">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ferrosa Memory — Design System</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+    <!-- Set the theme before first paint to avoid a flash. -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("fm-ds-theme");
+          if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+      })();
+    </script>
+    <style>
+      /* ============================================================
+         Ferrosa Memory design tokens — blued steel.
+         Dark is the brand-native theme; light is a full first-class
+         theme, not an inversion. Reach for the semantic token, never
+         the raw hex.
+         ============================================================ */
+      :root {
+        /* brand primitives */
+        --fm-cyan: #7ee7ff;
+        --fm-blue: #348cff;
+        --fm-steel: #516d92;
+
+        /* semantic — dark (default) */
+        --fm-bg: #05070c;
+        --fm-surface: #0e1726;
+        --fm-surface-2: #16243a;
+        --fm-surface-inset: #09111f;
+        --fm-text: #e8f4ff;
+        --fm-text-muted: #9bb3cf;
+        --fm-text-subtle: #6b8199;
+        --fm-border: #17263b;
+        --fm-divider: #101d30;
+        --fm-primary: #348cff;
+        --fm-primary-hover: #4f9dff;
+        --fm-primary-soft: rgba(52, 140, 255, 0.16);
+        --fm-text-on-primary: #04101f;
+        --fm-accent: #7ee7ff;
+        --fm-accent-soft: rgba(126, 231, 255, 0.12);
+        --fm-success: #6bc9a0;
+        --fm-success-soft: rgba(107, 201, 160, 0.14);
+        --fm-warning: #f4a261;
+        --fm-warning-soft: rgba(244, 162, 97, 0.14);
+        --fm-danger: #e25b5b;
+        --fm-danger-soft: rgba(226, 91, 91, 0.14);
+        --fm-info: #7ee7ff;
+        --fm-info-soft: rgba(126, 231, 255, 0.10);
+        --fm-focus-ring: rgba(126, 231, 255, 0.45);
+
+        --fm-shadow-1: 0 1px 2px rgba(2, 8, 20, 0.5);
+        --fm-shadow-2: 0 4px 12px rgba(2, 8, 20, 0.55);
+        --fm-shadow-3: 0 12px 32px rgba(2, 8, 20, 0.6);
+
+        /* type + shape + motion (theme-invariant) */
+        --fm-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --fm-serif: Georgia, "Times New Roman", serif;
+        --fm-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+        --fm-radius-xs: 4px;
+        --fm-radius-sm: 8px;
+        --fm-radius-md: 12px;
+        --fm-radius-lg: 16px;
+        --fm-space-1: 4px;
+        --fm-space-2: 8px;
+        --fm-space-3: 12px;
+        --fm-space-4: 16px;
+        --fm-space-5: 24px;
+        --fm-space-6: 32px;
+        --fm-space-7: 48px;
+        --fm-space-8: 64px;
+        --fm-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+        --fm-dur: 160ms;
+        --fm-z-sticky: 40;
+        --fm-z-overlay: 80;
+
+        color-scheme: dark;
+      }
+
+      /* light theme tokens — applied on explicit choice… */
+      :root[data-theme="light"] {
+        --fm-bg: #f4f8fd;
+        --fm-surface: #ffffff;
+        --fm-surface-2: #e7eef7;
+        --fm-surface-inset: #eef4fb;
+        --fm-text: #0c1a2b;
+        --fm-text-muted: #44586f;
+        --fm-text-subtle: #6d8098;
+        --fm-border: #d3dfec;
+        --fm-divider: #e2eaf4;
+        --fm-primary: #2270d8;
+        --fm-primary-hover: #1a5fbd;
+        --fm-primary-soft: rgba(34, 112, 216, 0.1);
+        --fm-text-on-primary: #ffffff;
+        --fm-accent: #0e7ea3;
+        --fm-accent-soft: rgba(14, 126, 163, 0.1);
+        --fm-info: #0e7ea3;
+        --fm-info-soft: rgba(14, 126, 163, 0.08);
+        --fm-success: #1f8a63;
+        --fm-success-soft: rgba(31, 138, 99, 0.1);
+        --fm-warning: #a15c14;
+        --fm-warning-soft: rgba(191, 121, 39, 0.12);
+        --fm-danger: #c23b3b;
+        --fm-danger-soft: rgba(194, 59, 59, 0.1);
+        --fm-focus-ring: rgba(34, 112, 216, 0.35);
+        --fm-shadow-1: 0 1px 2px rgba(12, 26, 43, 0.08);
+        --fm-shadow-2: 0 4px 12px rgba(12, 26, 43, 0.1);
+        --fm-shadow-3: 0 12px 32px rgba(12, 26, 43, 0.14);
+        color-scheme: light;
+      }
+
+      /* …and when the system prefers light and no explicit choice was made. */
+      @media (prefers-color-scheme: light) {
+        :root:not([data-theme="dark"]):not([data-theme="light"]) {
+          --fm-bg: #f4f8fd;
+          --fm-surface: #ffffff;
+          --fm-surface-2: #e7eef7;
+          --fm-surface-inset: #eef4fb;
+          --fm-text: #0c1a2b;
+          --fm-text-muted: #44586f;
+          --fm-text-subtle: #6d8098;
+          --fm-border: #d3dfec;
+          --fm-divider: #e2eaf4;
+          --fm-primary: #2270d8;
+          --fm-primary-hover: #1a5fbd;
+          --fm-primary-soft: rgba(34, 112, 216, 0.1);
+          --fm-text-on-primary: #ffffff;
+          --fm-accent: #0e7ea3;
+          --fm-accent-soft: rgba(14, 126, 163, 0.1);
+          --fm-info: #0e7ea3;
+          --fm-info-soft: rgba(14, 126, 163, 0.08);
+          --fm-success: #1f8a63;
+          --fm-success-soft: rgba(31, 138, 99, 0.1);
+          --fm-warning: #a15c14;
+          --fm-warning-soft: rgba(191, 121, 39, 0.12);
+          --fm-danger: #c23b3b;
+          --fm-danger-soft: rgba(194, 59, 59, 0.1);
+          --fm-focus-ring: rgba(34, 112, 216, 0.35);
+          --fm-shadow-1: 0 1px 2px rgba(12, 26, 43, 0.08);
+          --fm-shadow-2: 0 4px 12px rgba(12, 26, 43, 0.1);
+          --fm-shadow-3: 0 12px 32px rgba(12, 26, 43, 0.14);
+          color-scheme: light;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation: none !important; transition: none !important; }
+      }
+
+      /* ============================================================
+         Base
+         ============================================================ */
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: var(--fm-sans);
+        background: var(--fm-bg);
+        color: var(--fm-text);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      html { scroll-behavior: smooth; }
+      a { color: var(--fm-primary); }
+      :focus-visible { outline: 3px solid var(--fm-focus-ring); outline-offset: 2px; }
+
+      /* type scale */
+      .fm-display { font-size: clamp(2rem, 4vw, 2.75rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; }
+      .fm-h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+      .fm-h2 { font-size: 1.25rem; font-weight: 700; }
+      .fm-h3 { font-size: 1.0625rem; font-weight: 700; }
+      .fm-body { font-size: 1rem; max-width: 65ch; }
+      .fm-small { font-size: 0.8125rem; }
+      .fm-eyebrow { font-family: var(--fm-mono); font-size: 0.6875rem; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fm-accent); }
+      .fm-mono { font-family: var(--fm-mono); }
+      .fm-muted { color: var(--fm-text-muted); }
+      .fm-subtle { color: var(--fm-text-subtle); }
+
+      /* layout helpers */
+      .fm-stack { display: flex; flex-direction: column; gap: var(--fm-space-4); }
+      .fm-stack-sm { display: flex; flex-direction: column; gap: var(--fm-space-2); }
+      .fm-cluster { display: flex; flex-wrap: wrap; gap: var(--fm-space-4); align-items: center; }
+      .fm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--fm-space-4); }
+
+      .fm-icon { width: 18px; height: 18px; flex: none; }
+
+      /* ============================================================
+         Components
+         ============================================================ */
+
+      /* buttons */
+      .fm-btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        font: 600 0.875rem/1 var(--fm-sans);
+        padding: 10px 16px; border-radius: var(--fm-radius-sm);
+        border: 1px solid transparent; cursor: pointer; white-space: nowrap;
+        transition: background var(--fm-dur) var(--fm-ease), border-color var(--fm-dur) var(--fm-ease), color var(--fm-dur) var(--fm-ease);
+      }
+      .fm-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+      .fm-btn--primary { background: var(--fm-primary); color: var(--fm-text-on-primary); }
+      .fm-btn--primary:hover:not(:disabled) { background: var(--fm-primary-hover); }
+      .fm-btn--secondary { background: transparent; color: var(--fm-text); border-color: var(--fm-border); }
+      .fm-btn--secondary:hover:not(:disabled) { background: var(--fm-surface-2); }
+      .fm-btn--ghost { background: transparent; color: var(--fm-primary); }
+      .fm-btn--ghost:hover:not(:disabled) { background: var(--fm-primary-soft); }
+      .fm-btn--danger { background: var(--fm-danger); color: #fff; }
+      .fm-btn--danger:hover:not(:disabled) { filter: brightness(1.1); }
+      .fm-btn--sm { padding: 6px 12px; font-size: 0.8125rem; }
+      .fm-btn--lg { padding: 13px 22px; font-size: 0.9375rem; }
+      .fm-btn--loading { position: relative; color: transparent !important; pointer-events: none; }
+      .fm-btn--loading::after {
+        content: ""; position: absolute; width: 16px; height: 16px;
+        border: 2px solid var(--fm-text-on-primary); border-top-color: transparent;
+        border-radius: 50%; animation: fm-spin 700ms linear infinite;
+      }
+      @keyframes fm-spin { to { transform: rotate(360deg); } }
+
+      .fm-icon-btn {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 34px; height: 34px; padding: 0;
+        background: transparent; color: var(--fm-text-muted);
+        border: 1px solid transparent; border-radius: var(--fm-radius-sm); cursor: pointer;
+      }
+      .fm-icon-btn:hover { background: var(--fm-surface-2); color: var(--fm-text); }
+
+      /* forms */
+      .fm-field { display: flex; flex-direction: column; gap: 6px; }
+      .fm-label { font-size: 0.8125rem; font-weight: 600; }
+      .fm-req { color: var(--fm-danger); }
+      .fm-input, .fm-select {
+        font: 400 0.9375rem var(--fm-sans); color: var(--fm-text);
+        background: var(--fm-surface-inset);
+        border: 1px solid var(--fm-border); border-radius: var(--fm-radius-sm);
+        padding: 10px 12px; width: 100%;
+      }
+      .fm-input::placeholder { color: var(--fm-text-subtle); }
+      .fm-input:focus-visible, .fm-select:focus-visible { outline: 3px solid var(--fm-focus-ring); outline-offset: 0; border-color: var(--fm-primary); }
+      .fm-input[aria-invalid="true"] { border-color: var(--fm-danger); }
+      .fm-help { font-size: 0.75rem; color: var(--fm-text-subtle); }
+      .fm-error { display: inline-flex; align-items: center; gap: 5px; font-size: 0.75rem; color: var(--fm-danger); }
+
+      /* selection controls */
+      .fm-check { display: inline-flex; align-items: center; gap: 8px; font-size: 0.875rem; cursor: pointer; }
+      .fm-check input { width: 17px; height: 17px; accent-color: var(--fm-primary); }
+      .fm-switch { display: inline-flex; align-items: center; gap: 8px; font-size: 0.875rem; cursor: pointer; }
+      .fm-switch input { position: absolute; opacity: 0; width: 0; }
+      .fm-switch__track {
+        width: 38px; height: 22px; border-radius: 11px; position: relative; flex: none;
+        background: var(--fm-surface-2); border: 1px solid var(--fm-border);
+        transition: background var(--fm-dur) var(--fm-ease);
+      }
+      .fm-switch__track::after {
+        content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+        border-radius: 50%; background: var(--fm-text-muted);
+        transition: transform var(--fm-dur) var(--fm-ease), background var(--fm-dur) var(--fm-ease);
+      }
+      .fm-switch input:checked + .fm-switch__track { background: var(--fm-primary); border-color: var(--fm-primary); }
+      .fm-switch input:checked + .fm-switch__track::after { transform: translateX(16px); background: var(--fm-text-on-primary); }
+      .fm-switch input:focus-visible + .fm-switch__track { outline: 3px solid var(--fm-focus-ring); outline-offset: 2px; }
+      .fm-range { width: 100%; accent-color: var(--fm-primary); }
+
+      /* badges + chips + avatar */
+      .fm-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        font: 600 0.75rem var(--fm-sans); padding: 3px 10px; border-radius: 999px;
+        background: var(--fm-surface-2); color: var(--fm-text-muted);
+      }
+      .fm-badge__dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+      .fm-badge--success { background: var(--fm-success-soft); color: var(--fm-success); }
+      .fm-badge--warning { background: var(--fm-warning-soft); color: var(--fm-warning); }
+      .fm-badge--danger { background: var(--fm-danger-soft); color: var(--fm-danger); }
+      .fm-badge--info { background: var(--fm-info-soft); color: var(--fm-info); }
+      .fm-chip {
+        font: 500 0.8125rem var(--fm-sans); color: var(--fm-text-muted);
+        background: transparent; border: 1px solid var(--fm-border);
+        padding: 6px 14px; border-radius: 999px; cursor: pointer;
+      }
+      .fm-chip:hover { background: var(--fm-surface-2); }
+      .fm-chip[aria-pressed="true"] { background: var(--fm-primary-soft); border-color: var(--fm-primary); color: var(--fm-primary); }
+      .fm-avatar {
+        display: inline-flex; align-items: center; justify-content: center; flex: none;
+        width: 36px; height: 36px; border-radius: 50%;
+        background: var(--fm-primary-soft); color: var(--fm-primary);
+        font: 700 0.8125rem var(--fm-mono);
+      }
+
+      /* cards */
+      .fm-card { background: var(--fm-surface); border: 1px solid var(--fm-border); border-radius: var(--fm-radius-md); overflow: hidden; }
+      .fm-card__head { display: flex; align-items: center; justify-content: space-between; gap: var(--fm-space-3); padding: var(--fm-space-4) var(--fm-space-4) 0; }
+      .fm-card__body { padding: var(--fm-space-4); }
+      .fm-card__foot { display: flex; justify-content: flex-end; gap: var(--fm-space-2); padding: 0 var(--fm-space-4) var(--fm-space-4); }
+
+      /* alerts */
+      .fm-alert {
+        display: flex; gap: 10px; padding: 14px 16px;
+        border: 1px solid var(--fm-border); border-radius: var(--fm-radius-sm);
+        font-size: 0.875rem; color: var(--fm-text-muted);
+      }
+      .fm-alert__title { font-weight: 700; color: var(--fm-text); }
+      .fm-alert__icon { margin-top: 2px; }
+      .fm-alert--info { background: var(--fm-info-soft); border-color: color-mix(in srgb, var(--fm-info) 35%, transparent); }
+      .fm-alert--info .fm-alert__icon { color: var(--fm-info); }
+      .fm-alert--success { background: var(--fm-success-soft); border-color: color-mix(in srgb, var(--fm-success) 35%, transparent); }
+      .fm-alert--success .fm-alert__icon { color: var(--fm-success); }
+      .fm-alert--warning { background: var(--fm-warning-soft); border-color: color-mix(in srgb, var(--fm-warning) 35%, transparent); }
+      .fm-alert--warning .fm-alert__icon { color: var(--fm-warning); }
+      .fm-alert--danger { background: var(--fm-danger-soft); border-color: color-mix(in srgb, var(--fm-danger) 40%, transparent); }
+      .fm-alert--danger .fm-alert__icon { color: var(--fm-danger); }
+
+      /* tabs */
+      .fm-tabs__list { display: flex; gap: 4px; border-bottom: 1px solid var(--fm-border); }
+      .fm-tab {
+        font: 600 0.875rem var(--fm-sans); color: var(--fm-text-muted);
+        background: none; border: none; border-bottom: 2px solid transparent;
+        padding: 10px 14px; margin-bottom: -1px; cursor: pointer;
+      }
+      .fm-tab:hover { color: var(--fm-text); }
+      .fm-tab[aria-selected="true"] { color: var(--fm-primary); border-bottom-color: var(--fm-primary); }
+      .fm-tabs__panel { padding: var(--fm-space-4) 2px; font-size: 0.9375rem; color: var(--fm-text-muted); }
+
+      /* table */
+      .fm-table-wrap { overflow-x: auto; border: 1px solid var(--fm-border); border-radius: var(--fm-radius-md); }
+      .fm-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+      .fm-table caption { text-align: left; padding: 12px 14px; font-weight: 700; font-size: 0.8125rem; color: var(--fm-text-muted); }
+      .fm-table th {
+        text-align: left; font: 500 0.6875rem var(--fm-mono); letter-spacing: 0.1em; text-transform: uppercase;
+        color: var(--fm-text-subtle); padding: 10px 14px; border-bottom: 1px solid var(--fm-border);
+        background: var(--fm-surface-inset);
+      }
+      .fm-table td { padding: 11px 14px; border-bottom: 1px solid var(--fm-divider); }
+      .fm-table tbody tr:last-child td { border-bottom: none; }
+      .fm-table tbody tr:hover { background: var(--fm-surface-2); }
+      .fm-num { font-family: var(--fm-mono); font-size: 0.8125rem; text-align: right; }
+
+      /* modal */
+      .fm-modal {
+        position: fixed; inset: 0; z-index: var(--fm-z-overlay);
+        display: flex; align-items: center; justify-content: center;
+        background: rgba(2, 6, 14, 0.6); backdrop-filter: blur(3px); padding: var(--fm-space-4);
+      }
+      .fm-modal[hidden] { display: none; }
+      .fm-modal__panel {
+        background: var(--fm-surface); border: 1px solid var(--fm-border);
+        border-radius: var(--fm-radius-lg); box-shadow: var(--fm-shadow-3);
+        width: min(480px, 100%);
+      }
+      .fm-modal__head { display: flex; align-items: center; justify-content: space-between; padding: var(--fm-space-4) var(--fm-space-5) 0; }
+      .fm-modal__head h2 { margin: 0; }
+      .fm-modal__body { padding: var(--fm-space-3) var(--fm-space-5); color: var(--fm-text-muted); font-size: 0.9375rem; }
+      .fm-modal__foot { display: flex; justify-content: flex-end; gap: var(--fm-space-2); padding: 0 var(--fm-space-5) var(--fm-space-5); }
+
+      /* toast */
+      .fm-toast-region { position: fixed; bottom: 20px; right: 20px; z-index: var(--fm-z-overlay); display: flex; flex-direction: column; gap: 10px; }
+      .fm-toast {
+        display: flex; align-items: flex-start; gap: 10px;
+        background: var(--fm-surface); border: 1px solid var(--fm-border);
+        border-radius: var(--fm-radius-sm); box-shadow: var(--fm-shadow-2);
+        padding: 12px 16px; font-size: 0.875rem; max-width: 340px;
+        animation: fm-toast-in 200ms var(--fm-ease);
+      }
+      @keyframes fm-toast-in { from { opacity: 0; transform: translateY(8px); } }
+
+      /* progress + skeleton + spinner */
+      .fm-progress { height: 8px; border-radius: 4px; background: var(--fm-surface-2); overflow: hidden; }
+      .fm-progress__bar { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--fm-primary), var(--fm-accent)); }
+      .fm-spinner {
+        width: 20px; height: 20px; border-radius: 50%; flex: none;
+        border: 2.5px solid var(--fm-surface-2); border-top-color: var(--fm-primary);
+        animation: fm-spin 700ms linear infinite;
+      }
+      .fm-skeleton {
+        border-radius: var(--fm-radius-xs);
+        background: linear-gradient(90deg, var(--fm-surface-2) 25%, var(--fm-surface-inset) 50%, var(--fm-surface-2) 75%);
+        background-size: 200% 100%; animation: fm-shimmer 1.4s linear infinite;
+      }
+      @keyframes fm-shimmer { to { background-position: -200% 0; } }
+
+      /* breadcrumbs */
+      .fm-breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 0.875rem; }
+      .fm-breadcrumb a { color: var(--fm-text-muted); text-decoration: none; }
+      .fm-breadcrumb a:hover { color: var(--fm-primary); text-decoration: underline; }
+      .fm-breadcrumb [aria-current="page"] { color: var(--fm-text); font-weight: 600; font-family: var(--fm-mono); font-size: 0.8125rem; }
+      .fm-breadcrumb__sep { color: var(--fm-text-subtle); display: inline-flex; }
+
+      /* pagination */
+      .fm-pagination { display: flex; gap: 4px; }
+      .fm-page {
+        display: inline-flex; align-items: center; justify-content: center;
+        min-width: 34px; height: 34px; padding: 0 6px;
+        font-size: 0.875rem; text-decoration: none; color: var(--fm-text-muted);
+        border: 1px solid transparent; border-radius: var(--fm-radius-sm);
+      }
+      a.fm-page:hover { background: var(--fm-surface-2); color: var(--fm-text); }
+      .fm-page[aria-current="page"] { background: var(--fm-primary); color: var(--fm-text-on-primary); font-weight: 700; }
+      .fm-page[aria-disabled="true"] { opacity: 0.4; pointer-events: none; }
+
+      /* menu */
+      .fm-menu-wrap { position: relative; display: inline-block; }
+      .fm-menu {
+        position: absolute; top: calc(100% + 6px); left: 0; z-index: var(--fm-z-sticky);
+        min-width: 240px; padding: 6px;
+        background: var(--fm-surface); border: 1px solid var(--fm-border);
+        border-radius: var(--fm-radius-md); box-shadow: var(--fm-shadow-2);
+        display: flex; flex-direction: column;
+      }
+      .fm-menu[hidden] { display: none; }
+      .fm-menu__item {
+        font: 500 0.875rem var(--fm-sans); color: var(--fm-text); text-align: left;
+        background: none; border: none; border-radius: var(--fm-radius-sm);
+        padding: 9px 12px; cursor: pointer;
+      }
+      .fm-menu__item:hover { background: var(--fm-surface-2); }
+      .fm-menu__item--danger { color: var(--fm-danger); }
+      .fm-menu__sep { height: 1px; background: var(--fm-divider); margin: 5px 6px; }
+
+      /* nav + drawer */
+      .fm-nav { display: flex; flex-direction: column; gap: 2px; }
+      .fm-nav__link {
+        font: 500 0.875rem var(--fm-sans); color: var(--fm-text-muted); text-decoration: none;
+        padding: 9px 12px; border-radius: var(--fm-radius-sm);
+      }
+      .fm-nav__link:hover { background: var(--fm-surface-2); color: var(--fm-text); }
+      .fm-nav__link[aria-current="page"] { background: var(--fm-primary-soft); color: var(--fm-primary); font-weight: 600; }
+      .fm-drawer { position: fixed; inset: 0; z-index: var(--fm-z-overlay); }
+      .fm-drawer[hidden] { display: none; }
+      .fm-drawer__scrim { position: absolute; inset: 0; background: rgba(2, 6, 14, 0.6); }
+      .fm-drawer__panel {
+        position: absolute; top: 0; bottom: 0; left: 0; width: min(300px, 85vw);
+        background: var(--fm-surface); border-right: 1px solid var(--fm-border);
+        padding: var(--fm-space-4); overflow: auto;
+        animation: fm-drawer-in 200ms var(--fm-ease);
+      }
+      @keyframes fm-drawer-in { from { transform: translateX(-24px); opacity: 0; } }
+
+      /* accordion */
+      .fm-accordion { border: 1px solid var(--fm-border); border-radius: var(--fm-radius-md); overflow: hidden; }
+      .fm-accordion details { border-bottom: 1px solid var(--fm-divider); }
+      .fm-accordion details:last-child { border-bottom: none; }
+      .fm-accordion summary {
+        display: flex; align-items: center; justify-content: space-between; gap: var(--fm-space-3);
+        font-weight: 600; font-size: 0.9375rem; padding: 14px 16px; cursor: pointer; list-style: none;
+      }
+      .fm-accordion summary::-webkit-details-marker { display: none; }
+      .fm-accordion summary:hover { background: var(--fm-surface-2); }
+      .fm-acc-chev { color: var(--fm-text-subtle); transition: transform var(--fm-dur) var(--fm-ease); }
+      .fm-accordion details[open] .fm-acc-chev { transform: rotate(180deg); }
+      .fm-accordion__body { padding: 0 16px 14px; font-size: 0.875rem; color: var(--fm-text-muted); }
+
+      /* list */
+      .fm-list { list-style: none; margin: 0; padding: 0; border: 1px solid var(--fm-border); border-radius: var(--fm-radius-md); overflow: hidden; }
+      .fm-list__item { display: flex; align-items: center; gap: var(--fm-space-3); padding: 12px 16px; border-bottom: 1px solid var(--fm-divider); background: var(--fm-surface); }
+      .fm-list__item:last-child { border-bottom: none; }
+      .fm-list__text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+      .fm-list__title { font-weight: 600; font-size: 0.9375rem; }
+      .fm-list__sub { font-size: 0.8125rem; color: var(--fm-text-subtle); }
+
+      /* fab + file */
+      .fm-fab {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 52px; height: 52px; border-radius: 50%;
+        background: var(--fm-primary); color: var(--fm-text-on-primary);
+        border: none; cursor: pointer; box-shadow: var(--fm-shadow-2);
+      }
+      .fm-fab:hover { background: var(--fm-primary-hover); }
+      .fm-file input { position: absolute; opacity: 0; width: 0; }
+      .fm-file__zone {
+        display: flex; flex-direction: column; align-items: center; gap: 6px;
+        border: 1.5px dashed var(--fm-border); border-radius: var(--fm-radius-md);
+        background: var(--fm-surface-inset); color: var(--fm-text-muted);
+        padding: var(--fm-space-5); text-align: center; cursor: pointer;
+        font-size: 0.875rem;
+      }
+      .fm-file__zone:hover { border-color: var(--fm-primary); color: var(--fm-text); }
+      .fm-file input:focus-visible + .fm-file__zone { outline: 3px solid var(--fm-focus-ring); }
+
+      /* tooltip + kbd */
+      .fm-tooltip { position: relative; display: inline-flex; }
+      .fm-tooltip__bubble {
+        position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+        background: var(--fm-surface-2); color: var(--fm-text); border: 1px solid var(--fm-border);
+        font-size: 0.75rem; padding: 5px 10px; border-radius: var(--fm-radius-sm);
+        white-space: nowrap; box-shadow: var(--fm-shadow-1);
+        opacity: 0; pointer-events: none; transition: opacity var(--fm-dur) var(--fm-ease);
+      }
+      .fm-tooltip:hover .fm-tooltip__bubble, .fm-tooltip:focus-within .fm-tooltip__bubble { opacity: 1; }
+      .fm-kbd {
+        font: 500 0.75rem var(--fm-mono); color: var(--fm-text);
+        background: var(--fm-surface-2); border: 1px solid var(--fm-border);
+        border-bottom-width: 2px; border-radius: var(--fm-radius-xs); padding: 2px 6px;
+      }
+
+      /* ============================================================
+         Page chrome (this document only)
+         ============================================================ */
+      .fm-skip {
+        position: absolute; left: -9999px; top: 0; z-index: 999;
+        background: var(--fm-primary); color: var(--fm-text-on-primary);
+        padding: 8px 14px; border-radius: 0 0 var(--fm-radius-sm) 0; text-decoration: none;
+      }
+      .fm-skip:focus { left: 0; }
+      .ds-appbar {
+        position: sticky; top: 0; z-index: var(--fm-z-sticky);
+        display: flex; align-items: center; gap: var(--fm-space-3);
+        padding: 0 var(--fm-space-5); height: 64px;
+        background: color-mix(in srgb, var(--fm-bg) 88%, transparent);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid var(--fm-border);
+      }
+      .ds-appbar__brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+      .ds-appbar__brand img { width: 30px; height: 30px; }
+      .ds-appbar__spacer { flex: 1; }
+      .ds-appbar__links { display: flex; align-items: center; gap: var(--fm-space-2); }
+      .ds-appbar__links a { color: var(--fm-text-muted); text-decoration: none; font-size: 0.875rem; padding: 8px; border-radius: var(--fm-radius-xs); }
+      .ds-appbar__links a:hover { color: var(--fm-text); }
+      .ds-shell { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: var(--fm-space-6); max-width: 1280px; margin: 0 auto; padding: var(--fm-space-6) var(--fm-space-5) var(--fm-space-8); }
+      .ds-toc { position: sticky; top: 88px; align-self: start; max-height: calc(100vh - 110px); overflow: auto; display: flex; flex-direction: column; gap: 2px; }
+      .ds-toc a { color: var(--fm-text-muted); text-decoration: none; font-size: 0.875rem; padding: 6px 10px; border-radius: var(--fm-radius-sm); }
+      .ds-toc a:hover { background: var(--fm-surface-2); color: var(--fm-text); }
+      .ds-toc__group { font-family: var(--fm-mono); font-size: 0.625rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fm-text-subtle); padding: 14px 10px 4px; }
+      .ds-main { min-width: 0; }
+      .ds-section { padding-block: var(--fm-space-6) var(--fm-space-7); border-top: 1px solid var(--fm-divider); scroll-margin-top: 80px; }
+      .ds-section:first-of-type { border-top: none; padding-top: 0; }
+      .ds-section > h2 { margin: 0 0 var(--fm-space-2); }
+      .ds-section > .ds-lede { color: var(--fm-text-muted); max-width: 68ch; margin: 0 0 var(--fm-space-5); }
+      .ds-subhead { margin: var(--fm-space-6) 0 var(--fm-space-3); }
+      .ds-demo {
+        border: 1px solid var(--fm-border); border-radius: var(--fm-radius-md) var(--fm-radius-md) 0 0;
+        background: var(--fm-surface); padding: var(--fm-space-5);
+        display: flex; flex-wrap: wrap; gap: var(--fm-space-4); align-items: center;
+      }
+      .ds-demo--grid { display: grid; align-items: start; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+      .ds-demo--grid .fm-field { min-width: 0; }
+      .ds-demo:last-child { border-radius: var(--fm-radius-md); }
+      .ds-code {
+        position: relative; margin: 0 0 var(--fm-space-5);
+        border: 1px solid var(--fm-border); border-top: none;
+        border-radius: 0 0 var(--fm-radius-md) var(--fm-radius-md);
+        background: var(--fm-surface-inset);
+      }
+      .ds-code pre { margin: 0; padding: var(--fm-space-4); overflow-x: auto; font-family: var(--fm-mono); font-size: 0.8125rem; line-height: 1.6; color: var(--fm-text); }
+      .ds-copy { position: absolute; top: 8px; right: 8px; }
+      .ds-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--fm-space-3); }
+      .ds-swatch { border: 1px solid var(--fm-border); border-radius: var(--fm-radius-sm); overflow: hidden; background: var(--fm-surface); }
+      .ds-swatch__chip { height: 56px; }
+      .ds-swatch__meta { padding: 8px 10px; }
+      .ds-swatch__name { font-size: 0.8125rem; font-weight: 600; }
+      .ds-swatch__val { font-family: var(--fm-mono); font-size: 0.6875rem; color: var(--fm-text-subtle); }
+      .ds-scalewrap { display: flex; flex-direction: column; gap: var(--fm-space-2); }
+      .ds-spacebar { background: var(--fm-primary-soft); height: 16px; border-radius: var(--fm-radius-xs); }
+      @media (max-width: 860px) {
+        .ds-shell { grid-template-columns: 1fr; padding-top: var(--fm-space-5); }
+        .ds-toc { position: static; max-height: none; flex-direction: row; flex-wrap: wrap; overflow: visible; padding-bottom: var(--fm-space-3); border-bottom: 1px solid var(--fm-divider); }
+        .ds-toc__group { width: 100%; padding-top: 8px; }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="fm-skip" href="#main">Skip to content</a>
+
+    <!-- inline icon sprite -->
+    <svg width="0" height="0" aria-hidden="true" style="position:absolute">
+      <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4 1.4-1.4"/></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></symbol>
+      <symbol id="i-chev-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></symbol>
+      <symbol id="i-chev-d" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-dots" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 9l5-5 5 5M12 4v12"/></symbol>
+    </svg>
+
+    <header class="ds-appbar">
+      <span class="ds-appbar__brand">
+        <img src="logo-icon.svg" alt="" />
+        Ferrosa Memory
+      </span>
+      <span class="fm-mono fm-subtle" style="font-size:0.75rem">Design System</span>
+      <span class="ds-appbar__spacer"></span>
+      <nav class="ds-appbar__links" aria-label="Related">
+        <a href="brand.html">Brand guide</a>
+        <button id="theme-toggle" class="fm-icon-btn" type="button" aria-pressed="false" aria-label="Toggle dark mode" title="Toggle dark mode">
+          <svg class="fm-icon" aria-hidden="true"><use href="#i-moon" /></svg>
+        </button>
+      </nav>
+    </header>
+
+    <div class="ds-shell">
+      <nav class="ds-toc" aria-label="Sections">
+        <span class="ds-toc__group">Foundations</span>
+        <a href="#color">Color</a>
+        <a href="#type">Typography</a>
+        <a href="#space">Spacing &amp; radius</a>
+        <a href="#elevation">Elevation &amp; motion</a>
+        <span class="ds-toc__group">Components</span>
+        <a href="#buttons">Buttons</a>
+        <a href="#forms">Forms</a>
+        <a href="#selection">Selection controls</a>
+        <a href="#badges">Badges &amp; chips</a>
+        <a href="#cards">Cards</a>
+        <a href="#alerts">Alerts</a>
+        <a href="#tabs">Tabs</a>
+        <a href="#table">Table</a>
+        <a href="#overlays">Modal &amp; toast</a>
+        <a href="#feedback">Progress &amp; skeleton</a>
+        <span class="ds-toc__group">Navigation</span>
+        <a href="#breadcrumbs">Breadcrumbs</a>
+        <a href="#pagination">Pagination</a>
+        <a href="#menu">Menu</a>
+        <a href="#drawer">Drawer &amp; nav</a>
+        <span class="ds-toc__group">Disclosure &amp; data</span>
+        <a href="#accordion">Accordion</a>
+        <a href="#list">List</a>
+        <a href="#fab">FAB &amp; file</a>
+        <a href="#misc">Tooltip &amp; kbd</a>
+      </nav>
+
+      <main class="ds-main" id="main">
+        <p class="fm-eyebrow">Reference</p>
+        <h1 class="fm-display">Design System</h1>
+        <p class="ds-lede fm-body">
+          Accessible, responsive components built on the Ferrosa Memory brand tokens —
+          electric blued steel on a deep field. Core Blue is the single action color;
+          Electric Cyan is reserved for highlights, code, and data accents. Every example
+          meets WCAG 2.1 AA contrast in both themes and works with a keyboard. Toggle
+          dark mode in the header. Use the Copy button on any example to grab the markup.
+        </p>
+
+        <!-- ===================== COLOR ===================== -->
+        <section class="ds-section" id="color" aria-labelledby="color-h">
+          <h2 class="fm-h1" id="color-h">Color</h2>
+          <p class="ds-lede">Semantic tokens resolve to brand primitives and swap automatically between themes. Reach for the semantic name, not the raw hex — the swatches below re-resolve live when you toggle the theme.</p>
+          <div class="ds-swatches">
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:var(--fm-primary)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Primary</div><div class="ds-swatch__val">--fm-primary</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:var(--fm-accent)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Accent</div><div class="ds-swatch__val">--fm-accent</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:var(--fm-bg)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Background</div><div class="ds-swatch__val">--fm-bg</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:var(--fm-surface);border-bottom:1px solid var(--fm-border)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Surface</div><div class="ds-swatch__val">--fm-surface</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:var(--fm-success)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Success</div><div class="ds-swatch__val">--fm-success</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:var(--fm-warning)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Warning</div><div class="ds-swatch__val">--fm-warning</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:var(--fm-danger)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Danger</div><div class="ds-swatch__val">--fm-danger</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:var(--fm-steel)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Blued Steel</div><div class="ds-swatch__val">--fm-steel</div></div></div>
+          </div>
+          <h3 class="fm-h3 ds-subhead">Brand primitives</h3>
+          <p class="ds-lede fm-small">Fixed anchors from the <a href="brand.html">brand guide</a>. Dark theme uses them directly; the light theme darkens Core Blue and Cyan so text and actions keep AA contrast on white.</p>
+          <div class="ds-swatches">
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#7ee7ff"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Electric Cyan</div><div class="ds-swatch__val">#7ee7ff</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#348cff"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Core Blue</div><div class="ds-swatch__val">#348cff</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#516d92"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Blued Steel</div><div class="ds-swatch__val">#516d92</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#05070c"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Deep Field</div><div class="ds-swatch__val">#05070c</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#eef4fb;border-bottom:1px solid var(--fm-border)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Ice Field</div><div class="ds-swatch__val">#eef4fb</div></div></div>
+          </div>
+        </section>
+
+        <!-- ===================== TYPE ===================== -->
+        <section class="ds-section" id="type" aria-labelledby="type-h">
+          <h2 class="fm-h1" id="type-h">Typography</h2>
+          <p class="ds-lede">Inter for UI, JetBrains Mono for identifiers, scores, and tool output. Georgia serves the Fm monogram only — never body copy. The scale is fluid and capped for readability (body measure 65ch).</p>
+          <div class="fm-stack">
+            <div class="fm-display">Display 800</div>
+            <div class="fm-h1">Heading 1</div>
+            <div class="fm-h2">Heading 2</div>
+            <div class="fm-h3">Heading 3</div>
+            <div class="fm-body">Body. The knowledge graph holds 48,112 entities and 61,479 typed edges; hybrid recall fuses BM25, ANN, and the Datalog frontier before reranking.</div>
+            <div class="fm-eyebrow">Eyebrow label</div>
+            <div class="fm-mono fm-small">ent_9f27c1 · rrf 0.0312 · consolidated</div>
+          </div>
+        </section>
+
+        <!-- ===================== SPACE ===================== -->
+        <section class="ds-section" id="space" aria-labelledby="space-h">
+          <h2 class="fm-h1" id="space-h">Spacing &amp; radius</h2>
+          <p class="ds-lede">A 4px spacing base (<span class="fm-mono fm-small">--fm-space-1…8</span>) and one radius scale (<span class="fm-mono fm-small">xs 4 / sm 8 / md 12 / lg 16</span>). Pick a step and stay on it; do not mix radii within a surface.</p>
+          <div class="ds-scalewrap" aria-hidden="true">
+            <div class="ds-spacebar" style="width:4px"></div>
+            <div class="ds-spacebar" style="width:8px"></div>
+            <div class="ds-spacebar" style="width:16px"></div>
+            <div class="ds-spacebar" style="width:24px"></div>
+            <div class="ds-spacebar" style="width:32px"></div>
+            <div class="ds-spacebar" style="width:48px"></div>
+            <div class="ds-spacebar" style="width:64px"></div>
+          </div>
+          <div class="fm-cluster" style="margin-top:var(--fm-space-5)">
+            <div style="width:72px;height:48px;background:var(--fm-primary-soft);border:1px solid var(--fm-primary);border-radius:var(--fm-radius-xs)"></div>
+            <div style="width:72px;height:48px;background:var(--fm-primary-soft);border:1px solid var(--fm-primary);border-radius:var(--fm-radius-sm)"></div>
+            <div style="width:72px;height:48px;background:var(--fm-primary-soft);border:1px solid var(--fm-primary);border-radius:var(--fm-radius-md)"></div>
+            <div style="width:72px;height:48px;background:var(--fm-primary-soft);border:1px solid var(--fm-primary);border-radius:var(--fm-radius-lg)"></div>
+          </div>
+        </section>
+
+        <!-- ===================== ELEVATION ===================== -->
+        <section class="ds-section" id="elevation" aria-labelledby="elev-h">
+          <h2 class="fm-h1" id="elev-h">Elevation &amp; motion</h2>
+          <p class="ds-lede">Three shadow steps tinted to the deep-field ink, never pure black. Motion is short (160ms) and eased, and is disabled entirely under reduced-motion.</p>
+          <div class="fm-cluster">
+            <div class="fm-card" style="box-shadow:var(--fm-shadow-1)"><div class="fm-card__body">Level 1</div></div>
+            <div class="fm-card" style="box-shadow:var(--fm-shadow-2)"><div class="fm-card__body">Level 2</div></div>
+            <div class="fm-card" style="box-shadow:var(--fm-shadow-3)"><div class="fm-card__body">Level 3</div></div>
+          </div>
+        </section>
+
+        <!-- ===================== BUTTONS ===================== -->
+        <section class="ds-section" id="buttons" aria-labelledby="btn-h">
+          <h2 class="fm-h1" id="btn-h">Buttons</h2>
+          <p class="ds-lede">One primary action per view. Labels are 1–3 words and never wrap. All variants meet AA contrast and have hover, active, focus, disabled, and loading states. Danger is reserved for destructive, blast-radius actions like hard forget.</p>
+          <div class="ds-demo">
+            <button class="fm-btn fm-btn--primary">Ingest</button>
+            <button class="fm-btn fm-btn--secondary">Cancel</button>
+            <button class="fm-btn fm-btn--ghost">View edges</button>
+            <button class="fm-btn fm-btn--danger">Hard forget</button>
+            <button class="fm-btn fm-btn--primary" disabled>Disabled</button>
+            <button class="fm-btn fm-btn--primary" id="loading-demo">Click to load</button>
+          </div>
+          <div class="ds-code">
+            <button class="fm-icon-btn ds-copy" type="button" data-copy aria-label="Copy code"><svg class="fm-icon" aria-hidden="true"><use href="#i-copy"/></svg></button>
+<pre><code>&lt;button class="fm-btn fm-btn--primary"&gt;Ingest&lt;/button&gt;
+&lt;button class="fm-btn fm-btn--secondary"&gt;Cancel&lt;/button&gt;
+&lt;button class="fm-btn fm-btn--ghost"&gt;View edges&lt;/button&gt;
+&lt;button class="fm-btn fm-btn--danger"&gt;Hard forget&lt;/button&gt;</code></pre>
+          </div>
+          <h3 class="fm-h3 ds-subhead">Sizes</h3>
+          <div class="ds-demo">
+            <button class="fm-btn fm-btn--primary fm-btn--sm">Small</button>
+            <button class="fm-btn fm-btn--primary">Medium</button>
+            <button class="fm-btn fm-btn--primary fm-btn--lg">Large</button>
+          </div>
+        </section>
+
+        <!-- ===================== FORMS ===================== -->
+        <section class="ds-section" id="forms" aria-labelledby="form-h">
+          <h2 class="fm-h1" id="form-h">Forms</h2>
+          <p class="ds-lede">Label above input, helper text in markup, error below. Never use a placeholder as a label. Focus shows a 3px cyan ring; errors set aria-invalid.</p>
+          <div class="ds-demo ds-demo--grid">
+            <div class="fm-field">
+              <label class="fm-label" for="f-query">Search query <span class="fm-req" aria-hidden="true">*</span></label>
+              <input class="fm-input" id="f-query" type="text" placeholder="raft election storm" aria-describedby="f-query-help" />
+              <span class="fm-help" id="f-query-help">Fused across BM25, ANN, and phonetic sources.</span>
+            </div>
+            <div class="fm-field">
+              <label class="fm-label" for="f-scope">Scope</label>
+              <select class="fm-select" id="f-scope">
+                <option>Session + global</option>
+                <option>Session only</option>
+                <option>Global only</option>
+              </select>
+            </div>
+            <div class="fm-field">
+              <label class="fm-label" for="f-bad">Entity ID</label>
+              <input class="fm-input" id="f-bad" value="ent_00000" aria-invalid="true" aria-describedby="f-bad-err" />
+              <span class="fm-error" id="f-bad-err"><svg class="fm-icon" style="width:14px;height:14px" aria-hidden="true"><use href="#i-alert"/></svg> Entity not found.</span>
+            </div>
+          </div>
+          <div class="ds-code">
+            <button class="fm-icon-btn ds-copy" type="button" data-copy aria-label="Copy code"><svg class="fm-icon" aria-hidden="true"><use href="#i-copy"/></svg></button>
+<pre><code>&lt;div class="fm-field"&gt;
+  &lt;label class="fm-label" for="query"&gt;Search query&lt;/label&gt;
+  &lt;input class="fm-input" id="query" type="text"
+         aria-describedby="query-help" /&gt;
+  &lt;span class="fm-help" id="query-help"&gt;Fused across sources.&lt;/span&gt;
+&lt;/div&gt;</code></pre>
+          </div>
+        </section>
+
+        <!-- ===================== SELECTION ===================== -->
+        <section class="ds-section" id="selection" aria-labelledby="sel-h">
+          <h2 class="fm-h1" id="sel-h">Selection controls</h2>
+          <p class="ds-lede">Checkboxes, radios, switches, and sliders. All are real native inputs styled for the brand, so keyboard and screen-reader behavior is built in.</p>
+          <div class="ds-demo">
+            <label class="fm-check"><input type="checkbox" checked /> Include cross-session results</label>
+            <label class="fm-check"><input type="radio" name="r" checked /> Entities</label>
+            <label class="fm-check"><input type="radio" name="r" /> Folds</label>
+            <label class="fm-switch"><input type="checkbox" checked /><span class="fm-switch__track"></span> LLM rerank</label>
+          </div>
+          <div class="ds-demo">
+            <label class="fm-field" style="flex:1;min-width:240px"><span class="fm-label">Frontier confidence floor</span><input class="fm-range" type="range" min="0" max="100" value="30" /></label>
+          </div>
+          <div class="ds-code">
+            <button class="fm-icon-btn ds-copy" type="button" data-copy aria-label="Copy code"><svg class="fm-icon" aria-hidden="true"><use href="#i-copy"/></svg></button>
+<pre><code>&lt;label class="fm-check"&gt;&lt;input type="checkbox" /&gt; Label&lt;/label&gt;
+&lt;label class="fm-check"&gt;&lt;input type="radio" name="r" /&gt; Label&lt;/label&gt;
+&lt;label class="fm-switch"&gt;
+  &lt;input type="checkbox" /&gt;&lt;span class="fm-switch__track"&gt;&lt;/span&gt; Label
+&lt;/label&gt;
+&lt;input class="fm-range" type="range" min="0" max="100" /&gt;</code></pre>
+          </div>
+        </section>
+
+        <!-- ===================== BADGES ===================== -->
+        <section class="ds-section" id="badges" aria-labelledby="badge-h">
+          <h2 class="fm-h1" id="badge-h">Badges &amp; chips</h2>
+          <p class="ds-lede">Badges label status with a tint plus a word — color is never the only signal. The viz uses these exact semantics: LIVE is success, TRUNCATED is warning. Chips are interactive filters.</p>
+          <div class="ds-demo">
+            <span class="fm-badge fm-badge--success"><span class="fm-badge__dot"></span> Live</span>
+            <span class="fm-badge fm-badge--warning"><span class="fm-badge__dot"></span> Truncated</span>
+            <span class="fm-badge fm-badge--danger"><span class="fm-badge__dot"></span> Retracted</span>
+            <span class="fm-badge fm-badge--info"><span class="fm-badge__dot"></span> Consolidating</span>
+            <span class="fm-badge">Draft</span>
+          </div>
+          <div class="ds-demo">
+            <button class="fm-chip" aria-pressed="true">semantic</button>
+            <button class="fm-chip" aria-pressed="false">episodic</button>
+            <button class="fm-chip" aria-pressed="false">procedural</button>
+            <span class="fm-avatar" aria-hidden="true">Fm</span>
+          </div>
+          <div class="ds-code">
+            <button class="fm-icon-btn ds-copy" type="button" data-copy aria-label="Copy code"><svg class="fm-icon" aria-hidden="true"><use href="#i-copy"/></svg></button>
+<pre><code>&lt;span class="fm-badge fm-badge--success"&gt;
+  &lt;span class="fm-badge__dot"&gt;&lt;/span&gt; Live
+&lt;/span&gt;
+&lt;button class="fm-chip" aria-pressed="true"&gt;semantic&lt;/button&gt;
+&lt;span class="fm-avatar"&gt;Fm&lt;/span&gt;</code></pre>
+          </div>
+        </section>
+
+        <!-- ===================== CARDS ===================== -->
+        <section class="ds-section" id="cards" aria-labelledby="card-h">
+          <h2 class="fm-h1" id="card-h">Cards</h2>
+          <p class="ds-lede">Use a card only when elevation communicates real grouping. Optional header and footer regions.</p>
+          <div class="fm-grid">
+            <div class="fm-card">
+              <div class="fm-card__head"><strong>Consolidation run</strong><span class="fm-badge fm-badge--success">Done</span></div>
+              <div class="fm-card__body fm-muted">214 session entities folded into 31 global facts; 6 superseded, 0 conflicts.</div>
+              <div class="fm-card__foot"><button class="fm-btn fm-btn--ghost fm-btn--sm">Details</button><button class="fm-btn fm-btn--primary fm-btn--sm">Open</button></div>
+            </div>
+            <div class="fm-card"><div class="fm-card__body"><p class="fm-eyebrow" style="margin:0 0 6px">Entities</p><div class="fm-display" style="font-size:2rem">48,112</div><p class="fm-muted fm-small" style="margin:6px 0 0">Tenant-wide, up 3.1% this week</p></div></div>
+          </div>
+          <div class="ds-code">
+            <button class="fm-icon-btn ds-copy" type="button" data-copy aria-label="Copy code"><svg class="fm-icon" aria-hidden="true"><use href="#i-copy"/></svg></button>
+<pre><code>&lt;div class="fm-card"&gt;
+  &lt;div class="fm-card__head"&gt;&lt;strong&gt;Title&lt;/strong&gt;&lt;/div&gt;
+  &lt;div class="fm-card__body"&gt;Body content.&lt;/div&gt;
+  &lt;div class="fm-card__foot"&gt;
+    &lt;button class="fm-btn fm-btn--primary fm-btn--sm"&gt;Open&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+          </div>
+        </section>
+
+        <!-- ===================== ALERTS ===================== -->
+        <section class="ds-section" id="alerts" aria-labelledby="alert-h">
+          <h2 class="fm-h1" id="alert-h">Alerts</h2>
+          <p class="ds-lede">Inline, persistent messages. Each pairs an icon with a tint and a clear title so meaning does not rely on color alone. Degraded states are always disclosed — never fail silent.</p>
+          <div class="fm-stack">
+            <div class="fm-alert fm-alert--info" role="note"><svg class="fm-icon fm-alert__icon" aria-hidden="true"><use href="#i-info"/></svg><div><div class="fm-alert__title">Heads up</div>Consolidation is queued; new entities may fold within the hour.</div></div>
+            <div class="fm-alert fm-alert--success" role="note"><svg class="fm-icon fm-alert__icon" aria-hidden="true"><use href="#i-check"/></svg><div><div class="fm-alert__title">Ingested</div>Document split into 42 chunks with neighbor links.</div></div>
+            <div class="fm-alert fm-alert--warning" role="note"><svg class="fm-icon fm-alert__icon" aria-hidden="true"><use href="#i-alert"/></svg><div><div class="fm-alert__title">Snapshot truncated</div>A stream stalled mid-scan; the graph shown is a partial snapshot.</div></div>
+            <div class="fm-alert fm-alert--danger" role="alert"><svg class="fm-icon fm-alert__icon" aria-hidden="true"><use href="#i-alert"/></svg><div><div class="fm-alert__title">Blast radius</div>Forgetting this entity breaks 14 inbound edges. Review before confirming.</div></div>
+          </div>
+          <div class="ds-code">
+            <button class="fm-icon-btn ds-copy" type="button" data-copy aria-label="Copy code"><svg class="fm-icon" aria-hidden="true"><use href="#i-copy"/></svg></button>
+<pre><code>&lt;div class="fm-alert fm-alert--warning" role="note"&gt;
+  &lt;svg class="fm-icon fm-alert__icon"&gt;&lt;use href="#i-alert"/&gt;&lt;/svg&gt;
+  &lt;div&gt;&lt;div class="fm-alert__title"&gt;Snapshot truncated&lt;/div&gt;Message.&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+          </div>
+        </section>
+
+        <!-- ===================== TABS ===================== -->
+        <section class="ds-section" id="tabs" aria-labelledby="tab-h">
+          <h2 class="fm-h1" id="tab-h">Tabs</h2>
+          <p class="ds-lede">Keyboard accessible: arrow keys move between tabs, and the selected panel is linked with aria-controls.</p>
+          <div class="fm-tabs" data-tabs>
+            <div class="fm-tabs__list" role="tablist" aria-label="Memory views">
+              <button class="fm-tab" role="tab" id="t1" aria-controls="p1" aria-selected="true">Entities</button>
+              <button class="fm-tab" role="tab" id="t2" aria-controls="p2" aria-selected="false" tabindex="-1">Edges</button>
+              <button class="fm-tab" role="tab" id="t3" aria-controls="p3" aria-selected="false" tabindex="-1">Folds</button>
+            </div>
+            <div class="fm-tabs__panel" role="tabpanel" id="p1" aria-labelledby="t1">Typed entities with scope, kind, and confidence.</div>
+            <div class="fm-tabs__panel" role="tabpanel" id="p2" aria-labelledby="t2" hidden>Typed and temporal edges linking the graph.</div>
+            <div class="fm-tabs__panel" role="tabpanel" id="p3" aria-labelledby="t3" hidden>Trajectory folds produced by consolidation.</div>
+          </div>
+          <div class="ds-code">
+            <button class="fm-icon-btn ds-copy" type="button" data-copy aria-label="Copy code"><svg class="fm-icon" aria-hidden="true"><use href="#i-copy"/></svg></button>
+<pre><code>&lt;div class="fm-tabs" data-tabs&gt;
+  &lt;div class="fm-tabs__list" role="tablist"&gt;
+    &lt;button class="fm-tab" role="tab" aria-controls="p1" aria-selected="true"&gt;Entities&lt;/button&gt;
+    &lt;button class="fm-tab" role="tab" aria-controls="p2" aria-selected="false" tabindex="-1"&gt;Edges&lt;/button&gt;
+  &lt;/div&gt;
+  &lt;div class="fm-tabs__panel" role="tabpanel" id="p1"&gt;...&lt;/div&gt;
+  &lt;div class="fm-tabs__panel" role="tabpanel" id="p2" hidden&gt;...&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+          </div>
+        </section>
+
+        <!-- ===================== TABLE ===================== -->
+        <section class="ds-section" id="table" aria-labelledby="table-h">
+          <h2 class="fm-h1" id="table-h">Table</h2>
+          <p class="ds-lede">Scrolls horizontally on small screens without breaking the layout. Identifiers and figures use mono; figures right-align.</p>
+          <div class="fm-table-wrap">
+            <table class="fm-table">
+              <caption>Memory stores, tenant-wide</caption>
+              <thead><tr><th scope="col">Store</th><th scope="col">Kind</th><th scope="col" style="text-align:right">Rows</th></tr></thead>
+              <tbody>
+                <tr><td>entity_store</td><td>Semantic</td><td class="fm-num">48,112</td></tr>
+                <tr><td>typed_edges</td><td>Graph</td><td class="fm-num">61,479</td></tr>
+                <tr><td>temporal_edges</td><td>Episodic</td><td class="fm-num">23,806</td></tr>
+                <tr><td>trajectory_folds</td><td>Procedural</td><td class="fm-num">1,942</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="ds-code">
+            <button class="fm-icon-btn ds-copy" type="button" data-copy aria-label="Copy code"><svg class="fm-icon" aria-hidden="true"><use href="#i-copy"/></svg></button>
+<pre><code>&lt;div class="fm-table-wrap"&gt;
+  &lt;table class="fm-table"&gt;
+    &lt;thead&gt;&lt;tr&gt;&lt;th scope="col"&gt;Store&lt;/th&gt;&lt;th scope="col"&gt;Rows&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+    &lt;tbody&gt;&lt;tr&gt;&lt;td&gt;entity_store&lt;/td&gt;&lt;td class="fm-num"&gt;48,112&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;
+  &lt;/table&gt;
+&lt;/div&gt;</code></pre>
+          </div>
+        </section>
+
+        <!-- ===================== OVERLAYS ===================== -->
+        <section class="ds-section" id="overlays" aria-labelledby="ov-h">
+          <h2 class="fm-h1" id="ov-h">Modal &amp; toast</h2>
+          <p class="ds-lede">The modal traps focus, closes on Escape or backdrop click, and returns focus to the trigger. Toasts auto-dismiss and stack. Destructive confirmations always name the blast radius.</p>
+          <div class="ds-demo">
+            <button class="fm-btn fm-btn--primary" id="open-modal">Open dialog</button>
+            <button class="fm-btn fm-btn--secondary" id="fire-toast">Show toast</button>
+          </div>
+          <div class="ds-code">
+            <button class="fm-icon-btn ds-copy" type="button" data-copy aria-label="Copy code"><svg class="fm-icon" aria-hidden="true"><use href="#i-copy"/></svg></button>
+<pre><code>&lt;div class="fm-modal" hidden&gt;
+  &lt;div class="fm-modal__panel" role="dialog" aria-modal="true" aria-labelledby="t"&gt;
+    &lt;div class="fm-modal__head"&gt;&lt;h2 id="t"&gt;Title&lt;/h2&gt;&lt;/div&gt;
+    &lt;div class="fm-modal__body"&gt;Body.&lt;/div&gt;
+    &lt;div class="fm-modal__foot"&gt;&lt;button class="fm-btn fm-btn--primary"&gt;Confirm&lt;/button&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+          </div>
+        </section>
+
+        <!-- ===================== FEEDBACK ===================== -->
+        <section class="ds-section" id="feedback" aria-labelledby="fb-h">
+          <h2 class="fm-h1" id="fb-h">Progress &amp; skeleton</h2>
+          <p class="ds-lede">Skeletons match the final layout's shape; spinners are for indeterminate waits. Both stop animating under reduced-motion. The progress bar carries the blue-to-cyan brand gradient.</p>
+          <div class="fm-stack" style="max-width:420px">
+            <div class="fm-progress" role="progressbar" aria-valuenow="62" aria-valuemin="0" aria-valuemax="100" aria-label="Ingest"><div class="fm-progress__bar" style="width:62%"></div></div>
+            <div class="fm-cluster"><div class="fm-spinner" role="status" aria-label="Loading"></div><span class="fm-muted fm-small">Streaming snapshot…</span></div>
+            <div class="fm-card"><div class="fm-card__body fm-stack-sm">
+              <div class="fm-skeleton" style="height:14px;width:40%"></div>
+              <div class="fm-skeleton" style="height:32px;width:70%"></div>
+              <div class="fm-skeleton" style="height:14px;width:90%"></div>
+            </div></div>
+          </div>
+          <div class="ds-code">
+            <button class="fm-icon-btn ds-copy" type="button" data-copy aria-label="Copy code"><svg class="fm-icon" aria-hidden="true"><use href="#i-copy"/></svg></button>
+<pre><code>&lt;div class="fm-progress" role="progressbar" aria-valuenow="62"&gt;
+  &lt;div class="fm-progress__bar" style="width:62%"&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="fm-spinner" role="status" aria-label="Loading"&gt;&lt;/div&gt;
+&lt;div class="fm-skeleton" style="height:32px;width:70%"&gt;&lt;/div&gt;</code></pre>
+          </div>
+        </section>
+
+        <!-- ===================== BREADCRUMBS ===================== -->
+        <section class="ds-section" id="breadcrumbs" aria-labelledby="bc-h">
+          <h2 class="fm-h1" id="bc-h">Breadcrumbs</h2>
+          <p class="ds-lede">Show location in the hierarchy. The current page is marked with aria-current and is not a link. Identifiers render in mono.</p>
+          <div class="ds-demo">
+            <nav class="fm-breadcrumb" aria-label="Breadcrumb">
+              <a href="#breadcrumbs">Sessions</a>
+              <span class="fm-breadcrumb__sep" aria-hidden="true"><svg class="fm-icon" style="width:14px;height:14px"><use href="#i-chev-r"/></svg></span>
+              <a href="#breadcrumbs">Entities</a>
+              <span class="fm-breadcrumb__sep" aria-hidden="true"><svg class="fm-icon" style="width:14px;height:14px"><use href="#i-chev-r"/></svg></span>
+              <span aria-current="page">ent_9f27c1</span>
+            </nav>
+          </div>
+          <div class="ds-code">
+            <button class="fm-icon-btn ds-copy" type="button" data-copy aria-label="Copy code"><svg class="fm-icon" aria-hidden="true"><use href="#i-copy"/></svg></button>
+<pre><code>&lt;nav class="fm-breadcrumb" aria-label="Breadcrumb"&gt;
+  &lt;a href="/sessions"&gt;Sessions&lt;/a&gt;
+  &lt;span class="fm-breadcrumb__sep" aria-hidden="true"&gt;&lt;svg&gt;&lt;use href="#i-chev-r"/&gt;&lt;/svg&gt;&lt;/span&gt;
+  &lt;span aria-current="page"&gt;ent_9f27c1&lt;/span&gt;
+&lt;/nav&gt;</code></pre>
+          </div>
+        </section>
+
+        <!-- ===================== PAGINATION ===================== -->
+        <section class="ds-section" id="pagination" aria-labelledby="pg-h">
+          <h2 class="fm-h1" id="pg-h">Pagination</h2>
+          <p class="ds-lede">Wrapped in a nav landmark. The current page uses aria-current; disabled ends use aria-disabled.</p>
+          <div class="ds-demo">
+            <nav class="fm-pagination" aria-label="Pagination">
+              <a class="fm-page" href="#pagination" aria-disabled="true" aria-label="Previous">‹</a>
+              <a class="fm-page" href="#pagination" aria-current="page">1</a>
+              <a class="fm-page" href="#pagination">2</a>
+              <a class="fm-page" href="#pagination">3</a>
+              <span class="fm-page" aria-hidden="true">…</span>
+              <a class="fm-page" href="#pagination">12</a>
+              <a class="fm-page" href="#pagination" aria-label="Next">›</a>
+            </nav>
+          </div>
+          <div class="ds-code">
+            <button class="fm-icon-btn ds-copy" type="button" data-copy aria-label="Copy code"><svg class="fm-icon" aria-hidden="true"><use href="#i-copy"/></svg></button>
+<pre><code>&lt;nav class="fm-pagination" aria-label="Pagination"&gt;
+  &lt;a class="fm-page" href="?p=1" aria-current="page"&gt;1&lt;/a&gt;
+  &lt;a class="fm-page" href="?p=2"&gt;2&lt;/a&gt;
+  &lt;a class="fm-page" href="?p=2" aria-label="Next"&gt;›&lt;/a&gt;
+&lt;/nav&gt;</code></pre>
+          </div>
+        </section>
+
+        <!-- ===================== MENU ===================== -->
+        <section class="ds-section" id="menu" aria-labelledby="menu-h">
+          <h2 class="fm-h1" id="menu-h">Menu</h2>
+          <p class="ds-lede">A button toggles a menu with aria-expanded and aria-haspopup. It closes on Escape or an outside click and returns focus to the button. Destructive items sit below a separator, in danger red.</p>
+          <div class="ds-demo">
+            <div class="fm-menu-wrap" data-menu>
+              <button class="fm-btn fm-btn--secondary" type="button" aria-haspopup="true" aria-expanded="false" data-menu-button>
+                Actions <svg class="fm-icon" aria-hidden="true"><use href="#i-chev-d"/></svg>
+              </button>
+              <div class="fm-menu" role="menu" hidden data-menu-list>
+                <button class="fm-menu__item" role="menuitem" type="button">Run consolidation</button>
+                <button class="fm-menu__item" role="menuitem" type="button">Export snapshot</button>
+                <div class="fm-menu__sep" role="separator"></div>
+                <button class="fm-menu__item fm-menu__item--danger" role="menuitem" type="button">Retract entity</button>
+              </div>
+            </div>
+          </div>
+          <div class="ds-code">
+            <button class="fm-icon-btn ds-copy" type="button" data-copy aria-label="Copy code"><svg class="fm-icon" aria-hidden="true"><use href="#i-copy"/></svg></button>
+<pre><code>&lt;div class="fm-menu-wrap" data-menu&gt;
+  &lt;button class="fm-btn fm-btn--secondary" aria-haspopup="true"
+          aria-expanded="false" data-menu-button&gt;Actions&lt;/button&gt;
+  &lt;div class="fm-menu" role="menu" hidden data-menu-list&gt;
+    &lt;button class="fm-menu__item" role="menuitem"&gt;Run consolidation&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+          </div>
+        </section>
+
+        <!-- ===================== DRAWER + NAV ===================== -->
+        <section class="ds-section" id="drawer" aria-labelledby="dr-h">
+          <h2 class="fm-h1" id="dr-h">Drawer &amp; navigation</h2>
+          <p class="ds-lede">An off-canvas panel for navigation on small screens. It traps focus, closes on Escape or scrim click, and restores focus. Inside is the standard nav list with an active item.</p>
+          <div class="ds-demo">
+            <button class="fm-btn fm-btn--secondary" id="open-drawer" type="button"><svg class="fm-icon" aria-hidden="true"><use href="#i-menu"/></svg> Open navigation</button>
+            <nav class="fm-nav" aria-label="Example" style="min-width:220px">
+              <a class="fm-nav__link" href="#drawer" aria-current="page">Graph</a>
+              <a class="fm-nav__link" href="#drawer">Search</a>
+              <a class="fm-nav__link" href="#drawer">Tasks</a>
+              <a class="fm-nav__link" href="#drawer">Intentions</a>
+            </nav>
+          </div>
+        </section>
+
+        <!-- ===================== ACCORDION ===================== -->
+        <section class="ds-section" id="accordion" aria-labelledby="acc-h">
+          <h2 class="fm-h1" id="acc-h">Accordion</h2>
+          <p class="ds-lede">Built on native &lt;details&gt;, so it is keyboard- and screen-reader-accessible with no JavaScript. Each panel toggles independently.</p>
+          <div class="ds-demo" style="display:block">
+            <div class="fm-accordion">
+              <details open>
+                <summary>What is a fold? <svg class="fm-icon fm-acc-chev" aria-hidden="true"><use href="#i-chev-d"/></svg></summary>
+                <div class="fm-accordion__body">A consolidated summary of a trajectory — session entities compressed into a durable, retrievable fact.</div>
+              </details>
+              <details>
+                <summary>How does hybrid search rank results? <svg class="fm-icon fm-acc-chev" aria-hidden="true"><use href="#i-chev-d"/></svg></summary>
+                <div class="fm-accordion__body">Candidates from BM25, ANN, phonetic, and the Datalog frontier are merged with Reciprocal Rank Fusion, then optionally reranked by the judge model.</div>
+              </details>
+              <details>
+                <summary>Is forgetting reversible? <svg class="fm-icon fm-acc-chev" aria-hidden="true"><use href="#i-chev-d"/></svg></summary>
+                <div class="fm-accordion__body">Default retract mode is reversible via restore. Hard mode is permanent and always shows the blast radius first.</div>
+              </details>
+            </div>
+          </div>
+          <div class="ds-code">
+            <button class="fm-icon-btn ds-copy" type="button" data-copy aria-label="Copy code"><svg class="fm-icon" aria-hidden="true"><use href="#i-copy"/></svg></button>
+<pre><code>&lt;div class="fm-accordion"&gt;
+  &lt;details open&gt;
+    &lt;summary&gt;Question &lt;svg class="fm-acc-chev"&gt;&lt;use href="#i-chev-d"/&gt;&lt;/svg&gt;&lt;/summary&gt;
+    &lt;div class="fm-accordion__body"&gt;Answer.&lt;/div&gt;
+  &lt;/details&gt;
+&lt;/div&gt;</code></pre>
+          </div>
+        </section>
+
+        <!-- ===================== LIST ===================== -->
+        <section class="ds-section" id="list" aria-labelledby="list-h">
+          <h2 class="fm-h1" id="list-h">List</h2>
+          <p class="ds-lede">Rows with a leading avatar, two lines of text, and a trailing action or status. Use for entities, sessions, or settings.</p>
+          <div class="ds-demo" style="display:block">
+            <ul class="fm-list">
+              <li class="fm-list__item">
+                <span class="fm-avatar" aria-hidden="true">En</span>
+                <span class="fm-list__text"><span class="fm-list__title">raft-election-storm</span><span class="fm-list__sub">semantic · 14 edges · global scope</span></span>
+                <span class="fm-badge fm-badge--success">Consolidated</span>
+              </li>
+              <li class="fm-list__item">
+                <span class="fm-avatar" aria-hidden="true">Fo</span>
+                <span class="fm-list__text"><span class="fm-list__title">viz-guard-worktree</span><span class="fm-list__sub">fold · 3 sessions · updated 2h ago</span></span>
+                <button class="fm-icon-btn" type="button" aria-label="More actions"><svg class="fm-icon" aria-hidden="true"><use href="#i-dots"/></svg></button>
+              </li>
+              <li class="fm-list__item">
+                <span class="fm-avatar" aria-hidden="true">In</span>
+                <span class="fm-list__text"><span class="fm-list__title">check-cql-doc-gate</span><span class="fm-list__sub">intention · triggers on topic "release"</span></span>
+                <button class="fm-icon-btn" type="button" aria-label="More actions"><svg class="fm-icon" aria-hidden="true"><use href="#i-dots"/></svg></button>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- ===================== FAB + FILE ===================== -->
+        <section class="ds-section" id="fab" aria-labelledby="fab-h">
+          <h2 class="fm-h1" id="fab-h">FAB &amp; file upload</h2>
+          <p class="ds-lede">A floating action button for the single most important action, and an accessible file dropzone built on a real file input.</p>
+          <div class="ds-demo">
+            <button class="fm-fab" type="button" aria-label="New ingest"><svg class="fm-icon" style="width:24px;height:24px" aria-hidden="true"><use href="#i-plus"/></svg></button>
+            <label class="fm-file" style="flex:1;min-width:260px">
+              <input type="file" />
+              <span class="fm-file__zone">
+                <svg class="fm-icon" style="width:24px;height:24px" aria-hidden="true"><use href="#i-upload"/></svg>
+                <span><strong>Upload a corpus</strong></span>
+                <span class="fm-small">Markdown, PDF, or source tree up to 100 MB</span>
+              </span>
+            </label>
+          </div>
+          <div class="ds-code">
+            <button class="fm-icon-btn ds-copy" type="button" data-copy aria-label="Copy code"><svg class="fm-icon" aria-hidden="true"><use href="#i-copy"/></svg></button>
+<pre><code>&lt;label class="fm-file"&gt;
+  &lt;input type="file" /&gt;
+  &lt;span class="fm-file__zone"&gt;
+    &lt;svg&gt;&lt;use href="#i-upload"/&gt;&lt;/svg&gt;
+    &lt;strong&gt;Upload a corpus&lt;/strong&gt;
+  &lt;/span&gt;
+&lt;/label&gt;</code></pre>
+          </div>
+        </section>
+
+        <!-- ===================== TOOLTIP + KBD ===================== -->
+        <section class="ds-section" id="misc" aria-labelledby="misc-h">
+          <h2 class="fm-h1" id="misc-h">Tooltip &amp; keyboard key</h2>
+          <p class="ds-lede">The tooltip shows on hover and on keyboard focus (focus-within), not hover alone. Keyboard keys use the kbd style.</p>
+          <div class="ds-demo">
+            <span class="fm-tooltip">
+              <button class="fm-icon-btn" type="button" aria-describedby="tt-1"><svg class="fm-icon" aria-hidden="true"><use href="#i-info"/></svg></button>
+              <span class="fm-tooltip__bubble" role="tooltip" id="tt-1">RRF-fused score across sources</span>
+            </span>
+            <span class="fm-small">Press <kbd class="fm-kbd">Cmd</kbd> + <kbd class="fm-kbd">K</kbd> to search</span>
+          </div>
+        </section>
+
+        <p class="fm-subtle fm-small" style="margin-top:var(--fm-space-7)">
+          Ferrosa Memory Design System. Self-contained at <span class="fm-mono">design-system.html</span> and paired with the <a href="brand.html">brand guide</a>.
+        </p>
+      </main>
+    </div>
+
+    <!-- live region for toasts -->
+    <div class="fm-toast-region" id="toast-region" role="region" aria-label="Notifications" aria-live="polite"></div>
+
+    <!-- modal -->
+    <div class="fm-modal" id="demo-modal" hidden>
+      <div class="fm-modal__panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="fm-modal__head">
+          <h2 class="fm-h2" id="modal-title">Retract entity</h2>
+          <button class="fm-icon-btn" type="button" data-close-modal aria-label="Close"><svg class="fm-icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+        </div>
+        <div class="fm-modal__body">Retracting <span class="fm-mono">ent_9f27c1</span> hides it from recall and detaches 14 inbound edges. This is reversible with restore.</div>
+        <div class="fm-modal__foot">
+          <button class="fm-btn fm-btn--ghost" type="button" data-close-modal>Cancel</button>
+          <button class="fm-btn fm-btn--primary" type="button" data-close-modal>Retract</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- drawer -->
+    <div class="fm-drawer" id="demo-drawer" hidden>
+      <div class="fm-drawer__scrim" data-close-drawer></div>
+      <nav class="fm-drawer__panel" role="dialog" aria-modal="true" aria-label="Navigation">
+        <div class="fm-cluster" style="justify-content:space-between;margin-bottom:var(--fm-space-4)">
+          <strong>Menu</strong>
+          <button class="fm-icon-btn" type="button" data-close-drawer aria-label="Close navigation"><svg class="fm-icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+        </div>
+        <div class="fm-nav">
+          <a class="fm-nav__link" href="#drawer" aria-current="page">Graph</a>
+          <a class="fm-nav__link" href="#drawer">Search</a>
+          <a class="fm-nav__link" href="#drawer">Tasks</a>
+          <a class="fm-nav__link" href="#drawer">Intentions</a>
+        </div>
+      </nav>
+    </div>
+
+    <script>
+      (function () {
+        var root = document.documentElement;
+
+        /* ---- theme toggle -------------------------------------------- */
+        var toggle = document.getElementById("theme-toggle");
+        function currentTheme() {
+          var set = root.getAttribute("data-theme");
+          if (set === "light" || set === "dark") return set;
+          return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+        }
+        function syncToggle() {
+          var dark = currentTheme() === "dark";
+          toggle.setAttribute("aria-pressed", String(dark));
+          toggle.querySelector("use").setAttribute("href", dark ? "#i-sun" : "#i-moon");
+        }
+        toggle.addEventListener("click", function () {
+          var next = currentTheme() === "dark" ? "light" : "dark";
+          root.setAttribute("data-theme", next);
+          try { localStorage.setItem("fm-ds-theme", next); } catch (e) {}
+          syncToggle();
+        });
+        syncToggle();
+
+        /* ---- copy code ----------------------------------------------- */
+        document.querySelectorAll("[data-copy]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var code = btn.parentElement.querySelector("code");
+            if (!code) return;
+            navigator.clipboard.writeText(code.textContent).then(function () {
+              var icon = btn.querySelector("use");
+              icon.setAttribute("href", "#i-check");
+              setTimeout(function () { icon.setAttribute("href", "#i-copy"); }, 1200);
+            });
+          });
+        });
+
+        /* ---- button loading demo ------------------------------------- */
+        var loadBtn = document.getElementById("loading-demo");
+        loadBtn.addEventListener("click", function () {
+          loadBtn.classList.add("fm-btn--loading");
+          loadBtn.setAttribute("aria-busy", "true");
+          setTimeout(function () {
+            loadBtn.classList.remove("fm-btn--loading");
+            loadBtn.removeAttribute("aria-busy");
+          }, 1500);
+        });
+
+        /* ---- tabs (roving tabindex + arrow keys) --------------------- */
+        document.querySelectorAll("[data-tabs]").forEach(function (group) {
+          var tabs = Array.prototype.slice.call(group.querySelectorAll('[role="tab"]'));
+          function select(tab) {
+            tabs.forEach(function (t) {
+              var on = t === tab;
+              t.setAttribute("aria-selected", String(on));
+              t.tabIndex = on ? 0 : -1;
+              document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+            });
+          }
+          tabs.forEach(function (tab, i) {
+            tab.addEventListener("click", function () { select(tab); });
+            tab.addEventListener("keydown", function (e) {
+              if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+                e.preventDefault();
+                var dir = e.key === "ArrowRight" ? 1 : -1;
+                var next = tabs[(i + dir + tabs.length) % tabs.length];
+                next.focus(); select(next);
+              }
+            });
+          });
+        });
+
+        /* ---- modal (focus trap + Esc + restore focus) --------------- */
+        var modal = document.getElementById("demo-modal");
+        var lastFocus = null;
+        function focusables() {
+          return Array.prototype.slice.call(
+            modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+          );
+        }
+        function openModal() {
+          lastFocus = document.activeElement;
+          modal.hidden = false;
+          var f = focusables();
+          if (f.length) f[0].focus();
+          document.addEventListener("keydown", onKey);
+        }
+        function closeModal() {
+          modal.hidden = true;
+          document.removeEventListener("keydown", onKey);
+          if (lastFocus) lastFocus.focus();
+        }
+        function onKey(e) {
+          if (e.key === "Escape") return closeModal();
+          if (e.key !== "Tab") return;
+          var f = focusables();
+          if (!f.length) return;
+          var first = f[0], last = f[f.length - 1];
+          if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+          else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+        document.getElementById("open-modal").addEventListener("click", openModal);
+        modal.addEventListener("click", function (e) { if (e.target === modal) closeModal(); });
+        modal.querySelectorAll("[data-close-modal]").forEach(function (b) { b.addEventListener("click", closeModal); });
+
+        /* ---- toasts -------------------------------------------------- */
+        var region = document.getElementById("toast-region");
+        document.getElementById("fire-toast").addEventListener("click", function () {
+          var t = document.createElement("div");
+          t.className = "fm-toast";
+          t.innerHTML = '<svg class="fm-icon" aria-hidden="true" style="color:var(--fm-success)"><use href="#i-check"/></svg><div><strong>Ingested.</strong> 3 entities created, 1 superseded.</div>';
+          region.appendChild(t);
+          setTimeout(function () { t.remove(); }, 4000);
+        });
+
+        /* ---- menus (toggle, Esc, outside click) ---------------------- */
+        document.querySelectorAll("[data-menu]").forEach(function (wrap) {
+          var btn = wrap.querySelector("[data-menu-button]");
+          var list = wrap.querySelector("[data-menu-list]");
+          function outside(e) { if (!wrap.contains(e.target)) close(false); }
+          function onEsc(e) { if (e.key === "Escape") close(true); }
+          function open() {
+            list.hidden = false; btn.setAttribute("aria-expanded", "true");
+            document.addEventListener("click", outside, true);
+            document.addEventListener("keydown", onEsc);
+            var first = list.querySelector('[role="menuitem"]'); if (first) first.focus();
+          }
+          function close(focusBtn) {
+            list.hidden = true; btn.setAttribute("aria-expanded", "false");
+            document.removeEventListener("click", outside, true);
+            document.removeEventListener("keydown", onEsc);
+            if (focusBtn) btn.focus();
+          }
+          btn.addEventListener("click", function () { list.hidden ? open() : close(false); });
+          list.querySelectorAll('[role="menuitem"]').forEach(function (item) {
+            item.addEventListener("click", function () { close(true); });
+          });
+        });
+
+        /* ---- drawer (open, Esc, scrim, restore focus) --------------- */
+        var drawer = document.getElementById("demo-drawer");
+        var drawerLast = null;
+        function openDrawer() {
+          drawerLast = document.activeElement; drawer.hidden = false;
+          var f = drawer.querySelector("a, button"); if (f) f.focus();
+          document.addEventListener("keydown", drawerKey);
+        }
+        function closeDrawer() {
+          drawer.hidden = true;
+          document.removeEventListener("keydown", drawerKey);
+          if (drawerLast) drawerLast.focus();
+        }
+        function drawerKey(e) { if (e.key === "Escape") closeDrawer(); }
+        document.getElementById("open-drawer").addEventListener("click", openDrawer);
+        drawer.querySelectorAll("[data-close-drawer]").forEach(function (b) { b.addEventListener("click", closeDrawer); });
+      })();
+    </script>
+  </body>
+</html>

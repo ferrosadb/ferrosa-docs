@@ -253,10 +253,10 @@
   <table>
     <thead><tr><th>Platform</th><th>Tarball / Package</th></tr></thead>
     <tbody>
-      <tr><td>macOS Apple Silicon (arm64)</td><td><code>ferrosa-v&lt;version&gt;-aarch64-apple-darwin.tar.gz</code> or Homebrew tap</td></tr>
-      <tr><td>macOS Intel (x86_64)</td><td><code>ferrosa-v&lt;version&gt;-x86_64-apple-darwin.tar.gz</code> or Homebrew tap</td></tr>
+      <tr><td>macOS Apple Silicon (arm64)</td><td><code>ferrosa-v&lt;version&gt;-aarch64-apple-darwin.tar.gz</code> or Homebrew tap (<code>brew install ferrosadb/tap/ferrosa</code>)</td></tr>
+      <tr><td>macOS Intel (x86_64)</td><td>Not supported — macOS builds are Apple Silicon only. Build from source if needed.</td></tr>
       <tr><td>Linux x86_64 (static musl)</td><td><code>ferrosa-v&lt;version&gt;-x86_64-unknown-linux-musl.tar.gz</code> or <code>.deb</code></td></tr>
-      <tr><td>Linux aarch64 (static musl)</td><td><code>ferrosa-v&lt;version&gt;-aarch64-unknown-linux-musl.tar.gz</code> or <code>.deb</code></td></tr>
+      <tr><td>Linux aarch64 (static musl)</td><td><code>ferrosa-v&lt;version&gt;-aarch64-unknown-linux-musl.tar.gz</code></td></tr>
     </tbody>
   </table>
   <p>Release tarballs, <code>.deb</code> packages, and Homebrew bottles are published on the <a href="https://github.com/ferrosadb/ferrosa/releases">GitHub Releases page</a>. Each release includes a <code>SHA256SUMS</code> file; verify with <code>sha256sum -c SHA256SUMS --ignore-missing</code>.</p>

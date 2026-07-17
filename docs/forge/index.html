@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forge — Developer Tooling for AI Agents</title>
+  <meta name="description" content="Forge is a token-saving toolkit for AI coding agents: the frg CLI and MCP server wrap builds, tests, diffs, code analysis, task boards, and knowledge ingestion into compact structured output. Version 0.14.0 developer preview.">
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <style>
+    :root { --bg:#05070c; --card:#0e1828; --card2:#09111f; --text:#e8eef7; --muted:#9fb0c6; --accent:#ff8a62; --accent2:#ffd4c5; --border:#17273d; --code:#060b14; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); color:var(--text); line-height:1.65; }
+    nav { position:sticky; top:0; background:rgba(5,7,12,.9); backdrop-filter:blur(16px); border-bottom:1px solid var(--border); z-index:10; }
+    nav .inner { max-width:1100px; margin:0 auto; padding:1rem 1.5rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+    nav a { color:var(--text); text-decoration:none; }
+    nav .links { display:flex; gap:1rem; flex-wrap:wrap; }
+    nav .links a { color:var(--muted); font-size:.92rem; }
+    nav .nav-cta { background:var(--accent); color:#1a0d06; border-radius:8px; padding:.5rem .9rem; font-weight:700; }
+    nav .nav-toggle { display:none; align-items:center; justify-content:center; width:2.5rem; height:2.5rem; border:1px solid var(--border); border-radius:8px; background:var(--card); color:var(--text); cursor:pointer; }
+    nav .nav-toggle span, nav .nav-toggle span::before, nav .nav-toggle span::after { display:block; width:1.1rem; height:2px; border-radius:2px; background:currentColor; content:''; transition:transform .2s, opacity .2s; }
+    nav .nav-toggle span { position:relative; }
+    nav .nav-toggle span::before { position:absolute; transform:translateY(-6px); }
+    nav .nav-toggle span::after { position:absolute; transform:translateY(6px); }
+    nav.open .nav-toggle span { background:transparent; }
+    nav.open .nav-toggle span::before { background:var(--text); transform:rotate(45deg); }
+    nav.open .nav-toggle span::after { background:var(--text); transform:rotate(-45deg); }
+    main { max-width:980px; margin:0 auto; padding:3rem 1.5rem 5rem; }
+    h1 { font-size:clamp(2.2rem,5vw,4rem); line-height:1.05; letter-spacing:-.04em; margin:2rem 0 1rem; }
+    h2 { font-size:1.65rem; margin-top:3rem; border-top:1px solid var(--border); padding-top:2rem; }
+    h3 { margin-top:2rem; }
+    p, li, td { color:var(--muted); }
+    a { color:var(--accent); }
+    .hero { background:linear-gradient(135deg,rgba(255,138,98,.16),rgba(255,212,197,.06)); border:1px solid var(--border); border-radius:22px; padding:2rem; }
+    .pill { display:inline-block; border:1px solid rgba(255,138,98,.35); color:var(--accent); background:rgba(255,138,98,.08); border-radius:999px; padding:.25rem .7rem; font-size:.8rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1rem; margin:1rem 0; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:1.25rem; }
+    .card h3 { margin-top:0; }
+    table { width:100%; border-collapse:collapse; background:var(--card2); border:1px solid var(--border); border-radius:12px; overflow:hidden; display:table; }
+    th, td { padding:.75rem .9rem; border-bottom:1px solid var(--border); text-align:left; vertical-align:top; }
+    th { color:var(--text); font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; }
+    tr:last-child td { border-bottom:0; }
+    pre { background:var(--code); border:1px solid var(--border); border-radius:14px; padding:1rem; overflow:auto; }
+    code { font-family:'JetBrains Mono','Fira Code',ui-monospace,monospace; color:#dcdcf0; }
+    .warn { border-left:3px solid var(--accent2); background:rgba(255,212,197,.07); padding:1rem 1.2rem; border-radius:0 12px 12px 0; color:var(--muted); }
+    footer { max-width:980px; margin:0 auto; padding:2rem 1.5rem; color:#6b6b7a; border-top:1px solid var(--border); }
+    @media (max-width: 768px) {
+      body { overflow-x:hidden; }
+      nav .inner { min-height:64px; padding:1rem; position:relative; }
+      nav .inner > a:first-child { margin-right:auto; }
+      nav .nav-cta { flex-shrink:0; padding:.5rem .75rem; }
+      nav .nav-toggle { display:inline-flex; }
+      nav .links { position:fixed; top:64px; left:0; right:0; display:none; flex-direction:column; gap:0; padding:.5rem 1rem 1rem; background:rgba(5,7,12,.98); border-bottom:1px solid var(--border); box-shadow:0 18px 40px rgba(0,0,0,.35); }
+      nav.open .links { display:flex; }
+      nav .links a { display:block; padding:.75rem 0; white-space:nowrap; }
+      main { width:100%; min-width:0; padding-left:1rem; padding-right:1rem; overflow-wrap:anywhere; }
+      .hero { width:100%; min-width:0; padding:1.5rem; overflow-wrap:anywhere; }
+      h1 { font-size:clamp(2rem, 11vw, 3rem); }
+    }
+  </style>
+</head>
+<body>
+<nav><div class="inner"><a href="./"><strong>Ferrosa <span style="color:var(--accent)">Forge</span></strong></a><div class="links" id="site-nav-links"><a href="../">Suite Home</a><a href="../ferrosa-memory/">Memory</a><a href="../database/">Database</a><a href="#features">Features</a><a href="#install">Install</a><a href="#mcp">MCP setup</a><a href="https://github.com/ferrosadb/forge" target="_blank" rel="noopener noreferrer">GitHub</a></div><a href="#install" class="nav-cta">Install</a><button class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="site-nav-links"><span></span></button></div></nav>
+<main>
+  <section class="hero">
+    <span class="pill">Forge · v0.14.0 · Developer Preview</span>
+    <h1>Your agent's toolbox, without the token bill.</h1>
+    <p>Forge is a token-saving toolkit for AI coding agents: a single Rust binary, <code>frg</code>, plus a matching MCP server. Raw <code>cargo</code>, <code>pytest</code>, <code>go test</code>, and <code>git diff</code> output is verbose and token-expensive — <code>frg</code> wraps the most common developer operations and returns compact, structured JSON: errors with file paths and line numbers, warnings grouped by rule, summaries instead of wall-of-text logs. <code>frg run</code> starts the MCP server, surfacing the same tools to Claude Code and other MCP clients without a shell round-trip.</p>
+  </section>
+
+  <h2 id="features">What's in the box</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Structured toolchain wrappers</h3>
+      <p><code>frg run cargo|go|dotnet|npm|python|mix</code> parse native build/test/lint output into JSON with error locations, warning counts, and an actionable hint on failure. Covers <code>build</code>, <code>test</code>, <code>check</code>, <code>clippy</code>/<code>vet</code>/<code>lint</code>, and format checks.</p>
+    </div>
+    <div class="card">
+      <h3>Log &amp; diff distillation</h3>
+      <p><code>test-summary</code> (cargo/pytest/jest/go/mix), <code>log-distill</code> (errors + warnings with context), <code>diff-filter</code> (collapses large hunks, skips lockfiles and generated files), <code>lint-dedup</code>, and <code>log-monitor</code> (stall, OOM, and disk-pressure detection on live streams).</p>
+    </div>
+    <div class="card">
+      <h3>Quality &amp; security scans</h3>
+      <p><code>smell-detect</code>, <code>doc-coverage</code>, <code>coverage-gate</code>, STRIDE <code>threat-scan</code>, <code>fail-loud-scan</code> (swallowed errors and silent fallbacks, AST-based across 8 languages), <code>materialization-scan</code>, <code>secret-scan</code>, and CVE <code>deps-audit</code>.</p>
+    </div>
+    <div class="card">
+      <h3>Architecture analysis</h3>
+      <p><code>dsm</code> (Design Structure Matrix with cycle detection and refactor suggestions), <code>dsm dead-code</code>, <code>dep-tree</code> fan-in/fan-out, <code>api-diff</code> and <code>schema-diff</code> breaking-change detection, and <code>merge-check</code>.</p>
+    </div>
+    <div class="card">
+      <h3>Code discovery</h3>
+      <p><code>digest</code> — a structural summary with no bodies, the best first call on an unfamiliar file — plus <code>excerpt</code>, <code>lookup</code>, <code>outline</code>, <code>glob</code> with per-file stats, and <code>project-detect</code>.</p>
+    </div>
+    <div class="card">
+      <h3>CQL-backed task board</h3>
+      <p><code>frg task create|update|list|link|board</code> — a kanban store on a CQL cluster, plus <code>checklist</code> for persistent workflows with DAG dependencies, typed waiting gates, and atomic claim/release for agent fleets.</p>
+    </div>
+    <div class="card">
+      <h3>Knowledge-graph ingestion</h3>
+      <p><code>ingest</code> (codebase structure via LSP), SSRF-guarded <code>ingest-url</code>/<code>fetch-url</code>, <code>web-search</code> via a trusted SearXNG backend, and <code>ingest-paper</code> (academic PDFs with reading-order reconstruction for multi-column layouts) — all writing typed entities and edges into <a href="../ferrosa-memory/">Ferrosa Memory</a>.</p>
+    </div>
+    <div class="card">
+      <h3>Claude Code hooks &amp; analytics</h3>
+      <p><code>frg init --install</code> wires a pre-tool-call output filter into Claude Code; <code>frg gain</code> and <code>frg analytics</code> report the token savings per tool.</p>
+    </div>
+  </div>
+
+  <h2 id="install">Install</h2>
+  <p>v0.14.0 is the first stable release with prebuilt binaries. Pick one path:</p>
+
+  <h3>Homebrew (macOS Apple Silicon, Linux x86_64)</h3>
+  <pre><code>brew install ferrosadb/tap/forge
+frg --version</code></pre>
+
+  <h3>Release binaries</h3>
+  <p>Download from the <a href="https://github.com/ferrosadb/forge/releases/latest">GitHub Releases page</a> and put <code>frg</code> on your <code>PATH</code>:</p>
+  <table>
+    <thead><tr><th>Platform</th><th>Asset</th></tr></thead>
+    <tbody>
+      <tr><td>macOS Apple Silicon (arm64)</td><td><code>frg-macos-aarch64.tar.gz</code></td></tr>
+      <tr><td>Linux x86_64</td><td><code>frg-linux-x86_64.tar.gz</code></td></tr>
+      <tr><td>Windows x86_64</td><td><code>frg-windows-x86_64.zip</code></td></tr>
+    </tbody>
+  </table>
+  <p>Each release includes a <code>SHA256SUMS</code> file; verify with <code>sha256sum -c SHA256SUMS --ignore-missing</code>.</p>
+
+  <h3>From source</h3>
+  <pre><code>git clone https://github.com/ferrosadb/forge.git
+cd forge
+cargo build --release
+cp target/release/frg ~/.cargo/bin/frg    # or anywhere on your PATH</code></pre>
+  <p>Any platform with a Rust toolchain works — unlike the database and memory server, <code>frg</code> has no Apple-Silicon-only constraint.</p>
+
+  <h2 id="mcp">Connect it to your agent</h2>
+  <p>Expose the MCP server by adding forge to <code>~/.claude/settings.json</code> (Claude Code):</p>
+  <pre><code>{
+  "mcpServers": {
+    "forge": {
+      "command": "/path/to/frg",
+      "args": ["run"]
+    }
+  }
+}</code></pre>
+  <p>Any MCP client that can launch <code>frg run</code> as a stdio server works the same way. Then install the Claude Code output-filtering hooks:</p>
+  <pre><code>frg init --install</code></pre>
+
+  <h3>Optional backends</h3>
+  <p>The core tools are standalone. Some tool families need a backend, and each fails loud rather than silently degrading:</p>
+  <table>
+    <thead><tr><th>Tool family</th><th>Needs</th><th>Resolution</th></tr></thead>
+    <tbody>
+      <tr><td>Task board / checklists</td><td>A CQL contact point</td><td><code>cql_host</code> arg → <code>FORGE_CQL_HOST</code> env → <code>.forge/config.toml</code> → <code>127.0.0.1:9042</code></td></tr>
+      <tr><td>Ingestion</td><td>Running Ferrosa Memory HTTP endpoint</td><td>Auto-discovered from <code>~/.config/ferrosa-memory.toml</code></td></tr>
+      <tr><td><code>web-search</code></td><td>Trusted SearXNG endpoint</td><td><code>FORGE_WEB_SEARCH_URL</code> or <code>SEARXNG_URL</code></td></tr>
+      <tr><td><code>ingest-descriptions</code></td><td>Local Ollama model</td><td>Ollama default endpoint</td></tr>
+    </tbody>
+  </table>
+
+  <div class="warn"><strong>Developer preview.</strong> Forge is useful today, but the public API and MCP tool surface may still change before 1.0. Apache-2.0 licensed.</div>
+</main>
+<footer>Ferrosa Forge · <a href="../">Suite home</a> · <a href="../ferrosa-memory/">Memory</a> · <a href="../database/">Database</a> · <a href="https://github.com/ferrosadb/forge">GitHub</a></footer>
+
+<script>
+  document.querySelectorAll('nav').forEach((nav) => {
+    const toggle = nav.querySelector('.nav-toggle');
+    if (!toggle) return;
+    toggle.addEventListener('click', () => {
+      const open = nav.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+    });
+    nav.querySelectorAll('.links a').forEach((link) => {
+      link.addEventListener('click', () => {
+        nav.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.setAttribute('aria-label', 'Open navigation');
+      });
+    });
+  });
+</script>
+</body>
+</html>

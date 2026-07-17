@@ -3,16 +3,18 @@
 # downloads ONBOARDING.md, optionally clones source repos, optionally pulls
 # the Nomic embedding model, and hands off to a selected LLM harness.
 #
-# Reads https://ferrosadb.com/LATEST (a plain-text version tag like "v0.16.0")
-# and uses it for both ferrosa and ferrosa-memory release artifacts (the two
-# projects ship synchronized tags). No source compile.
+# Reads https://ferrosadb.com/LATEST (a plain-text version tag like "v0.18.0")
+# for the ferrosa release artifact and https://ferrosadb.com/LATEST-MEMORY
+# (e.g. "v0.24.0") for the ferrosa-memory artifact — the two projects version
+# independently. No source compile.
 #
 # Usage:
 #   curl -fsSL https://ferrosadb.com/setup-memory.sh | bash
 #   curl -fsSL https://ferrosadb.com/setup-memory.sh | bash -s -- --version v0.16.0 --no-clone
 #
 # Env overrides (mostly for testing):
-#   FERROSA_LATEST_URL    — version pointer (default https://ferrosadb.com/LATEST)
+#   FERROSA_LATEST_URL    — ferrosa version pointer (default https://ferrosadb.com/LATEST)
+#   MEMORY_LATEST_URL     — ferrosa-memory version pointer (default https://ferrosadb.com/LATEST-MEMORY)
 #   FERROSA_RELEASE_HOST  — ferrosa releases root
 #   MEMORY_RELEASE_HOST   — ferrosa-memory releases root
 #   ONBOARDING_URL        — ONBOARDING.md source (default github raw on main)
@@ -24,6 +26,7 @@ set -euo pipefail
 FERROSA_REPO="ferrosadb/ferrosa"
 MEMORY_REPO="ferrosadb/ferrosa-memory"
 LATEST_URL="${FERROSA_LATEST_URL:-https://ferrosadb.com/LATEST}"
+MEMORY_LATEST_URL="${MEMORY_LATEST_URL:-https://ferrosadb.com/LATEST-MEMORY}"
 FERROSA_RELEASE_HOST="${FERROSA_RELEASE_HOST:-https://github.com/${FERROSA_REPO}/releases}"
 MEMORY_RELEASE_HOST="${MEMORY_RELEASE_HOST:-https://github.com/${MEMORY_REPO}/releases}"
 ONBOARDING_URL="${ONBOARDING_URL:-https://raw.githubusercontent.com/${MEMORY_REPO}/main/ONBOARDING.md}"
@@ -36,6 +39,7 @@ LOG_DIR="${INSTALL_ROOT}/logs"
 NOMIC_MODEL="${NOMIC_MODEL:-nomic-embed-text-v2-moe}"
 
 VERSION=""
+MEMORY_VERSION=""
 WANT_CLONE=""    # ask|yes|no
 WANT_NOMIC=""    # ask|yes|no
 WANT_HERMES=""   # ask|yes|no
@@ -45,7 +49,8 @@ MCP_URL="${FERROSA_MEMORY_MCP_URL:-http://127.0.0.1:18765/mcp}"
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    --version)    VERSION="$2"; shift 2 ;;
+    --version)        VERSION="$2"; shift 2 ;;
+    --memory-version) MEMORY_VERSION="$2"; shift 2 ;;
     --clone)      WANT_CLONE="yes"; shift ;;
     --no-clone)   WANT_CLONE="no"; shift ;;
     --nomic)      WANT_NOMIC="yes"; shift ;;
@@ -59,7 +64,8 @@ while [ $# -gt 0 ]; do
     -h|--help)
       cat <<EOF
 ferrosa-memory fast setup
-  --version <tag>          install a specific tag (default: read $LATEST_URL)
+  --version <tag>          ferrosa tag to install (default: read $LATEST_URL)
+  --memory-version <tag>   ferrosa-memory tag to install (default: read $MEMORY_LATEST_URL)
   --clone / --no-clone     clone or update source repos under \$FERROSA_SUITE_DIR
   --nomic / --no-nomic     pull the Nomic embedding model via ollama
   --hooks / --no-hooks     install LLM-harness hooks (session-start/recall/turn)
@@ -90,13 +96,23 @@ detect_target() {
 TARGET=$(detect_target)
 
 if [ -z "$VERSION" ]; then
-  say "resolving latest version from $LATEST_URL"
+  say "resolving latest ferrosa version from $LATEST_URL"
   VERSION=$(curl -fsSL "$LATEST_URL" | tr -d '[:space:]')
 fi
 [ -n "$VERSION" ] || die "no version resolved from $LATEST_URL"
 case "$VERSION" in
   v*) : ;;
   *)  VERSION="v${VERSION}" ;;
+esac
+
+if [ -z "$MEMORY_VERSION" ]; then
+  say "resolving latest ferrosa-memory version from $MEMORY_LATEST_URL"
+  MEMORY_VERSION=$(curl -fsSL "$MEMORY_LATEST_URL" | tr -d '[:space:]')
+fi
+[ -n "$MEMORY_VERSION" ] || die "no version resolved from $MEMORY_LATEST_URL"
+case "$MEMORY_VERSION" in
+  v*) : ;;
+  *)  MEMORY_VERSION="v${MEMORY_VERSION}" ;;
 esac
 
 prompt_yes() {
@@ -110,9 +126,9 @@ prompt_yes() {
 
 # ── Stage 1: install binaries ───────────────────────────────────────────────
 install_tarball() {
-  local label="$1" host="$2" tarball="$3"
-  local url="${host}/download/${VERSION}/${tarball}"
-  local sums_url="${host}/download/${VERSION}/SHA256SUMS"
+  local label="$1" host="$2" tarball="$3" version="$4"
+  local url="${host}/download/${version}/${tarball}"
+  local sums_url="${host}/download/${version}/SHA256SUMS"
   local tmp; tmp=$(mktemp -d)
   say "downloading ${label} ${tarball}"
   curl -fsSL --output "$tmp/$tarball" "$url" >&2
@@ -126,10 +142,10 @@ install_tarball() {
 mkdir -p "$BIN_DIR" "$CONFIG_DIR" "$DATA_DIR" "$LOG_DIR"
 
 FERROSA_TARBALL="ferrosa-${VERSION}-${TARGET}.tar.gz"
-MEMORY_TARBALL="ferrosa-memory-${VERSION}-${TARGET}.tar.gz"
+MEMORY_TARBALL="ferrosa-memory-${MEMORY_VERSION}-${TARGET}.tar.gz"
 
 # ferrosa binary
-F_TMP=$(install_tarball "ferrosa" "$FERROSA_RELEASE_HOST" "$FERROSA_TARBALL")
+F_TMP=$(install_tarball "ferrosa" "$FERROSA_RELEASE_HOST" "$FERROSA_TARBALL" "$VERSION")
 cp "$F_TMP/ferrosa"     "$BIN_DIR/"
 cp "$F_TMP/ferrosa-ctl" "$BIN_DIR/"
 chmod +x "$BIN_DIR/ferrosa" "$BIN_DIR/ferrosa-ctl"
@@ -139,7 +155,7 @@ fi
 rm -rf "$F_TMP"
 
 # ferrosa-memory binary
-M_TMP=$(install_tarball "ferrosa-memory" "$MEMORY_RELEASE_HOST" "$MEMORY_TARBALL")
+M_TMP=$(install_tarball "ferrosa-memory" "$MEMORY_RELEASE_HOST" "$MEMORY_TARBALL" "$MEMORY_VERSION")
 cp "$M_TMP/ferrosa-memory-mcp" "$BIN_DIR/"
 chmod +x "$BIN_DIR/ferrosa-memory-mcp"
 if [ ! -f "$CONFIG_DIR/ferrosa-memory.toml" ]; then
@@ -187,11 +203,12 @@ fi
 # They are installed by ferrosa-memory's self-contained hook installer
 # (scripts/install-agent-hooks.py + scripts/hooks/ferrosa-memory-turn-hook.py,
 # both stdlib-only Python). With a source checkout we run it in-tree; with
-# --no-clone we fetch those two files PINNED to $VERSION into a stable location
+# --no-clone we fetch those two files PINNED to $MEMORY_VERSION into a stable
+# location
 # (the generated wrappers bake in the hook path, so it must persist) and run
 # them against the installed MCP endpoint.
 HOOK_SRC_DIR="${INSTALL_ROOT}/share/ferrosa-memory"
-RAW_BASE="https://raw.githubusercontent.com/${MEMORY_REPO}/${VERSION}"
+RAW_BASE="https://raw.githubusercontent.com/${MEMORY_REPO}/${MEMORY_VERSION}"
 
 fetch_hook_installer() {
   # Pinned to the release tag so hooks match the installed binary; fails loud
@@ -216,9 +233,9 @@ install_hooks() {
     root="$FERROSA_SUITE_DIR/ferrosa-memory"
     say "installing harness hooks from source checkout (harness=$HARNESS)"
   else
-    say "fetching harness hook installer @ $VERSION (no source checkout)"
+    say "fetching harness hook installer @ $MEMORY_VERSION (no source checkout)"
     if ! fetch_hook_installer; then
-      say "could not fetch the hook installer at $VERSION."
+      say "could not fetch the hook installer at $MEMORY_VERSION."
       say "Fix: clone the repo and run ./setup.sh, or fetch manually from"
       say "  $RAW_BASE/scripts/install-agent-hooks.py"
       return 1
@@ -268,7 +285,7 @@ esac
 # ── Stage 5: hand off to LLM harness ────────────────────────────────────────
 cat <<EOF >&2
 
-ferrosa-memory $VERSION installed.
+ferrosa-memory $MEMORY_VERSION installed (ferrosa $VERSION).
 
   binaries: $BIN_DIR
   config:   $CONFIG_DIR/ferrosa-memory.toml

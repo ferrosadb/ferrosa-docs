@@ -2,13 +2,14 @@
 
 Public developer-preview documentation for Ferrosa Database and Ferrosa Memory. These pages describe install and getting-started flows; engineering plans and verification notes are tracked separately from the public site.
 
-Latest stable releases: Ferrosa Database `v0.17.0`; Ferrosa Memory `v0.23.0`.
+Latest stable releases: Ferrosa Database `v0.18.0`; Ferrosa Memory `v0.24.0`; Forge `v0.14.0`.
 
 ## Products
 
-- [Ferrosa Database](database/) — developer-preview database docs, examples, CQL/Cypher/SPARQL notes, and migration guidance for the latest stable `v0.17.0` release.
-- [Ferrosa Memory](ferrosa-memory/) — developer-preview long-context linked memory for agents, including document/chunk retrieval, task-aware query decomposition, feedback-aware reranking, query-intent fusion, and Codex/Claude/Hermes hook onboarding for the latest stable `v0.23.0` release.
+- [Ferrosa Database](database/) — developer-preview database docs, examples, CQL/Cypher/SPARQL notes, and migration guidance for the latest stable `v0.18.0` release.
+- [Ferrosa Memory](ferrosa-memory/) — developer-preview long-context linked memory for agents, including document/chunk retrieval, task-aware query decomposition, feedback-aware reranking, query-intent fusion, and Codex/Claude/Hermes hook onboarding for the latest stable `v0.24.0` release.
 - [Ferrosa Memory Getting Started](ferrosa-memory/getting-started.html) — run the local stack, connect MCP clients, and try memory examples.
+- [Forge](forge/) — developer tooling CLI (`frg`) and MCP server for code analysis, task boards, and knowledge ingestion, at its first stable `v0.14.0` release.
 
 ## Database Docs
 

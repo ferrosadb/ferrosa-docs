@@ -811,6 +811,7 @@
     </a>
     <ul class="nav-links" id="site-nav-links">
       <li><a href="/">Suite Home</a></li>
+      <li><a href="#whats-new">What's New</a></li>
       <li><a href="#features">Features</a></li>
       <li><a href="#architecture">Architecture</a></li>
       <li><a href="examples/">Examples</a></li>
@@ -910,6 +911,85 @@
 </div>
 
 <!-- ═══════════════════ Features ═══════════════════ -->
+<section id="whats-new">
+  <p class="section-label centered">Release Notes</p>
+  <h2 class="section-title centered">What&rsquo;s new in v0.18.0</h2>
+  <p class="section-subtitle centered">
+    The headline theme: correctness at scale. Full-text search is streaming and analyzer-accurate,
+    the server-side 10k result cap is gone from every scan path, and secondary indexes now do real work.
+  </p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon cql">⚡</div>
+      <h3>Partition-Scoped Index Reads</h3>
+      <p>
+        Secondary indexes on clustering columns are now wired to the storage engine and served at read time.
+        A query with a full partition key plus an indexed column consults the index and point-reads only
+        matching rows &mdash; a 50k-row partition with 3 matches went from visiting 50,003 rows to 3.
+        <code>EXPLAIN</code> shows the new <code>PartitionIndexLookup</code> plan.
+      </p>
+      <span class="metric">O(matching rows), not O(partition)</span>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon index">🔍</div>
+      <h3>Streaming Full-Text Search</h3>
+      <p>
+        <code>fts_match</code> now runs as a bounded-memory key stream across the whole cluster &mdash; no result
+        windows, no geometric retry loops. Query terms pass through the index&rsquo;s analyzer, so natural-language
+        queries containing stop words match correctly instead of silently returning zero rows.
+      </p>
+      <span class="metric">Bounded memory &middot; fail-loud on replica errors</span>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon s3">∞</div>
+      <h3>The 10k Result Cap Is Gone</h3>
+      <p>
+        Range scans, <code>SELECT DISTINCT</code>, filtered scans, and <code>COUNT(*)</code> are bounded only
+        by your query&rsquo;s own <code>LIMIT</code>. Unbounded <code>ORDER BY</code> streams through an external
+        merge sort that spills sorted runs to disk past a configurable RAM budget &mdash; complete, ordered results
+        with a working set independent of result size.
+      </p>
+      <span class="metric">No silent truncation, ever</span>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon cql">⌨</div>
+      <h3>Native Protocol v5 Framing</h3>
+      <p>
+        The wire codec accepts native protocol v5 &mdash; modern framing and v5 <code>PREPARE</code>
+        <code>result_metadata_id</code> &mdash; alongside v3/v4. Drivers continue to negotiate v4 while the
+        remaining v5-only query flags land.
+      </p>
+      <span class="metric">v3 / v4 / v5 framing accepted</span>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon graph">◉</div>
+      <h3>Correct Graph Endpoint Hydration</h3>
+      <p>
+        Partial-label Cypher patterns hydrate correctly: <code>-[r:T]-&gt;(n)</code> resolves the unlabeled
+        node from the edge&rsquo;s target label, and <code>-[r]-&gt;(n:L)</code> resolves the relationship&rsquo;s real
+        properties &mdash; no more null endpoints. Bounded expansions short-circuit with LIMIT push-down.
+      </p>
+      <span class="metric">Typed traversals byte-for-byte unchanged</span>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon rust">🛡</div>
+      <h3>Steadier Under Failure</h3>
+      <p>
+        A replica pair that loses its primary keeps serving reads in a degraded mode instead of going
+        unavailable. Raft RPC targets re-resolve per call, so late-registering nodes heal automatically.
+        Config precedence is now strictly TOML-wins, with binds and seeds all derived from your config file.
+      </p>
+      <span class="metric">Reads survive primary loss</span>
+    </div>
+  </div>
+</section>
+
 <section id="features">
   <p class="section-label centered">Core Capabilities</p>
   <h2 class="section-title centered">Everything you need.<br>Nothing you don't.</h2>

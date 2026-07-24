@@ -1273,11 +1273,16 @@
           On 2026-07-24, a fresh single-DC, RF=3 Fly cluster produced a <code>valid? true</code>
           Elle strict-serializability result for the Accord list-append workload: 2,400 committed
           transactions, 0 indeterminate outcomes, and no anomalies. Read the
-          <a href="https://github.com/ferrosadb/ferrosa/blob/docs/testing-methodology-results/deploy/fly-accord-elle/CERTIFICATION.md">certification record</a>
-          and <a href="https://github.com/ferrosadb/ferrosa/blob/docs/testing-methodology-results/specs/reference/testing-methodology-and-results-2026-07.md">methodology</a>.
+          <a href="https://github.com/ferrosadb/ferrosa/blob/main/deploy/fly-accord-elle/CERTIFICATION.md">certification record</a>
+          and <a href="https://github.com/ferrosadb/ferrosa/blob/main/specs/reference/testing-methodology-and-results-2026-07.md">methodology</a>.
           The separate six-node dual-DC nightly injects <code>dc-partition+dc-slow</code> and verifies
           bank conservation; it is not an Elle certification. Fault-injected and multi-DC Elle
           certification remain pending.
+        </p>
+        <p style="margin-top: 0.75rem; font-size: 0.875rem; color: var(--text-secondary);">
+          The same recorded methodology includes a Fly write-path A/B on the stated workload: steady
+          throughput moved from 7,520 to 11,148 writes/s and write p99 from 43.9 ms to 16.5 ms.
+          These are benchmark observations for that environment, not a capacity guarantee.
         </p>
       </div>
       <div class="code-demo" style="margin: 0; border: none;">

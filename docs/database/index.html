@@ -904,7 +904,7 @@
       <div class="pain-card">
         <div class="pain-icon">🔧</div>
         <h3>Ops Expertise Required</h3>
-        <p>Compaction tuning, repair scheduling, bootstrap orchestration, heap sizing — Snapshot model demands a dedicated team to keep it healthy.</p>
+        <p>Compaction tuning, repair scheduling, bootstrap orchestration, heap sizing — Cassandra demands a dedicated team to keep it healthy.</p>
       </div>
     </div>
   </section>
@@ -1019,7 +1019,7 @@
           <thead>
             <tr style="border-bottom: 1px solid var(--border);">
               <th style="text-align: left; padding: 0.5rem; color: var(--text-muted); font-weight: 600;">10 TB Recovery</th>
-              <th style="text-align: right; padding: 0.5rem; color: var(--text-muted); font-weight: 600;">Snapshot model</th>
+              <th style="text-align: right; padding: 0.5rem; color: var(--text-muted); font-weight: 600;">Cassandra</th>
               <th style="text-align: right; padding: 0.5rem; color: var(--accent); font-weight: 600;">Ferrosa</th>
             </tr>
           </thead>
@@ -1267,11 +1267,20 @@
           .accord sidecar files. Dynamic electorate reconfiguration with a 4-gate join
           protocol for safe membership changes.
         </p>
-        <span class="metric">Accord protocol · transaction components · Jepsen verification planned</span>
-        <p style="margin-top: 0.75rem; font-size: 0.875rem; color: var(--text-secondary);">Accord transaction components and Jepsen-style harness code exist, but public Jepsen evidence is still a tracked verification item.</p>
+        <span class="metric">Elle-certified Accord list-append · 3-node RF=3 · 0 anomalies</span>
+        <p style="margin-top: 0.75rem; font-size: 0.875rem; color: var(--text-secondary);">
+          On 2026-07-24, a fresh single-DC, RF=3 Fly cluster produced a <code>valid? true</code>
+          Elle strict-serializability result for the Accord list-append workload: 2,400 committed
+          transactions, 0 indeterminate outcomes, and no anomalies. Read the
+          <a href="https://github.com/ferrosadb/ferrosa/blob/docs/testing-methodology-results/deploy/fly-accord-elle/CERTIFICATION.md">certification record</a>
+          and <a href="https://github.com/ferrosadb/ferrosa/blob/docs/testing-methodology-results/specs/reference/testing-methodology-and-results-2026-07.md">methodology</a>.
+          The separate six-node dual-DC nightly injects <code>dc-partition+dc-slow</code> and verifies
+          bank conservation; it is not an Elle certification. Fault-injected and multi-DC Elle
+          certification remain pending.
+        </p>
       </div>
       <div class="code-demo" style="margin: 0; border: none;">
-        <pre class="code-block active" style="display: block; font-size: 0.8125rem;"><span class="cm">-- Lightweight transactions (Snapshot model-compatible)</span>
+        <pre class="code-block active" style="display: block; font-size: 0.8125rem;"><span class="cm">-- Cassandra-compatible lightweight transactions</span>
 <span class="kw">INSERT INTO</span> accounts (id, balance)
 <span class="kw">VALUES</span> (<span class="str">'acct-1'</span>, <span class="num">1000</span>)
 <span class="kw">IF NOT EXISTS</span>;
@@ -1482,7 +1491,7 @@
   <span class="str">'replication_factor'</span>: <span class="num">3</span>
 };
 
-<span class="cm">-- Tables work exactly like Snapshot model</span>
+<span class="cm">-- Tables work exactly like Cassandra</span>
 <span class="kw">CREATE TABLE</span> <span class="type">social.users</span> (
   user_id <span class="type">uuid</span> <span class="kw">PRIMARY KEY</span>,
   name <span class="type">text</span>,
@@ -1589,7 +1598,7 @@
     <pre class="code-block" id="tab-python"><span class="cm"># Your existing Python code — just change the contact point</span>
 <span class="kw">from</span> cassandra.cluster <span class="kw">import</span> Cluster
 
-<span class="cm"># Before: Snapshot model</span>
+<span class="cm"># Before: Cassandra</span>
 <span class="cm"># cluster = Cluster(['cassandra-node-1.prod'])</span>
 
 <span class="cm"># After: Ferrosa — same driver, same API</span>
@@ -1641,7 +1650,7 @@ user = session.execute(stmt, [user_id])
         <tr>
           <th></th>
           <th class="ferrosa-col">Ferrosa</th>
-          <th>Snapshot model</th>
+          <th>Cassandra</th>
           <th>ScyllaDB</th>
           <th>DynamoDB</th>
           <th>Keyspaces</th>

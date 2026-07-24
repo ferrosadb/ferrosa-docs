@@ -347,7 +347,8 @@
     <div class="step-content">
       <h3>Start a Ferrosa node</h3>
       <p>Run Ferrosa alongside your existing cluster. It doesn't need to join the Cassandra ring.</p>
-      <pre><span class="cm"># Build and start</span>
+      <pre><span class="cm"># Build and start. This migration example deliberately exposes CQL to the
+# source Cassandra clients; a fresh local Ferrosa install binds to loopback.</span>
 <span class="kw">cargo</span> build --release
 <span class="kw">FERROSA_CQL_BIND</span>=0.0.0.0:9042 \
 <span class="kw">FERROSA_AUTH_DISABLED</span>=true \

@@ -64,7 +64,7 @@
   <section class="hero">
     <span class="pill">Forge · v0.14.0 · Developer Preview</span>
     <h1>Your agent's toolbox, without the token bill.</h1>
-    <p>Forge is a token-saving toolkit for AI coding agents: a single Rust binary, <code>frg</code>, plus a matching MCP server. Raw <code>cargo</code>, <code>pytest</code>, <code>go test</code>, and <code>git diff</code> output is verbose and token-expensive — <code>frg</code> wraps the most common developer operations and returns compact, structured JSON: errors with file paths and line numbers, warnings grouped by rule, summaries instead of wall-of-text logs. <code>frg run</code> starts the MCP server, surfacing the same tools to Claude Code and other MCP clients without a shell round-trip.</p>
+    <p>Forge is a token-saving toolkit for AI coding agents: a single Rust binary, <code>frg</code>, plus a matching MCP server. Raw <code>cargo</code>, <code>pytest</code>, <code>go test</code>, and <code>git diff</code> output is verbose and token-expensive — <code>frg</code> wraps the most common developer operations and returns compact, structured JSON: errors with file paths and line numbers, warnings grouped by rule, summaries instead of wall-of-text logs. Run <code>frg --mcp</code> for stdio clients or <code>frg --mcp-http</code> for a Streamable HTTP MCP endpoint.</p>
   </section>
 
   <h2 id="features">What's in the box</h2>
@@ -104,7 +104,7 @@
   </div>
 
   <h2 id="install">Install</h2>
-  <p>v0.14.0 is the first stable release with prebuilt binaries. Pick one path:</p>
+  <p>v0.14.0 is a developer-preview release with prebuilt binaries. Pick one path:</p>
 
   <h3>Homebrew (macOS Apple Silicon, Linux x86_64)</h3>
   <pre><code>brew install ferrosadb/tap/forge
@@ -130,16 +130,19 @@ cp target/release/frg ~/.cargo/bin/frg    # or anywhere on your PATH</code></pre
   <p>Any platform with a Rust toolchain works — unlike the database and memory server, <code>frg</code> has no Apple-Silicon-only constraint.</p>
 
   <h2 id="mcp">Connect it to your agent</h2>
-  <p>Expose the MCP server by adding forge to <code>~/.claude/settings.json</code> (Claude Code):</p>
+  <p>Expose the stdio MCP server by adding Forge to <code>~/.claude/settings.json</code> (Claude Code):</p>
   <pre><code>{
   "mcpServers": {
     "forge": {
       "command": "/path/to/frg",
-      "args": ["run"]
+      "args": ["--mcp"]
     }
   }
 }</code></pre>
-  <p>Any MCP client that can launch <code>frg run</code> as a stdio server works the same way. Then install the Claude Code output-filtering hooks:</p>
+  <p>Any MCP client that can launch <code>frg --mcp</code> as a stdio server works the same way. For a long-running shared client, start Streamable HTTP on loopback and connect to <code>POST /mcp</code>:</p>
+  <pre><code>frg --mcp-http --mcp-http-addr 127.0.0.1:9977
+# MCP endpoint: http://127.0.0.1:9977/mcp</code></pre>
+  <p>Ferrosa Memory's next release installs and validates Forge for its research and ingestion workflows, including <code>project_summary</code> and dry-run <code>ingest</code>. Then install the Claude Code output-filtering hooks:</p>
   <pre><code>frg init --install</code></pre>
 
   <h3>Optional backends</h3>

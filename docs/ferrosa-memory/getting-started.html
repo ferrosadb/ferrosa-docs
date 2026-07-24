@@ -95,7 +95,8 @@ curl -fsSL https://ferrosadb.com/install.sh | bash
 
 # Ferrosa Memory plus LLM onboarding
 curl -fsSL https://ferrosadb.com/setup-memory.sh | bash</code></pre>
-  <p><code>setup-memory.sh</code> installs Ferrosa Database and the Ferrosa Memory MCP server, downloads the onboarding guide, optionally clones or updates the public repos, and offers to pull the Nomic embedding model. After it finishes, your agent takes over using the onboarding guide.</p>
+  <p><code>setup-memory.sh</code> installs Ferrosa Database and the long-running Ferrosa Memory HTTP service, downloads the onboarding guide, optionally clones or updates the public repos, and offers to pull the Nomic embedding model. After it finishes, your agent takes over using the onboarding guide.</p>
+  <div class="warn"><strong>Next release:</strong> first-run setup starts and verifies Ferrosa before configuring Memory. The local service and database listeners remain loopback-only; shared deployments must explicitly configure network exposure, TLS, and credentials.</div>
 
   <h2>What you will run</h2>
   <div class="grid">
@@ -213,9 +214,11 @@ curl -fsS http://127.0.0.1:18766/viz | head -c 64 && echo</code></pre>
   <div class="warn">Use unique credentials and TLS/auth boundaries for shared deployments. Default local credentials are only appropriate for single-user development on loopback.</div>
 
   <h3>Goose</h3>
-  <p>Goose users get a dedicated installer that downloads the matching release binary (with SHA256 verification), installs the <code>ferrosa-memory-mcp</code> stdio server, and updates <code>~/.config/goose/config.yaml</code> in place — idempotently, with a backup:</p>
+  <p>Goose connects to the long-running Ferrosa Memory service over Streamable HTTP. The installer adds or repairs the named extension in <code>~/.config/goose/config.yaml</code>, preserves other extensions, carries supplied credentials, and is idempotent:</p>
   <pre><code>cd ~/src/ferrosa-suite/ferrosa-memory
-./scripts/setup-goose.sh          # add --dry-run to preview changes</code></pre>
+./setup.sh --harness goose
+# or preview only:
+python3 scripts/install-agent-hooks.py --harness goose --dry-run</code></pre>
 
   <h3>Per-turn recall hooks (Codex, Claude Code, Hermes, Pi)</h3>
   <p>Beyond the MCP connection, <code>scripts/install-agent-hooks.py</code> wires per-turn recall/capture hooks into supported harnesses so your agent remembers automatically instead of only when it thinks to ask. <code>setup-memory.sh</code> offers this during install; run it directly to add a harness later:</p>
@@ -275,7 +278,7 @@ curl -sS -u ferrosa_user:ferrosa_user \
 
   <h2>Workbench, hooks, and evals</h2>
   <p>The workbench at <code>http://127.0.0.1:18765/</code> includes CQL, SPARQL, Datalog, graph/viz, aliases, rules, approvals, explanations, and Judge Config pages. Use the separate viz page at <code>http://127.0.0.1:18766/viz</code> to inspect linked entities and graph neighborhoods.</p>
-  <p>The onboarding flow can install Codex, Claude, and Hermes hooks. Hooks capture session turns, working directory metadata, and compact retrieval feedback so memories learned in a repository can be preferred when future agents work from the same directory.</p>
+  <p>The onboarding flow can install Codex, Claude, Hermes, Pi, and Goose client configuration. Lifecycle-capable harnesses receive recall/capture hooks; Goose receives the Streamable HTTP MCP extension. Hooks capture session turns, working directory metadata, and compact retrieval feedback so memories learned in a repository can be preferred when future agents work from the same directory.</p>
   <pre><code>cd ~/src/ferrosa-suite/ferrosa-memory
 ./setup.sh --harness auto
 
@@ -320,14 +323,15 @@ docker compose logs --tail=100 node1 node2 node3 ferrosa-memory-mcp</code></pre>
   <p>Highlights since v0.23.0 — the theme is memories that genuinely survive, and a server that tells you when it can't:</p>
   <ul>
     <li><strong>Global memories now actually persist across sessions.</strong> Durable entity types (skills, concepts, decisions, patterns, code symbols, people, places, orgs) were being written under the caller's session partition despite being labeled global — invisible to later sessions. They're now physically stored in the tenant-global partition and readable cross-session.</li>
-    <li><strong>Goose support.</strong> New <code>setup-goose.sh</code> installs ferrosa-memory as a Goose MCP extension end to end (see above).</li>
+    <li><strong>Goose support.</strong> <code>setup.sh --harness goose</code> installs or repairs Ferrosa Memory as a Streamable HTTP Goose extension end to end (see above).</li>
     <li><strong>Per-turn hooks for Codex, Claude Code, Hermes, and Pi</strong> via <code>install-agent-hooks.py</code>, with fail-loud verification: setup sends a representative per-turn write and fails rather than claiming success if it's rejected.</li>
     <li><strong><code>debug_stop</code> degraded-cluster alerts</strong> (opt-in). A background health monitor probes the database and configured embedding/LLM endpoints every 10s; degraded state attaches an alert to tool responses, and quorum loss or a dead provider fails the call outright — so your agent halts instead of building on a broken cluster. Toggle at runtime via the <code>config</code> tool.</li>
     <li><strong><code>GET /introspect</code></strong> — loopback endpoint returning the server's cluster identity (transport, tenant, keyspace, contact points, ports, version, live reachability) for local controllers like the workbench. No secrets.</li>
     <li><strong>Cross-replica consolidation coordination.</strong> Lease-based scheduling so background memory consolidation runs once cluster-wide instead of per-replica.</li>
     <li><strong>Search correctness.</strong> Fulltext queries containing English stop words no longer silently return zero results, and the viz graph snapshot defends against non-progressing pagination cursors (reports TRUNCATED instead of streaming forever).</li>
     <li><strong>Non-UUID session IDs</strong> (e.g. Hermes agents) map deterministically to stable UUIDs, keeping distinct agent sessions isolated.</li>
-    <li><strong>Setup installs the Forge <code>frg</code> CLI</strong> (used by task/defer workflows) and reconciles the per-install tenant across auth, viz, and hook config. Skip with <code>--skip-forge</code>.</li>
+    <li><strong>Next release: complete first-run setup.</strong> Setup starts Ferrosa before Memory, reconciles the per-install tenant across HTTP auth, viz, and hooks, and registers supported clients consistently. Tenant selection follows the authenticated request; it is not inferred from an arbitrary client value.</li>
+    <li><strong>Next release: Forge is installed and validated.</strong> Setup builds <code>frg</code> for research and ingestion workflows, verifies its version, then exercises the MCP <code>project_summary</code> and dry-run <code>ingest</code> capabilities. <code>--skip-forge</code> is only for controlled environments that validate Forge separately.</li>
   </ul>
 
   <h2>You're up — what next?</h2>

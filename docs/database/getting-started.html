@@ -277,6 +277,10 @@
 <span class="cm"># CQL :9042 · Postgres :5432 · graph HTTP :7474 + Bolt :7687 · SPARQL :8080 · console :9090</span>
 <span class="kw">ferrosa</span></pre>
 
+  <div class="note">
+    <strong>Local by default.</strong> In the next developer-preview release, every listener in a fresh single-node install binds to <code>127.0.0.1</code>: CQL, Postgres, Graph HTTP and Bolt, SPARQL, Flight, the web console, and internode RPC. Ferrosa does not expose a database on the network until an operator deliberately changes the relevant bind address and configures the deployment boundary.
+  </div>
+
   <h3>Disable endpoints you don't need (reduce attack surface)</h3>
   <pre><span class="cm"># Everything is on by default; opt out explicitly.</span>
 <span class="kw">FERROSA_GRAPH_ENABLED</span>=false <span class="kw">FERROSA_SPARQL_ENABLED</span>=false ferrosa</pre>
@@ -420,7 +424,7 @@ session.execute(<span class="str">"""
   <!-- ── Config ── -->
   <h2 id="config">Configuration Reference</h2>
 
-  <p>Ferrosa is configured via environment variables and an optional TOML file. Environment variables override file values. The tables below cover the customer-facing runtime variables currently honored by the server.</p>
+  <p>Ferrosa is configured via environment variables and an optional TOML file. For listener settings, a value in the TOML file wins over the corresponding environment variable, which wins over the built-in default. The tables below cover the customer-facing runtime variables currently honored by the server.</p>
 
   <h3>Startup, Auth, and CQL</h3>
   <table>
@@ -429,7 +433,7 @@ session.execute(<span class="str">"""
       <tr><td><code>FERROSA_CONFIG</code></td><td><code>/etc/ferrosa/ferrosa.toml</code></td><td>Optional TOML config file loaded at startup</td></tr>
       <tr><td><code>FERROSA_MODE</code></td><td><code>development</code></td><td>Deployment mode used for production-safety checks</td></tr>
       <tr><td><code>FERROSA_HOST_ID</code></td><td>auto-generated</td><td>Stable node UUID persisted under the data directory</td></tr>
-      <tr><td><code>FERROSA_CQL_BIND</code></td><td><code>0.0.0.0:9042</code></td><td>CQL server bind address</td></tr>
+      <tr><td><code>FERROSA_CQL_BIND</code></td><td><code>127.0.0.1:9042</code></td><td>CQL server bind address</td></tr>
       <tr><td><code>FERROSA_CQL_BROADCAST</code></td><td>bind address/port</td><td>Public CQL address advertised to clients via <code>system.local</code> / <code>system.peers_v2</code></td></tr>
       <tr><td><code>FERROSA_CQL_INTERNAL_CLIENT_CIDRS</code></td><td>—</td><td>Comma-separated CIDRs whose clients should receive the internal topology view instead of the public CQL broadcast</td></tr>
       <tr><td><code>FERROSA_CQL_MAX_CONNECTIONS</code></td><td><code>1024</code></td><td>Maximum concurrent CQL connections</td></tr>
@@ -437,15 +441,18 @@ session.execute(<span class="str">"""
       <tr><td><code>FERROSA_CQL_TLS_CERT</code></td><td>—</td><td>PEM certificate path for CQL TLS</td></tr>
       <tr><td><code>FERROSA_CQL_TLS_KEY</code></td><td>—</td><td>PEM private-key path for CQL TLS</td></tr>
       <tr><td><code>FERROSA_CQL_REQUIRE_TLS</code></td><td><code>false</code></td><td>Fail startup if the CQL listener does not have TLS configured</td></tr>
-      <tr><td><code>FERROSA_WEB_BIND</code></td><td><code>0.0.0.0:9090</code></td><td>Web console bind address</td></tr>
+      <tr><td><code>FERROSA_WEB_BIND</code></td><td><code>127.0.0.1:9090</code></td><td>Web console bind address</td></tr>
       <tr><td><code>FERROSA_AUTH_ENABLED</code></td><td><code>false</code></td><td>Enable CQL role auth and permission enforcement</td></tr>
       <tr><td><code>FERROSA_AUTH_WARN</code></td><td><code>false</code></td><td>Soak mode: log auth failures as warnings while still allowing requests</td></tr>
       <tr><td><code>FERROSA_AUTH_DISABLED</code></td><td><code>false</code></td><td>Development escape hatch that skips the CQL SASL handshake entirely</td></tr>
       <tr><td><code>FERROSA_SUPERUSER_PASSWORD</code></td><td>—</td><td>Optional override for the seeded <code>ferrosa_admin</code> password during bootstrap</td></tr>
       <tr><td><code>FERROSA_GRAPH_ENABLED</code></td><td><code>true</code></td><td>Graph engine (HTTP 7474 + Bolt 7687) — on by default; set <code>false</code> to disable</td></tr>
+      <tr><td><code>FERROSA_GRAPH_BIND</code></td><td><code>127.0.0.1:7474</code></td><td>Graph HTTP bind address; Bolt uses the same host</td></tr>
       <tr><td><code>FERROSA_BOLT_PORT</code></td><td><code>7687</code></td><td>Bolt listener port</td></tr>
       <tr><td><code>FERROSA_SPARQL_ENABLED</code></td><td><code>true</code></td><td>SPARQL HTTP endpoint (8080) — on by default; set <code>false</code> to disable</td></tr>
-      <tr><td><code>FERROSA_SPARQL_BIND</code></td><td><code>0.0.0.0:8080</code></td><td>SPARQL HTTP listen address</td></tr>
+      <tr><td><code>FERROSA_SPARQL_BIND</code></td><td><code>127.0.0.1:8080</code></td><td>SPARQL HTTP listen address</td></tr>
+      <tr><td><code>FERROSA_POSTGRES_BIND</code></td><td><code>127.0.0.1:5432</code></td><td>Postgres wire-protocol bind address</td></tr>
+      <tr><td><code>FERROSA_FLIGHT_BIND</code></td><td><code>127.0.0.1:8815</code></td><td>Arrow Flight bind address when built with the <code>flight</code> feature</td></tr>
       <tr><td><code>RUST_LOG</code></td><td><code>info</code></td><td>Tracing filter (e.g. <code>debug</code>, <code>ferrosa_cql=trace</code>)</td></tr>
     </tbody>
   </table>
@@ -464,7 +471,7 @@ session.execute(<span class="str">"""
     <tbody>
       <tr><td><code>FERROSA_CLUSTER_NAME</code></td><td><code>ferrosa</code></td><td>Cluster name (must match across nodes)</td></tr>
       <tr><td><code>FERROSA_SEED</code></td><td>—</td><td>Comma-separated seed addresses; each entry may be an IP:port or resolvable hostname:port</td></tr>
-      <tr><td><code>FERROSA_INTERNODE_BIND</code></td><td><code>0.0.0.0:17000</code></td><td>Internode protocol bind address</td></tr>
+      <tr><td><code>FERROSA_INTERNODE_BIND</code></td><td><code>127.0.0.1:17000</code></td><td>Internode protocol bind address</td></tr>
       <tr><td><code>FERROSA_INTERNODE_BROADCAST</code></td><td><code>127.0.0.1:17000</code></td><td>Address other nodes use to reach this node; also forms the default internal topology view. May be an IP:port or resolvable hostname:port.</td></tr>
       <tr><td><code>FERROSA_INTERNODE_PSK</code></td><td>—</td><td>Pre-shared key for internode auth (HMAC-SHA256)</td></tr>
       <tr><td><code>FERROSA_INTERNODE_TLS_CERT</code></td><td>—</td><td>PEM certificate path for internode TLS</td></tr>

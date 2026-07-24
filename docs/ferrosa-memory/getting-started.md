@@ -28,6 +28,8 @@ onboard me using ONBOARDING.md
 
 Manual source setup is still useful for contributors and is shown below.
 
+The next developer-preview release makes first-run setup local and complete: it starts and verifies Ferrosa before configuring the long-running Ferrosa Memory HTTP service. Fresh database and memory listeners remain loopback-only; shared deployments must explicitly configure their network and authentication boundary.
+
 ## What you will run
 
 The minimal local setup can be just:
@@ -373,7 +375,7 @@ Use the viz page to inspect graph neighborhoods and entity links. Wait for graph
 
 ## Agent hooks and feedback
 
-The onboarding flow can install Codex, Claude, and Hermes hooks. Those hooks capture session turns, working directory metadata, and compact retrieval feedback so memories learned in a repository can be preferred when future agents work from the same directory.
+The onboarding flow can install Codex, Claude, Hermes, Pi, and Goose client configuration. Lifecycle-capable harnesses receive recall/capture hooks; Goose is configured as a Streamable HTTP client of the long-running service. Hooks capture session turns, working directory metadata, and compact retrieval feedback so memories learned in a repository can be preferred when future agents work from the same directory.
 
 From a source checkout:
 
@@ -387,6 +389,8 @@ or run the hook installer directly:
 ```bash
 python3 scripts/install-agent-hooks.py --harness auto --verify
 ```
+
+During this release's setup, Forge is built and validated for the research and ingestion workflows. The installer checks the Forge MCP `project_summary` and dry-run `ingest` capabilities; use `--skip-forge` only when a controlled environment validates Forge separately.
 
 Agents should call `feedback` after retrieval when they can judge returned items. Use scores in result order: `1` for useful, `-1` for irrelevant or wrong, `0` for neutral, and `"-"` when a judge abstains or fails.
 

@@ -524,6 +524,33 @@ session.execute(<span class="str">"""
     </tbody>
   </table>
 
+  <h3>Point-in-Time Restore</h3>
+
+  <p>A node started with <code>FERROSA_RESTORE_SNAPSHOT</code> set opens by restoring that snapshot from object storage instead of opening its local state. Set the variables, then restart the node — the restore happens during startup, before the node accepts connections.</p>
+
+  <table>
+    <thead><tr><th>Variable</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>FERROSA_RESTORE_SNAPSHOT</code></td><td>—</td><td>Name of the snapshot to restore from at startup. When unset, the node starts normally.</td></tr>
+      <tr><td><code>FERROSA_RESTORE_POINT_IN_TIME</code></td><td>snapshot boundary</td><td>RFC 3339 UTC timestamp (for example <code>2026-08-05T12:00:00Z</code>). Archived commit-log segments are replayed up to and including this instant. Without it, the node restores to the snapshot boundary with no replay.</td></tr>
+      <tr><td><code>FERROSA_RESTORE_FORCE</code></td><td><code>false</code></td><td>Accept a snapshot taken by a different node. Required when restoring onto a new node, since snapshots record the node that created them.</td></tr>
+    </tbody>
+  </table>
+
+  <p>Point-in-time replay requires <code>FERROSA_ARCHIVE_ENABLED=true</code> to have been set <em>before</em> the window you want to recover to. Restore can only replay segments that were archived at the time; it cannot recover a window that was never captured.</p>
+
+  <p>The timestamp is validated strictly at startup, before any data is downloaded. Non-UTC offsets, unpadded fields, and space-separated forms are rejected rather than guessed at — a misread cutoff would restore to the wrong moment. A point-in-time with no snapshot is also an error.</p>
+
+  <h4>Applied at most once</h4>
+
+  <p>Environment variables survive a reboot, so a restore is recorded once it succeeds. The node writes a marker to <code>{data_dir}/.restore-applied</code>, and a later start carrying the same values skips the restore rather than repeating it — otherwise every restart would roll the database back again and discard everything written since. Changing the snapshot or the point-in-time makes it a new request, which is applied normally.</p>
+
+  <p>To restore the same snapshot a second time deliberately, remove that marker file before starting the node.</p>
+
+  <div class="note">
+    <p><strong>Use the environment variables, not the HTTP endpoint.</strong> <code>POST /api/restore</code> currently validates a request and returns <code>202 Accepted</code>, but it does not record the intent — restarting after calling it will <em>not</em> restore. Wiring that endpoint to the startup path is tracked for a future release.</p>
+  </div>
+
   <h3>Secondary Index and Search Backends</h3>
   <table>
     <thead><tr><th>Variable</th><th>Default</th><th>Description</th></tr></thead>

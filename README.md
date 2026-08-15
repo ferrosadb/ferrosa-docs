@@ -41,8 +41,15 @@ Run the docs checks:
 ```bash
 scripts/generate-example-docs.sh
 scripts/check-site.py
+node scripts/check-design-system-contrast.mjs
+node scripts/check-brand-contrast.mjs
 git diff --check
 ```
+
+The two contrast checks read the token blocks out of `docs/ferrosa-memory/design-system.html`
+and `docs/design-system.html` and assert every foreground/background pair meets WCAG 2.1 AA
+in both themes. Each prints `39 combinations checked, 0 below AA.` and exits non-zero on the
+first pair below threshold. They need Node 18 or newer and use only the standard library.
 
 This repo now OWNS docs/ (the marketing site moved off ferrosadb/ferrosa). `sync-from-ferrosa.sh` no longer pulls docs/ by default — only the example SOURCES (sources/ferrosa/examples) track the engine repo. Use `--with-docs` only for a deliberate full re-mirror.
 

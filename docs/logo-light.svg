@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 333.59 100" width="334" height="100" role="img" aria-label="Ferrosa AI">
+  <defs>
+    <linearGradient id="l-light-icon" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0e7ea3"/>
+      <stop offset="55%" stop-color="#2270d8"/>
+      <stop offset="100%" stop-color="#516d92"/>
+    </linearGradient>
+    <linearGradient id="l-light-ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2270d8" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#516d92" stop-opacity="0.22"/>
+    </linearGradient>
+  </defs>
+  <g>
+    <ellipse cx="50" cy="50" rx="47" ry="47" fill="none" stroke="url(#l-light-ring)" stroke-width="1.5"
+             stroke-dasharray="216 80" stroke-linecap="round" transform="rotate(-20 50 50)"/>
+    <rect x="14" y="14" width="72" height="72" rx="15" fill="none" stroke="url(#l-light-icon)" stroke-width="2.5"/>
+    <text x="50" y="61" font-family="Georgia, 'Times New Roman', Times, serif" font-size="40" font-weight="700" letter-spacing="-1"
+          fill="url(#l-light-icon)" text-anchor="middle">Fe</text>
+    <text x="26" y="30" font-family="Inter, 'Helvetica Neue', Arial, Helvetica, sans-serif" font-size="10" font-weight="600"
+          fill="url(#l-light-icon)" text-anchor="middle">26</text>
+  </g>
+  <text x="126.0" y="66" font-family="Inter, 'Helvetica Neue', Arial, Helvetica, sans-serif" font-size="44" letter-spacing="-1"><tspan font-weight="600" fill="#0c1a2b">Ferrosa</tspan><tspan font-weight="400" fill="#44586f"> AI</tspan></text>
+</svg>

@@ -41,6 +41,16 @@ jobs:
       - name: Parse HTML and check local links
         run: scripts/check-site.py
 
+      # Both design systems state in prose that they meet WCAG 2.1 AA in both
+      # themes. These make that arithmetic. Each exits non-zero on the first
+      # token pair below threshold, so a palette edit cannot quietly walk the
+      # contrast back down the way it did before #11.
+      - name: Check design system contrast
+        run: |
+          node --version
+          node scripts/check-design-system-contrast.mjs
+          node scripts/check-brand-contrast.mjs
+
       - name: Check whitespace
         run: git diff --check
 

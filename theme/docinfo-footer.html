@@ -1,0 +1,74 @@
+<!-- theme/docinfo-footer.html -->
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <div>&copy; 2026 Ferrosa, Inc. All rights reserved.</div>
+    <nav class="site-footer-links" aria-label="Site">
+      <a href="../../">Suite Home</a>
+      <a href="../../productdocs/database/getting-started.html">Database Docs</a>
+      <a href="./">All Examples</a>
+      <a href="../../ferrosa-memory/">Memory</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+// Theme toggle. The button only ever writes an explicit choice; leaving it
+// alone keeps the page following the OS, which is what the CSS defaults to.
+// Key is shared with brand.html and design-system.html.
+(function () {
+  var root = document.documentElement;
+  var toggle = document.getElementById("theme-toggle");
+  if (!toggle) { return; }
+
+  function currentTheme() {
+    var set = root.getAttribute("data-theme");
+    if (set === "light" || set === "dark") { return set; }
+    return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+  }
+
+  function sync() {
+    toggle.setAttribute("aria-pressed", String(currentTheme() === "dark"));
+  }
+
+  toggle.addEventListener("click", function () {
+    var next = currentTheme() === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("ferrosa-ds-theme", next); } catch (e) {}
+    sync();
+  });
+
+  sync();
+})();
+
+// Add a "Copy" button to every code listing.
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.listingblock .content').forEach(function (content) {
+    var pre = content.querySelector('pre');
+    if (!pre) { return; }
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'copy-btn';
+    button.textContent = 'Copy';
+    button.setAttribute('aria-label', 'Copy code to clipboard');
+    button.addEventListener('click', function () {
+      var text = pre.innerText;
+      var done = function () {
+        button.textContent = 'Copied';
+        setTimeout(function () { button.textContent = 'Copy'; }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, done);
+      } else {
+        var area = document.createElement('textarea');
+        area.value = text;
+        document.body.appendChild(area);
+        area.select();
+        try { document.execCommand('copy'); } catch (e) { /* ignore */ }
+        document.body.removeChild(area);
+        done();
+      }
+    });
+    content.appendChild(button);
+  });
+});
+</script>

@@ -3,3 +3,12 @@ __pycache__/
 *.py[cod]
 /.tmp/
 /artifacts/
+
+# Resolved from the public GitHub releases at deploy time by
+# scripts/fetch-release-versions.sh. Build artifacts, not source: a committed
+# copy is a version number that can go stale, which is the whole thing these
+# files exist to prevent.
+/docs/versions.json
+/docs/LATEST
+/docs/LATEST-MEMORY
+/docs/LATEST-FORGE

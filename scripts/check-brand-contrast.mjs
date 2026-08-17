@@ -6,6 +6,15 @@
 // different token prefixes (--fm- for Ferrosa Memory, --ferrosa- for Ferrosa AI)
 // and the memory checker should keep guarding memory without gaining a mode.
 //
+// It covers two sources, because a token block that nothing checks is a token
+// block that drifts:
+//   docs/design-system.html  the design system page itself
+//   theme/examples.css       the AsciiDoc theme the generated database examples
+//                            use, which restates the same tokens for a stylesheet
+//                            Asciidoctor links rather than a page
+// Both declare --ferrosa-* tokens in the same three blocks (dark :root, explicit
+// light, prefers-color-scheme light), so one parser reads both.
+//
 // Run: node scripts/check-brand-contrast.mjs
 
 import { readFileSync } from "node:fs";
@@ -13,10 +22,11 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const html = readFileSync(
-  join(here, "..", "docs", "design-system.html"),
-  "utf8",
-);
+
+const SOURCES = [
+  ["design system", join(here, "..", "docs", "design-system.html")],
+  ["examples theme", join(here, "..", "theme", "examples.css")],
+];
 
 function linear(channel) {
   const c = channel / 255;
@@ -47,18 +57,29 @@ function tokensIn(block) {
   return found;
 }
 
-const darkBlock = html.slice(html.indexOf(":root {"), html.indexOf('[data-theme="light"]'));
-const lightExplicit = html.slice(
-  html.indexOf(':root[data-theme="light"]'),
-  html.indexOf("@media (prefers-color-scheme: light)"),
-);
-const lightMedia = html.slice(html.indexOf("@media (prefers-color-scheme: light)"));
+function themesIn(text, label) {
+  const darkStart = text.indexOf(":root {");
+  const lightStart = text.indexOf(':root[data-theme="light"]');
+  const mediaStart = text.indexOf("@media (prefers-color-scheme: light)");
 
-const themes = [
-  ["dark", tokensIn(darkBlock)],
-  ["light (explicit)", tokensIn(lightExplicit)],
-  ["light (prefers-color-scheme)", tokensIn(lightMedia)],
-];
+  // Every source must declare all three blocks. A source missing one would
+  // otherwise be checked in the themes it has and pass silently in the one it
+  // forgot — the exact drift this script exists to catch.
+  if (darkStart < 0 || lightStart < 0 || mediaStart < 0) {
+    console.error(
+      `\n${label}: expected a dark :root block, a :root[data-theme="light"] ` +
+        "block and a @media (prefers-color-scheme: light) block. " +
+        "One or more is missing, so its palette cannot be checked.",
+    );
+    process.exit(1);
+  }
+
+  return [
+    ["dark", tokensIn(text.slice(darkStart, lightStart))],
+    ["light (explicit)", tokensIn(text.slice(lightStart, mediaStart))],
+    ["light (prefers-color-scheme)", tokensIn(text.slice(mediaStart))],
+  ];
+}
 
 // [foreground token, background token, threshold, what it is]
 const CHECKS = [
@@ -75,27 +96,42 @@ const CHECKS = [
   ["text-on-primary", "primary", 4.5, "primary button label"],
   ["border", "surface", 3.0, "component boundary (1.4.11)"],
   ["border", "bg", 3.0, "component boundary (1.4.11)"],
+  // Code is the whole point of the examples theme: syntax colours sit on the
+  // code background, not on a surface, so they need their own pairs.
+  ["text-muted", "code-bg", 4.5, "code text"],
+  ["primary", "code-bg", 4.5, "keyword"],
+  ["accent", "code-bg", 4.5, "identifier / inline code"],
+  ["success", "code-bg", 4.5, "string literal"],
+  ["warning", "code-bg", 4.5, "numeric literal"],
+  ["danger", "code-bg", 4.5, "tag"],
+  ["text-subtle", "code-bg", 4.5, "comment"],
 ];
 
 let failures = 0;
 let checked = 0;
 
-for (const [themeName, tokens] of themes) {
-  console.log(`\n${themeName}`);
-  for (const [fgName, bgName, threshold, what] of CHECKS) {
-    const fg = tokens[fgName];
-    const bg = tokens[bgName];
-    // A theme block legitimately omits tokens it inherits from :root. Skipping
-    // is correct; silently passing a missing token would not be.
-    if (!fg || !bg) continue;
-    checked += 1;
-    const r = ratio(fg, bg);
-    const ok = r >= threshold;
-    if (!ok) failures += 1;
-    console.log(
-      `  ${ok ? "ok  " : "FAIL"} --ferrosa-${fgName} on --ferrosa-${bgName}  ` +
-        `${r.toFixed(2)}:1 (needs ${threshold.toFixed(1)} — ${what})`,
-    );
+for (const [sourceLabel, path] of SOURCES) {
+  const text = readFileSync(path, "utf8");
+  console.log(`\n=== ${sourceLabel} ===`);
+
+  for (const [themeName, tokens] of themesIn(text, sourceLabel)) {
+    console.log(`\n${themeName}`);
+    for (const [fgName, bgName, threshold, what] of CHECKS) {
+      const fg = tokens[fgName];
+      const bg = tokens[bgName];
+      // A theme block legitimately omits tokens it inherits from :root, and a
+      // source legitimately omits tokens it has no use for. Skipping is
+      // correct; silently passing a missing token would not be.
+      if (!fg || !bg) continue;
+      checked += 1;
+      const r = ratio(fg, bg);
+      const ok = r >= threshold;
+      if (!ok) failures += 1;
+      console.log(
+        `  ${ok ? "ok  " : "FAIL"} --ferrosa-${fgName} on --ferrosa-${bgName}  ` +
+          `${r.toFixed(2)}:1 (needs ${threshold.toFixed(1)} — ${what})`,
+      );
+    }
   }
 }
 

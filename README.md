@@ -38,19 +38,27 @@ To add a page:
 
 1. Copy `docs/productdocs/database/_template.html` to `docs/productdocs/<product>/<name>.html`.
    Its relative paths are already correct for any product directory.
-2. Replace the `<title>`, the `<meta name="description">`, the last breadcrumb
-   label, and the body. Leave the header and footer exactly as they are.
-3. Add one `<li>` to that product's `index.html`, in reading order. The link text
-   should match the page's own `<h1>`.
-4. Run `python3 scripts/check-site.py` and confirm it prints `site check passed`.
+2. Replace the `<title>`, the `<meta name="description">` and the body. Leave the
+   header, the footer and the `<!-- docs-* -->` marker comments exactly as they are.
+3. Add one entry to that product's `pages` array in `docs/productdocs/nav.json`, in
+   reading order. The label should match the page's own `<h1>`.
+4. Run `python3 scripts/build-docs-nav.py`. It writes the sidebar and the prev/next
+   links into every page and rebuilds the print view.
+5. Run `python3 scripts/check-site.py` and confirm it prints `site check passed`.
 
 Notes:
 
 - Do not add colour literals to a page. Use the tokens in `docs.css`; they are the
   Ferrosa AI design system (see `docs/design-system.html`).
-- `<!-- docs-sidebar -->` markers sit in every docs page. They are intentionally
-  empty. When the section grows enough to need a sidebar, it can be generated into
-  those markers rather than hand-added to each page.
+- **Everything between the `<!-- docs-sidebar:start/end -->` and
+  `<!-- docs-prevnext:start/end -->` markers is generated, and so is
+  `docs/productdocs/database/print.html`.** Hand-edits there are overwritten on the
+  next run, and CI regenerates and fails on drift. Change `nav.json` instead.
+- The generator is idempotent, and it skips files whose name starts with `_`, so the
+  template keeps its markers empty for the next page copied from it.
+- `docs/productdocs/index.html` and `docs/productdocs/database/index.html` are
+  meta-refresh stubs onto Getting Started — the docs open on the first page rather
+  than on a table of contents. They carry no markers and the generator skips them.
 - Pages that moved out of `docs/database/` left redirect stubs behind at their old
   URLs. Those stubs must stay: the generated Asciidoctor examples link to the old
   paths, and that HTML cannot be hand-edited.
@@ -67,6 +75,7 @@ Run the docs checks:
 
 ```bash
 scripts/generate-example-docs.sh
+python3 scripts/build-docs-nav.py
 scripts/check-site.py
 node scripts/check-design-system-contrast.mjs
 node scripts/check-brand-contrast.mjs
@@ -83,6 +92,10 @@ This repo now OWNS docs/ (the marketing site moved off ferrosadb/ferrosa). `sync
 `scripts/generate-example-docs.sh` regenerates `docs/database/examples/*.html`
 from `sources/ferrosa/examples/**/*.adoc`. CI fails if generated HTML drifts
 from the checked-in source.
+
+`scripts/build-docs-nav.py` regenerates the docs sidebar, the prev/next links and
+`docs/productdocs/database/print.html` from `docs/productdocs/nav.json`. CI fails
+the same way if `docs/productdocs/` drifts from `nav.json`.
 
 ## Sync From Product Repos
 

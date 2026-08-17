@@ -38,6 +38,21 @@ jobs:
           fi
           echo "Generated HTML is in sync with AsciiDoc sources."
 
+      # The docs sidebar, prev/next links and print view are generated into the
+      # pages from docs/productdocs/nav.json. Same contract as the Asciidoctor
+      # check above: regenerate, then fail if the committed HTML has drifted.
+      - name: Rebuild docs navigation
+        run: python3 scripts/build-docs-nav.py
+
+      - name: Check docs navigation is in sync
+        run: |
+          if ! git diff --quiet -- docs/productdocs/; then
+            echo "::error::Docs navigation is out of date. Run python3 scripts/build-docs-nav.py and commit docs/productdocs/."
+            git diff -- docs/productdocs/ | head -120
+            exit 1
+          fi
+          echo "Docs navigation is in sync with nav.json."
+
       - name: Parse HTML and check local links
         run: scripts/check-site.py
 

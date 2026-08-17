@@ -33,6 +33,14 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 
+/* The header is sticky and 65px tall, so an anchor jump would otherwise park
+   the heading behind it and drop you into the section's body with no visible
+   sign of which section you are in. Offset every jump target by the header
+   plus some air. :target covers fragment navigation; the heading selectors
+   also cover scrollIntoView and a reloaded page landing on its own hash. */
+:target,
+h1[id], h2[id], h3[id], h4[id] { scroll-margin-top: 85px; }
+
 body {
   font-family: var(--font-sans);
   background: var(--bg-primary);
@@ -65,20 +73,37 @@ body {
 .docs-logo { display: inline-flex; align-items: center; flex-shrink: 0; }
 .docs-logo img { width: 140px; height: 42px; display: block; }
 
-/* Breadcrumb — "Docs / <Product>". The product segment routes back to the
-   product landing page, which is how these pages were reached before. */
-.docs-crumbs {
-  display: flex;
+/* Sidebar toggle — the only route to the nav below 1024px, where the sidebar
+   itself moves off-canvas. Hidden above that, where the sidebar is always up.
+   The button holds a single empty <span>; the two bars are its pseudo-
+   elements. Its behaviour is the script the nav generator writes. */
+.sidebar-toggle {
+  display: none;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   align-items: center;
-  gap: 0.5rem;
-  margin-left: 1.25rem;
-  font-size: 0.9375rem;
-  min-width: 0;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  cursor: pointer;
 }
-.docs-crumbs a { color: var(--text-secondary); text-decoration: none; white-space: nowrap; }
-.docs-crumbs a:hover { color: var(--text-primary); text-decoration: none; }
-.docs-crumbs .sep { color: var(--text-muted); flex-shrink: 0; }
-.docs-crumbs .here { color: var(--text-primary); font-weight: 600; white-space: nowrap; }
+.sidebar-toggle:hover { background: var(--bg-card-hover); border-color: var(--text-muted); }
+.sidebar-toggle span,
+.sidebar-toggle span::before,
+.sidebar-toggle span::after {
+  display: block;
+  width: 16px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
+.sidebar-toggle span { position: relative; }
+.sidebar-toggle span::before { content: ''; position: absolute; top: -5px; }
+.sidebar-toggle span::after  { content: ''; position: absolute; top: 5px; }
 
 .docs-actions { display: inline-flex; align-items: center; gap: 0.6rem; margin-left: auto; }
 .docs-actions a {
@@ -97,21 +122,21 @@ body {
 .docs-actions a:hover { background: var(--bg-card-hover); border-color: var(--text-muted); text-decoration: none; }
 .docs-actions svg { width: 17px; height: 17px; flex-shrink: 0; }
 
-/* Route back to the product's own landing page — the affordance these pages
-   carried as "Database home" before they moved under /productdocs/. */
-.docs-actions a.text-link {
-  width: auto;
-  height: auto;
-  padding: 0.4rem 0.8rem;
-  border-radius: 999px;
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  font-weight: 500;
-  white-space: nowrap;
-}
-.docs-actions a.text-link:hover { color: var(--text-primary); }
+/* ── Layout ─────────────────────────────────────────────────────────────────
+   Two columns: a fixed-width nav rail and the content column. .container keeps
+   its 960px measure and its auto margins, so it stays centred in whatever the
+   content column gives it and no page's line length changes on a wide screen.
 
-/* ── Layout ─────────────────────────────────────────────────────────────── */
+   minmax(0, 1fr) rather than 1fr: grid items are min-width:auto by default and
+   refuse to shrink below their content, which is what pushed a <pre> 564px past
+   a 320px viewport last round.
+   ───────────────────────────────────────────────────────────────────────── */
+
+.docs-layout {
+  display: grid;
+  grid-template-columns: 272px minmax(0, 1fr);
+  align-items: start;
+}
 
 .container {
   max-width: 960px;
@@ -119,7 +144,206 @@ body {
   padding: 4rem 2rem 6rem;
 }
 
-/* Index pages: a plain ordered list of links, no invented copy. */
+/* An explicit width is load-bearing here, not decoration. Auto margins on a
+   grid item suppress the normal stretch and make it shrink-to-fit, which for
+   .container means max-content — 846px of it hanging off a 320px viewport.
+   With a width set, the margins go back to just centring it inside the track.
+   (print.html's .container is a plain block child of body and is unaffected.) */
+.docs-layout > .container { width: 100%; }
+
+/* ── Sidebar ────────────────────────────────────────────────────────────────
+   Generated into every docs page from docs/productdocs/nav.json by
+   scripts/build-docs-nav.py. Do not hand-edit it in the pages.
+   ───────────────────────────────────────────────────────────────────────── */
+
+.docs-sidebar {
+  position: sticky;
+  top: 64px;                        /* clears the sticky header */
+  align-self: start;
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  min-width: 0;
+  padding: 2.5rem 1.25rem 3rem 2rem;
+  border-right: 1px solid var(--border);
+}
+
+.docs-nav, .docs-nav-pages, .docs-nav-sections { list-style: none; margin: 0; padding: 0; }
+/* The content rules give every li a bottom margin and a 720px measure. */
+.docs-nav li { margin: 0; max-width: none; }
+.docs-nav-product + .docs-nav-product { margin-top: 1.75rem; }
+
+.docs-nav-title {
+  display: block;
+  margin-bottom: 0.5rem;
+  padding: 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+a.docs-nav-title:hover { color: var(--accent); text-decoration: none; }
+.docs-nav-title.is-soon { color: var(--text-muted); }
+/* Its own line for every product. Inline, it fits after "Ferrosa Forge" but
+   wraps after "Ferrosa Memory", so the two coming-soon entries would not
+   match each other. */
+.docs-nav-soon {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.docs-nav-pages a {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+.docs-nav-pages a:hover { background: var(--bg-card); color: var(--text-primary); text-decoration: none; }
+.docs-nav-pages a[aria-current="page"] {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+.docs-nav-pages .n {
+  flex-shrink: 0;
+  min-width: 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.docs-nav-pages .ext { color: var(--text-muted); font-size: 0.75rem; }
+
+/* The open chapter's own sections — the same list as its "On this page" box.
+   Indented to sit under the chapter label, clear of the number column. */
+.docs-nav-sections { margin: 0.15rem 0 0.5rem; padding-left: 1.8rem; }
+.docs-nav-sections a {
+  display: block;
+  padding: 0.25rem 0.5rem;
+  border-left: 1px solid var(--border);
+  border-radius: 0 6px 6px 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+.docs-nav-sections a:hover {
+  border-left-color: var(--accent);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+/* ── Prev / next ────────────────────────────────────────────────────────── */
+
+.docs-prevnext {
+  display: flex;
+  gap: 1rem;
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+.docs-prevnext a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  max-width: 22rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-card);
+  text-decoration: none;
+}
+.docs-prevnext a:hover { border-color: var(--accent); text-decoration: none; }
+.docs-next { margin-left: auto; text-align: right; align-items: flex-end; }
+.docs-prevnext .dir {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.docs-prevnext .lbl { font-size: 0.9375rem; font-weight: 600; color: var(--text-primary); }
+
+/* ── Print view ─────────────────────────────────────────────────────────────
+   database/print.html: every chapter concatenated, no header, no sidebar.
+   ───────────────────────────────────────────────────────────────────────── */
+
+.print-chapter { min-width: 0; }
+.print-chapter + .print-chapter {
+  margin-top: 5rem;
+  padding-top: 3rem;
+  border-top: 1px solid var(--border);
+}
+
+/* Printing needs the light palette, not an exception to the "no new colour
+   literals" rule: browsers drop background colours when printing, so the dark
+   theme's #e8f4ff body text would land on white paper and be invisible. Every
+   value below is lifted verbatim from the design system's light theme
+   (docs/design-system.html, :root[data-theme="light"]) — the same pairs
+   check-brand-contrast.mjs already verifies at AA against #ffffff. */
+@media print {
+  :root {
+    --bg-primary: #ffffff;      /* --ferrosa-surface */
+    --bg-secondary: #eef4fb;    /* --ferrosa-surface-inset */
+    --bg-card: #ffffff;         /* --ferrosa-surface */
+    --bg-card-hover: #e7eef7;   /* --ferrosa-surface-2 */
+    --text-primary: #0c1a2b;    /* --ferrosa-text */
+    --text-secondary: #44586f;  /* --ferrosa-text-muted */
+    --text-muted: #61738a;      /* --ferrosa-text-subtle */
+    --accent: #2270d8;          /* --ferrosa-primary */
+    --accent-cool: #0e7ea3;     /* --ferrosa-accent */
+    --accent-green: #1d805c;    /* --ferrosa-success */
+    --accent-warm: #a15c14;     /* --ferrosa-warning */
+    --border: #6a93bf;          /* --ferrosa-border */
+    --code-bg: #eef4fb;         /* --ferrosa-surface-inset */
+    --on-accent: #ffffff;       /* --ferrosa-text-on-primary */
+  }
+
+  body { background: #ffffff; color: var(--text-primary); }
+
+  .docs-header, .docs-sidebar, .docs-prevnext, footer { display: none; }
+  /* print.html's chapter list is on-screen navigation — that page has no
+     sidebar, and it stays useful if the print dialog is cancelled. On paper it
+     is dead weight, and the Rust book's print view carries no contents page
+     either, so it comes out of the printed document. */
+  .print-toc { display: none; }
+  .docs-layout { display: block; }
+  .container { max-width: none; padding: 0; }
+  .print-chapter + .print-chapter { break-before: page; border-top: none; }
+
+  /* Callout tints are rgba on a dark ground; on paper only the border survives
+     the background being dropped, so give them one that reads. */
+  .note, .warning, .success, .extension, .toc, .card {
+    border: 1px solid var(--border);
+    background: none;
+  }
+
+  /* Syntax colours are a dark-theme scheme. Remap to the light tokens so code
+     is legible on paper instead of washing out. */
+  pre .cm, .comment { color: var(--text-muted); }
+  pre .kw, .keyword { color: var(--accent); }
+  pre .str, .string { color: var(--accent-green); }
+  pre .var, .uri    { color: var(--accent-warm); }
+  pre .type         { color: var(--accent-cool); }
+
+  pre, code { border: 1px solid var(--border); background: none; color: var(--text-primary); }
+  a { color: var(--accent); }
+  h1, h2, h3, h4 { break-after: avoid; }
+  pre, table, .note, .warning { break-inside: avoid; }
+}
+
+/* Chapter list on the print view. (It was also the product index pages, which
+   are now meta-refresh stubs onto Getting Started.) */
 .docs-index { list-style: none; padding: 0; margin: 2rem 0 0; max-width: 720px; }
 .docs-index li { margin: 0; border-bottom: 1px solid var(--border); }
 .docs-index li:first-child { border-top: 1px solid var(--border); }
@@ -136,37 +360,8 @@ body {
 .docs-index .n { color: var(--text-muted); font-family: var(--font-mono); font-size: 0.8125rem; font-weight: 500; min-width: 1.5rem; }
 .docs-index .ext { color: var(--text-muted); font-size: 0.8125rem; font-weight: 500; }
 
-/* Product cards on the docs home. */
-.product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; margin-top: 2rem; }
-.product-card {
-  display: block;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1.5rem;
-  text-decoration: none;
-  transition: border-color 0.2s, background 0.2s;
-}
-.product-card:hover { border-color: var(--accent); background: var(--bg-card-hover); text-decoration: none; }
-/* flex so the status tag stays on the product name's line rather than dropping
-   to its own row when the name is a little longer */
-.product-card h2 { display: flex; align-items: center; gap: 0.5rem; margin: 0 0 0.4rem; font-size: 1.0625rem; font-weight: 700; letter-spacing: -0.01em; color: var(--text-primary); text-transform: none; white-space: nowrap; }
-.product-card p { margin: 0; font-size: 0.875rem; color: var(--text-muted); }
-.product-card[aria-disabled="true"] { opacity: 0.62; pointer-events: none; }
-.tag {
-  display: inline-block;
-  flex-shrink: 0;
-  padding: 0.1rem 0.45rem;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--bg-primary);
-  color: var(--text-muted);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  vertical-align: middle;
-}
+/* The product-card grid that stood on the docs home went with that page: the
+   products are the sidebar now. */
 
 /* ── Content ────────────────────────────────────────────────────────────────
    Carried over verbatim from the pages these docs came from, retokenised to
@@ -283,15 +478,45 @@ footer { border-top: 1px solid var(--border); }
    viewport, since they contain no break opportunities. */
 code { overflow-wrap: anywhere; }
 
-@media (max-width: 860px) {
-  .docs-header-inner { padding: 0.5rem 1rem; flex-wrap: wrap; row-gap: 0.5rem; }
-  .docs-crumbs { margin-left: 0; order: 3; width: 100%; }
+/* Below 1024px the sidebar slides in over the page from the header toggle
+   instead of holding a rail. The toggle is the only route to it at these
+   widths — it must never be hidden here. Escape, a link click, or a click
+   outside all close it.
+
+   1024px, not the 860px first tried: at 861px the 272px rail left a 589px
+   content column, and the widest reference tables have a larger min-content
+   width than that, so cql-compatibility.html ran 32px off the side. The
+   breakpoint has to sit high enough that the narrowest two-column content
+   track (1025 - 272 = 753px) still clears them. */
+@media (max-width: 1024px) {
+  .docs-header-inner { padding: 0.5rem 1rem; }
   .docs-logo img { width: 120px; height: 36px; }
-  /* The current-page crumb repeats the <h1> directly below it, and long labels
-     ("PostgreSQL Wire Protocol") do not fit a 320px viewport. Drop it, and drop
-     the separator in front of it so no dangling "/" is left behind. */
-  .docs-crumbs .here { display: none; }
-  .docs-crumbs .sep:has(+ .here) { display: none; }
+  .sidebar-toggle { display: inline-flex; }
+
+  .docs-layout { grid-template-columns: minmax(0, 1fr); }
+
+  .docs-sidebar {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    bottom: 0;
+    z-index: 30;
+    width: min(300px, 85vw);
+    height: auto;
+    background: var(--bg-secondary);
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+  }
+  body.nav-open .docs-sidebar { transform: none; }
+
+  /* Scrim. Purely visual — the outside-click close is in the nav script. */
+  body.nav-open::after {
+    content: '';
+    position: fixed;
+    inset: 64px 0 0 0;
+    z-index: 25;
+    background: rgba(5, 7, 12, 0.6);
+  }
 }
 
 /* Grid and flex items default to min-width:auto, so they refuse to shrink below
@@ -301,6 +526,20 @@ code { overflow-wrap: anywhere; }
 .step-grid, .step-content, .card-grid, .card, .container { min-width: 0; }
 pre { max-width: 100%; }
 
+/* The print action is a third icon in the header. Below ~420px the row of
+   toggle + lockup + three actions no longer fits — at 320px it ran 27px over.
+   Everything steps down together rather than any affordance being dropped:
+   print is only reachable from the header, so hiding it on a phone would
+   remove the print view from small screens entirely. */
+@media (max-width: 420px) {
+  .docs-header-inner { gap: 0.625rem; padding: 0.5rem 0.75rem; }
+  .docs-logo img { width: 96px; height: 29px; }   /* keeps the 140x42 ratio */
+  .sidebar-toggle { width: 34px; height: 34px; }
+  .docs-actions { gap: 0.4rem; }
+  .docs-actions a { width: 34px; height: 34px; }
+  .docs-actions svg { width: 15px; height: 15px; }
+}
+
 @media (max-width: 640px) {
   .container { padding: 2.5rem 1rem 4rem; }
   h1 { font-size: 1.75rem; }
@@ -309,6 +548,10 @@ pre { max-width: 100%; }
   th, td { padding: 0.5rem 0.625rem; }
   .card-grid { grid-template-columns: 1fr; }
   .step-grid { grid-template-columns: 1fr; }
+  /* Side by side, the two chapter links get too narrow to read their labels. */
+  .docs-prevnext { flex-direction: column; }
+  .docs-prevnext a { max-width: none; }
+  .docs-next { margin-left: 0; text-align: left; align-items: flex-start; }
   .step-content { border-left: none; margin-left: 0; padding-left: 0; }
   .footer-inner { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 1.25rem; padding: 2rem 1rem; }
   .footer-community, .footer-links { justify-content: center; }

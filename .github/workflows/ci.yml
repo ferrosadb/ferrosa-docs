@@ -41,14 +41,17 @@ jobs:
       - name: Parse HTML and check local links
         run: scripts/check-site.py
 
-      # Both design systems state in prose that they meet WCAG 2.1 AA in both
-      # themes. These make that arithmetic. Each exits non-zero on the first
+      # The design system states in prose that it meets WCAG 2.1 AA in both
+      # themes. This makes that arithmetic. It exits non-zero on the first
       # token pair below threshold, so a palette edit cannot quietly walk the
       # contrast back down the way it did before #11.
+      #
+      # There were two of these. The Ferrosa Memory system was retired along
+      # with its page, so its checker went with it: pointed at a stub it would
+      # have matched no --fm- tokens, found no failures, and passed vacuously.
       - name: Check design system contrast
         run: |
           node --version
-          node scripts/check-design-system-contrast.mjs
           node scripts/check-brand-contrast.mjs
 
       - name: Check whitespace

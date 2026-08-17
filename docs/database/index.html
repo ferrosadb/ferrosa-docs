@@ -9,23 +9,23 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <style>
     :root {
-      --bg-primary: #0a0a0f;
-      --bg-secondary: #111118;
-      --bg-card: #16161f;
-      --bg-card-hover: #1c1c28;
-      --text-primary: #e8e8ed;
-      --text-secondary: #9494a3;
-      --text-muted: #6b6b7a;
-      --accent: #e2725b;
-      --accent-glow: rgba(226, 114, 91, 0.15);
-      --accent-secondary: #f4a261;
-      --accent-cool: #7c9cf5;
+      --bg-primary: #05070c;
+      --bg-secondary: #09111f;
+      --bg-card: #0e1726;
+      --bg-card-hover: #16243a;
+      --text-primary: #e8f4ff;
+      --text-secondary: #9bb3cf;
+      --text-muted: #6d829a;
+      --accent: #348cff;
+      --accent-glow: rgba(52, 140, 255, 0.18);
+      --accent-secondary: #7ee7ff;
+      --accent-cool: #7ee7ff;
       --accent-green: #6bc9a0;
-      --border: #1e1e2a;
-      --border-hover: #2e2e3e;
-      --code-bg: #0d0d14;
+      --border: #17273d;
+      --border-hover: #25395a;
+      --code-bg: #060b14;
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+      --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -46,7 +46,7 @@
       top: 0;
       width: 100%;
       z-index: 100;
-      background: rgba(10, 10, 15, 0.85);
+      background: rgba(5, 7, 12, 0.85);
       backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
       padding: 0 2rem;
@@ -786,7 +786,7 @@
         flex-direction: column;
         gap: 0;
         padding: 0.5rem 1rem 1rem;
-        background: rgba(10, 10, 15, 0.98);
+        background: rgba(5, 7, 12, 0.98);
         border-bottom: 1px solid var(--border);
         box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
       }
@@ -822,9 +822,8 @@
 <!-- ═══════════════════ Navigation ═══════════════════ -->
 <nav>
   <div class="nav-inner">
-    <a href="../" class="logo" style="display:flex;align-items:center;gap:0.5rem;">
-      <img src="favicon.svg" alt="Fe" width="28" height="28">
-      ferro<span>sa</span>
+    <a href="../" class="logo" style="display:flex;align-items:center;" aria-label="Ferrosa AI home">
+      <img src="../logo.svg" alt="Ferrosa AI" width="140" height="42">
     </a>
     <ul class="nav-links" id="site-nav-links">
       <li><a href="../">Suite Home</a></li>

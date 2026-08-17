@@ -24,6 +24,7 @@ domain is currently configured on the legacy `ferrosadb/ferrosa` Pages site.
 ```text
 docs/                    Published static site and installer scripts
 sources/ferrosa/examples  AsciiDoc example sources mirrored from ferrosadb/ferrosa
+theme/                   Stylesheet and docinfo for the generated examples (this repo owns it)
 scripts/                 Local generation, validation, and sync helpers
 specs/                   Architecture notes for this docs repo
 ```
@@ -77,21 +78,38 @@ Run the docs checks:
 scripts/generate-example-docs.sh
 python3 scripts/build-docs-nav.py
 scripts/check-site.py
-node scripts/check-design-system-contrast.mjs
 node scripts/check-brand-contrast.mjs
 git diff --check
 ```
 
-The two contrast checks read the token blocks out of `docs/ferrosa-memory/design-system.html`
-and `docs/design-system.html` and assert every foreground/background pair meets WCAG 2.1 AA
-in both themes. Each prints `39 combinations checked, 0 below AA.` and exits non-zero on the
-first pair below threshold. They need Node 18 or newer and use only the standard library.
+`check-brand-contrast.mjs` reads the `--ferrosa-*` token blocks out of
+`docs/design-system.html` **and** `theme/examples.css`, and asserts every
+foreground/background pair meets WCAG 2.1 AA in both themes — including the
+syntax-highlight colours against the code background. It prints
+`99 combinations checked, 0 below AA.` and exits non-zero on the first pair below
+threshold. It needs Node 18 or newer and uses only the standard library. (The
+Ferrosa Memory design system was retired along with its page, and its `--fm-`
+checker went with it.)
 
 This repo now OWNS docs/ (the marketing site moved off ferrosadb/ferrosa). `sync-from-ferrosa.sh` no longer pulls docs/ by default — only the example SOURCES (sources/ferrosa/examples) track the engine repo. Use `--with-docs` only for a deliberate full re-mirror.
 
 `scripts/generate-example-docs.sh` regenerates `docs/database/examples/*.html`
 from `sources/ferrosa/examples/**/*.adoc`. CI fails if generated HTML drifts
 from the checked-in source.
+
+The examples' **content** comes from that synced tree; their **presentation**
+comes from `theme/`, which this repo owns:
+
+```text
+theme/examples.css          palette, type and layout (Ferrosa AI design system)
+theme/docinfo.html          -> <head>: stylesheet, favicon, pre-paint theme script
+theme/docinfo-header.html   -> after <body>: site header lockup + theme toggle
+theme/docinfo-footer.html   -> before </body>: site footer, theme toggle, copy buttons
+```
+
+Keeping the theme here rather than in `sources/ferrosa/examples/theme/` is
+deliberate: `sync-from-ferrosa.sh` rsyncs that tree with `--delete`, so a theme
+stored there is silently reverted on the next sync.
 
 `scripts/build-docs-nav.py` regenerates the docs sidebar, the prev/next links and
 `docs/productdocs/database/print.html` from `docs/productdocs/nav.json`. CI fails
@@ -112,10 +130,55 @@ copy `docs/` and `examples/`, regenerate example HTML, and open a docs PR.
 
 ## Deployment
 
-GitHub Pages deploys the checked-in `docs/` directory on pushes to `main`.
-Release pointer files such as `docs/LATEST`, `docs/setup.sh`, and
-`docs/setup-memory.sh` are website-owned here, so release documentation and
-installer pointers can ship independently from engine CI.
+GitHub Pages deploys the checked-in `docs/` directory on pushes to `main`, and
+on a daily schedule. Installer scripts such as `docs/setup.sh` and
+`docs/setup-memory.sh` are website-owned here, so installer behaviour ships
+independently from engine CI.
+
+### Version numbers
+
+No page carries a version literal. Every version on the site is resolved at
+**deploy time** from the latest stable public release of each product, so a new
+release reaches the site with no commit and no PR — the next scheduled deploy
+picks it up.
+
+`scripts/fetch-release-versions.sh` runs in the Pages workflow just before the
+artifact is uploaded, and writes four **gitignored build artifacts** into `docs/`:
+
+```text
+versions.json    { products: { ferrosa | memory | forge: {tag, version, minor} } }
+LATEST           v-prefixed ferrosa tag        — fetched by install.sh / setup.sh
+LATEST-MEMORY    v-prefixed ferrosa-memory tag — fetched by install-memory.sh
+LATEST-FORGE     v-prefixed forge tag
+```
+
+Pages mark the spot with a placeholder and `docs/versions.js` fills it in:
+
+```html
+<span class="fv" data-fv="ferrosa" data-fv-suffix=" — " hidden></span>active development
+```
+
+- `data-fv` — `ferrosa` | `memory` | `forge`
+- `data-fv-part` — `tag` (`v0.19.1`, default) | `version` (`0.19.1`) | `minor` (`0.19`)
+- `data-fv-prefix` / `data-fv-suffix` — literal text written around the number
+
+Placeholders ship `hidden` and are revealed only once a real number is in them,
+so a failed fetch leaves the sentence reading correctly rather than showing a
+stale number or a dangling separator. The failure is logged to the console and
+stamped on `<html>` as `data-fv-state="error"`. If a release feed is unreachable
+the script exits non-zero, which **fails the deploy** instead of publishing a
+site with missing versions.
+
+To see real numbers in a local preview, run the script first — it needs `gh`
+authenticated, and writes into your working tree:
+
+```bash
+scripts/fetch-release-versions.sh
+```
+
+Release-note sections (`What's new in vX.Y.Z`) are deliberately **not** wired to
+this. They describe one specific release, so filling them from "latest" would
+put the wrong heading over the right content.
 
 ## Production Cutover
 

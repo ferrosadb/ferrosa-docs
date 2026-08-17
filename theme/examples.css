@@ -1,0 +1,572 @@
+/* ============================================================================
+   Ferrosa AI — AsciiDoc example theme
+   Stylesheet for the generated pages under docs/database/examples/.
+
+   This file lives in the docs repo, NOT in sources/ferrosa/examples/. That tree
+   is rsync --delete'd from ferrosadb/ferrosa by scripts/sync-from-ferrosa.sh, so
+   a theme kept there is silently reverted on the next sync. The engine repo owns
+   the example CONTENT; this repo owns how it looks, exactly as it owns docs/.
+
+   Palette and type are the Ferrosa AI design system (docs/design-system.html),
+   named with its own --ferrosa-* tokens so scripts/check-brand-contrast.mjs can
+   read this file and hold it to the same WCAG 2.1 AA thresholds as the system
+   page. Do not add a colour literal outside the three token blocks below.
+
+   Light and dark are both first-class, matching brand.html: an explicit choice
+   is stamped on <html data-theme>, and the unset default follows the OS.
+   ========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+/* ── Tokens: dark (default) ────────────────────────────────────────────── */
+:root {
+  --ferrosa-bg: #05070c;
+  --ferrosa-surface: #0e1726;
+  --ferrosa-surface-2: #16243a;
+  --ferrosa-surface-inset: #09111f;
+  --ferrosa-text: #e8f4ff;
+  --ferrosa-text-muted: #9bb3cf;
+  --ferrosa-text-subtle: #6d829a;
+  --ferrosa-border: #3d659c;
+  --ferrosa-divider: #101d30;
+  --ferrosa-primary: #348cff;
+  --ferrosa-text-on-primary: #04101f;
+  --ferrosa-accent: #7ee7ff;
+  --ferrosa-success: #6bc9a0;
+  --ferrosa-warning: #f4a261;
+  --ferrosa-danger: #e25b5b;
+  --ferrosa-code-bg: #060b14;
+
+  --ferrosa-primary-soft: rgba(52, 140, 255, 0.16);
+  --ferrosa-accent-soft: rgba(126, 231, 255, 0.12);
+  --ferrosa-success-soft: rgba(107, 201, 160, 0.14);
+  --ferrosa-warning-soft: rgba(244, 162, 97, 0.14);
+  --ferrosa-danger-soft: rgba(226, 91, 91, 0.14);
+  --ferrosa-shadow-2: 0 4px 12px rgba(2, 8, 20, 0.55);
+
+  --ferrosa-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --ferrosa-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  --ferrosa-radius-sm: 8px;
+  --ferrosa-radius-md: 12px;
+  --ferrosa-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ferrosa-dur: 160ms;
+}
+
+/* ── Tokens: light, explicit choice ────────────────────────────────────── */
+:root[data-theme="light"] {
+  --ferrosa-bg: #f4f8fd;
+  --ferrosa-surface: #ffffff;
+  --ferrosa-surface-2: #e7eef7;
+  --ferrosa-surface-inset: #eef4fb;
+  --ferrosa-text: #0c1a2b;
+  --ferrosa-text-muted: #44586f;
+  --ferrosa-text-subtle: #61738a;
+  --ferrosa-border: #6a93bf;
+  --ferrosa-divider: #e2eaf4;
+  --ferrosa-primary: #2270d8;
+  --ferrosa-text-on-primary: #ffffff;
+  --ferrosa-accent: #0e7ea3;
+  --ferrosa-success: #1d805c;
+  --ferrosa-warning: #a15c14;
+  --ferrosa-danger: #c23b3b;
+  --ferrosa-code-bg: #ffffff;
+
+  --ferrosa-primary-soft: rgba(34, 112, 216, 0.10);
+  --ferrosa-accent-soft: rgba(14, 126, 163, 0.10);
+  --ferrosa-success-soft: rgba(31, 138, 99, 0.10);
+  --ferrosa-warning-soft: rgba(191, 121, 39, 0.12);
+  --ferrosa-danger-soft: rgba(194, 59, 59, 0.10);
+  --ferrosa-shadow-2: 0 4px 12px rgba(12, 26, 43, 0.10);
+}
+
+/* ── Tokens: light, following the OS ───────────────────────────────────── */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --ferrosa-bg: #f4f8fd;
+    --ferrosa-surface: #ffffff;
+    --ferrosa-surface-2: #e7eef7;
+    --ferrosa-surface-inset: #eef4fb;
+    --ferrosa-text: #0c1a2b;
+    --ferrosa-text-muted: #44586f;
+    --ferrosa-text-subtle: #61738a;
+    --ferrosa-border: #6a93bf;
+    --ferrosa-divider: #e2eaf4;
+    --ferrosa-primary: #2270d8;
+    --ferrosa-text-on-primary: #ffffff;
+    --ferrosa-accent: #0e7ea3;
+    --ferrosa-success: #1d805c;
+    --ferrosa-warning: #a15c14;
+    --ferrosa-danger: #c23b3b;
+    --ferrosa-code-bg: #ffffff;
+
+    --ferrosa-primary-soft: rgba(34, 112, 216, 0.10);
+    --ferrosa-accent-soft: rgba(14, 126, 163, 0.10);
+    --ferrosa-success-soft: rgba(31, 138, 99, 0.10);
+    --ferrosa-warning-soft: rgba(191, 121, 39, 0.12);
+    --ferrosa-danger-soft: rgba(194, 59, 59, 0.10);
+    --ferrosa-shadow-2: 0 4px 12px rgba(12, 26, 43, 0.10);
+  }
+}
+
+/* ── Reset ─────────────────────────────────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--ferrosa-sans);
+  background: var(--ferrosa-bg);
+  color: var(--ferrosa-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Site header (theme/docinfo-header.html) ───────────────────────────────
+   The same lockup, actions and measurements as the /productdocs/ header in
+   docs/productdocs/docs.css, so an example page reads as part of the site
+   rather than as a loose Asciidoctor output.
+   ───────────────────────────────────────────────────────────────────────── */
+
+.docs-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--ferrosa-bg);
+  border-bottom: 1px solid var(--ferrosa-divider);
+}
+
+.docs-header-inner {
+  max-width: 1200px;
+  min-height: 64px;
+  margin: 0 auto;
+  padding: 0.5rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.docs-logo { display: inline-flex; align-items: center; flex-shrink: 0; }
+.docs-logo img { width: 140px; height: 42px; display: block; }
+.docs-logo .logo-light { display: none; }
+:root[data-theme="light"] .docs-logo .logo-dark { display: none; }
+:root[data-theme="light"] .docs-logo .logo-light { display: block; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .docs-logo .logo-dark { display: none; }
+  :root:not([data-theme="dark"]) .docs-logo .logo-light { display: block; }
+}
+
+.docs-actions { display: inline-flex; align-items: center; gap: 0.6rem; margin-left: auto; }
+.docs-actions a,
+.docs-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--ferrosa-border);
+  border-radius: 999px;
+  background: var(--ferrosa-surface);
+  color: var(--ferrosa-text);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--ferrosa-dur) var(--ferrosa-ease),
+              border-color var(--ferrosa-dur) var(--ferrosa-ease);
+}
+.docs-actions a:hover,
+.docs-actions button:hover {
+  background: var(--ferrosa-surface-2);
+  text-decoration: none;
+}
+.docs-actions svg { width: 17px; height: 17px; flex-shrink: 0; }
+.docs-actions .icon-moon { display: none; }
+:root[data-theme="light"] .docs-actions .icon-moon { display: block; }
+:root[data-theme="light"] .docs-actions .icon-sun { display: none; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .docs-actions .icon-moon { display: block; }
+  :root:not([data-theme="dark"]) .docs-actions .icon-sun { display: none; }
+}
+
+/* ── Containers ────────────────────────────────────────────────────────── */
+#header {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 3rem 2rem 0;
+}
+
+#content {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 2rem 5rem;
+}
+
+/* Asciidoctor's own footer — the generated "Last updated" line. */
+#footer {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem;
+  border-top: 1px solid var(--ferrosa-divider);
+  color: var(--ferrosa-text-subtle);
+  font-size: 0.8125rem;
+}
+#footer-text { color: var(--ferrosa-text-subtle); }
+
+/* ── Site footer (theme/docinfo-footer.html) ───────────────────────────── */
+.site-footer { border-top: 1px solid var(--ferrosa-divider); }
+.site-footer-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: var(--ferrosa-text-muted);
+}
+.site-footer-links { display: flex; gap: 1rem; flex-wrap: wrap; }
+.site-footer-links a { color: var(--ferrosa-text-muted); text-decoration: none; }
+.site-footer-links a:hover { color: var(--ferrosa-text); text-decoration: underline; }
+
+/* ── Typography ────────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--ferrosa-text);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  font-size: clamp(2rem, 4vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.5rem;
+}
+
+h2 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ferrosa-primary);
+  margin-top: 4rem;
+  margin-bottom: 1.5rem;
+}
+
+h3 { font-size: 1.25rem; margin-top: 2rem; margin-bottom: 0.75rem; }
+h4 { font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+
+p, .paragraph p {
+  color: var(--ferrosa-text-muted);
+  margin-bottom: 1rem;
+  max-width: 720px;
+  line-height: 1.7;
+}
+
+#preamble .sectionbody p {
+  font-size: 1.125rem;
+  color: var(--ferrosa-text-muted);
+  max-width: 640px;
+  line-height: 1.7;
+}
+
+a { color: var(--ferrosa-primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+ul, ol { padding-left: 1.5rem; margin-bottom: 1.5rem; }
+li { color: var(--ferrosa-text-muted); margin-bottom: 0.5rem; line-height: 1.7; }
+li p { margin-bottom: 0.25rem; }
+
+strong { color: var(--ferrosa-text); font-weight: 600; }
+em { color: var(--ferrosa-text-muted); font-style: italic; }
+
+hr { border: none; border-top: 1px solid var(--ferrosa-divider); margin: 2rem 0; }
+
+/* ── Inline code ───────────────────────────────────────────────────────── */
+code, .literal {
+  font-family: var(--ferrosa-mono);
+  font-size: 0.875em;
+  background: var(--ferrosa-code-bg);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  border: 1px solid var(--ferrosa-divider);
+  color: var(--ferrosa-accent);
+}
+
+/* ── Code blocks ───────────────────────────────────────────────────────── */
+.listingblock { margin-bottom: 1.5rem; }
+
+.listingblock .title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ferrosa-text-subtle);
+  margin-bottom: 0.5rem;
+}
+
+.listingblock .content { position: relative; }
+
+.listingblock pre,
+.literalblock pre {
+  background: var(--ferrosa-code-bg);
+  border: 1px solid var(--ferrosa-divider);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  overflow-x: auto;
+  margin: 0;
+  font-family: var(--ferrosa-mono);
+  font-size: 0.875rem;
+  line-height: 1.8;
+  color: var(--ferrosa-text-muted);
+}
+
+.literalblock pre { margin-bottom: 1.5rem; }
+
+.listingblock pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* Copy-to-clipboard button (added by theme/docinfo-footer.html). */
+.listingblock .content .copy-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: var(--ferrosa-surface);
+  border: 1px solid var(--ferrosa-border);
+  color: var(--ferrosa-text-muted);
+  font-family: var(--ferrosa-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--ferrosa-dur) var(--ferrosa-ease),
+              color var(--ferrosa-dur) var(--ferrosa-ease),
+              border-color var(--ferrosa-dur) var(--ferrosa-ease);
+}
+
+.listingblock:hover .content .copy-btn,
+.listingblock .content .copy-btn:focus { opacity: 1; }
+
+.listingblock .content .copy-btn:hover {
+  color: var(--ferrosa-primary);
+  border-color: var(--ferrosa-primary);
+}
+
+/* ── Syntax highlighting ───────────────────────────────────────────────────
+   Asciidoctor still emits Rouge's class names with the highlighter switched
+   off, so these rules are live. Every colour is a design-system token, which
+   is what lets the contrast checker cover code as well as prose.
+   ───────────────────────────────────────────────────────────────────────── */
+.highlight .c, .highlight .c1, .highlight .cm, .highlight .cs, .highlight .cp { color: var(--ferrosa-text-subtle); font-style: italic; }
+.highlight .k, .highlight .kd, .highlight .kn, .highlight .kp,
+.highlight .kr, .highlight .kt, .highlight .kw { color: var(--ferrosa-primary); font-weight: 600; }
+.highlight .s, .highlight .s1, .highlight .s2, .highlight .sb, .highlight .sc,
+.highlight .sd, .highlight .se, .highlight .sh, .highlight .si, .highlight .sx,
+.highlight .sr, .highlight .ss { color: var(--ferrosa-success); }
+.highlight .m, .highlight .mi, .highlight .mf, .highlight .mh, .highlight .mo,
+.highlight .mb, .highlight .mx, .highlight .nv, .highlight .vc, .highlight .vg,
+.highlight .vi { color: var(--ferrosa-warning); }
+.highlight .na { color: var(--ferrosa-accent); }
+.highlight .nt { color: var(--ferrosa-danger); }
+.highlight .nc, .highlight .nn, .highlight .nb, .highlight .nf { color: var(--ferrosa-accent); }
+.highlight .o, .highlight .ow { color: var(--ferrosa-text); }
+.highlight .p { color: var(--ferrosa-text-muted); }
+
+/* ── Tables ────────────────────────────────────────────────────────────── */
+table.tableblock {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.9375rem;
+  border: 1px solid var(--ferrosa-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+table.tableblock th,
+table.tableblock td {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--ferrosa-divider);
+  border-right: 1px solid var(--ferrosa-divider);
+}
+
+table.tableblock th:last-child,
+table.tableblock td:last-child { border-right: none; }
+table.tableblock tbody tr:last-child td { border-bottom: none; }
+
+table.tableblock thead th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ferrosa-text-subtle);
+  font-weight: 600;
+  background: var(--ferrosa-surface-inset);
+}
+
+table.tableblock td { color: var(--ferrosa-text-muted); }
+table.tableblock td:first-child { color: var(--ferrosa-text); font-weight: 600; }
+table.tableblock td code { font-size: 0.8125rem; }
+table.tableblock tbody tr:hover { background: var(--ferrosa-primary-soft); }
+
+/* ── Admonitions ───────────────────────────────────────────────────────── */
+.admonitionblock { margin: 1.5rem 0; }
+.admonitionblock table { border: none; margin: 0; }
+.admonitionblock td { border: none; padding: 0; }
+
+.admonitionblock > table {
+  background: var(--ferrosa-primary-soft);
+  border: 1px solid var(--ferrosa-border);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+}
+
+.admonitionblock td.icon {
+  vertical-align: top;
+  padding-right: 0.75rem;
+  width: auto;
+  font-weight: 700;
+  color: var(--ferrosa-primary);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  padding-top: 0.125rem;
+}
+
+.admonitionblock td.icon .title { color: var(--ferrosa-primary); font-weight: 700; }
+
+.admonitionblock td.content {
+  color: var(--ferrosa-text-muted);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+}
+
+.admonitionblock td.content .paragraph:last-child p { margin-bottom: 0; }
+
+.admonitionblock.tip > table { background: var(--ferrosa-success-soft); }
+.admonitionblock.tip td.icon, .admonitionblock.tip td.icon .title { color: var(--ferrosa-success); }
+
+.admonitionblock.important > table { background: var(--ferrosa-warning-soft); }
+.admonitionblock.important td.icon, .admonitionblock.important td.icon .title { color: var(--ferrosa-warning); }
+
+.admonitionblock.warning > table { background: var(--ferrosa-warning-soft); }
+.admonitionblock.warning td.icon, .admonitionblock.warning td.icon .title { color: var(--ferrosa-warning); }
+
+.admonitionblock.caution > table { background: var(--ferrosa-danger-soft); }
+.admonitionblock.caution td.icon, .admonitionblock.caution td.icon .title { color: var(--ferrosa-danger); }
+
+/* ── TOC ───────────────────────────────────────────────────────────────── */
+#toc {
+  background: var(--ferrosa-surface);
+  border: 1px solid var(--ferrosa-border);
+  border-radius: var(--ferrosa-radius-md);
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+}
+
+#toctitle {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ferrosa-text-subtle);
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+#toc ul { list-style: none; padding: 0; margin: 0; }
+#toc li { margin-bottom: 0.375rem; }
+#toc a { font-size: 0.9375rem; font-weight: 500; }
+#toc ul ul { padding-left: 1rem; margin-top: 0.375rem; }
+
+/* The sources set `:toc: left`, so Asciidoctor stamps `toc2 toc-left` on the
+   body and expects its own stylesheet to park the TOC in a fixed rail. This
+   theme replaces that stylesheet, so those classes carry no layout and the TOC
+   renders as the card above — which is what these pages have always shown.
+   Neutralised explicitly rather than left to chance: `toc2` is meaningless
+   without the rail, and a stray width or float here reads as a broken page.
+   Turning it into a real rail is a layout change, not a restyle. */
+body.toc2 { margin-left: 0; }
+body.toc2 #toc.toc2 {
+  position: static;
+  width: auto;
+  height: auto;
+  max-width: 960px;
+  margin: 0 auto 2rem;
+}
+
+/* ── Cards: sidebar, example, quote ────────────────────────────────────── */
+.sidebarblock, .exampleblock {
+  background: var(--ferrosa-surface);
+  border: 1px solid var(--ferrosa-border);
+  border-radius: var(--ferrosa-radius-md);
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.sidebarblock .title, .exampleblock .title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ferrosa-text);
+  margin-bottom: 0.75rem;
+}
+
+.sidebarblock .content p { margin-bottom: 0.5rem; }
+
+.quoteblock {
+  border-left: 3px solid var(--ferrosa-primary);
+  padding-left: 1.25rem;
+  margin: 1.5rem 0;
+}
+.quoteblock blockquote p { color: var(--ferrosa-text-muted); font-style: italic; }
+.quoteblock .attribution { color: var(--ferrosa-text-subtle); font-size: 0.875rem; margin-top: 0.5rem; }
+
+/* ── Lists and images ──────────────────────────────────────────────────── */
+.sect1 + .sect1 { margin-top: 1rem; }
+.sectionbody { margin-top: 1rem; }
+
+.imageblock { margin: 1.5rem 0; }
+.imageblock .title { font-size: 0.8125rem; color: var(--ferrosa-text-subtle); margin-top: 0.5rem; }
+.imageblock img {
+  max-width: 100%;
+  border-radius: var(--ferrosa-radius-sm);
+  border: 1px solid var(--ferrosa-border);
+}
+
+.olist .title { font-weight: 700; color: var(--ferrosa-text); margin-bottom: 0.5rem; }
+
+.dlist dt { color: var(--ferrosa-text); font-weight: 600; margin-top: 1rem; }
+.dlist dd { color: var(--ferrosa-text-muted); margin-left: 1.5rem; margin-bottom: 0.5rem; }
+
+/* ── Responsive ────────────────────────────────────────────────────────────
+   min-width:0 and the scroll containers below are what keep a wide table or
+   code block from pushing the page sideways on a phone.
+   ───────────────────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  html, body { max-width: 100%; overflow-x: hidden; }
+
+  .docs-header-inner { padding: 0.5rem 1rem; }
+  .docs-logo img { width: 116px; height: 35px; }
+
+  #header, #content, #footer, .site-footer-inner { padding-left: 1rem; padding-right: 1rem; }
+  #header { padding-top: 2rem; }
+  #content { padding-bottom: 3rem; }
+
+  h1 { font-size: 1.75rem; }
+  h3 { font-size: 1.125rem; }
+
+  .listingblock pre, .literalblock pre { padding: 1rem; font-size: 0.8125rem; }
+
+  /* Tables are the one block that cannot reflow, so the table scrolls
+     inside its own box instead of widening the page. */
+  .tableblock, .imageblock { max-width: 100%; overflow-x: auto; }
+  table.tableblock { font-size: 0.8125rem; }
+  table.tableblock th, table.tableblock td { padding: 0.5rem 0.75rem; }
+
+  .site-footer-inner { flex-direction: column; align-items: flex-start; }
+}

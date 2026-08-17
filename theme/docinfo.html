@@ -1,0 +1,12 @@
+<!-- theme/docinfo.html -->
+<link rel="stylesheet" href="./examples.css">
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<!-- Resolve the theme before first paint. Key shared with brand.html. -->
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem("ferrosa-ds-theme");
+      if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+    } catch (e) {}
+  })();
+</script>

@@ -5,7 +5,13 @@ on:
     branches: [main]
     paths:
       - "docs/**"
+      - "scripts/fetch-release-versions.sh"
       - ".github/workflows/pages.yml"
+  # The site's version numbers are resolved at deploy time, so a new public
+  # release reaches the site through a deploy rather than through a commit.
+  # This is what makes that happen without anyone touching the repo.
+  schedule:
+    - cron: "17 7 * * *"
   workflow_dispatch:
 
 permissions:
@@ -23,6 +29,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      # Writes docs/versions.json and the three docs/LATEST* pointer files from
+      # the latest stable releases of ferrosa, ferrosa-memory and forge. These
+      # are gitignored build artifacts: they exist only inside this job and the
+      # Pages artifact it uploads.
+      #
+      # All three repos are public, so the default token can read their release
+      # feeds. The script exits non-zero if any feed is unreachable or has no
+      # stable release, which fails the deploy rather than publishing a site
+      # with blank or missing versions.
+      - name: Resolve release versions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: scripts/fetch-release-versions.sh
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
@@ -39,4 +60,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
-

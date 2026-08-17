@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ferrosa — Migration Guide</title>
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../productdocs/docs.css">
+  <style>
+    /* page-specific variations from the shared docs stylesheet */
+    td:first-child { color: var(--text-primary); font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<header class="docs-header">
+  <div class="docs-header-inner">
+    <a class="docs-logo" href="../../" aria-label="Ferrosa AI home"><img src="../../logo.svg" alt="Ferrosa AI" width="140" height="42"></a>
+    <nav class="docs-crumbs" aria-label="Breadcrumb">
+      <a href="../../productdocs/">Docs</a>
+      <span class="sep">/</span>
+      <a href="./">Ferrosa Database</a>
+      <span class="sep">/</span>
+      <span class="here">Migration Guide</span>
+    </nav>
+    <div class="docs-actions">
+      <a class="text-link" href="../../database/">Database home</a>
+      <a href="https://github.com/ferrosadb/ferrosa" target="_blank" rel="noopener noreferrer" aria-label="Ferrosa on GitHub"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
+      <a href="https://discord.gg/fxz9kNJ5a" target="_blank" rel="noopener noreferrer" aria-label="Join Ferrosa on Discord"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.369a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.009c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.891.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.056c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028ZM8.02 15.331c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418Zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418Z"/></svg></a>
+    </div>
+  </div>
+</header>
+
+<!-- docs-sidebar:start --><!-- docs-sidebar:end -->
+
+<div class="container">
+
+<h1>Migration <span>Guide</span></h1>
+  <p class="subtitle">Move from Apache Cassandra to Ferrosa with the same CQL protocol, the same drivers, and the same LWT semantics. Most core application paths migrate without code changes; a small set of features — GROUP BY, PER PARTITION LIMIT, Java UDFs, and server-push schema events — require changes described below.</p>
+
+  <div class="note">
+    <strong>Developer Preview:</strong> Ferrosa is in active development. Run representative dual-read and failure-recovery tests before migrating production traffic.
+  </div>
+
+  <div class="toc">
+    <h4>On this page</h4>
+    <ul>
+      <li><a href="#overview">Migration Overview</a></li>
+      <li><a href="#compatibility">What's Compatible</a></li>
+      <li><a href="#steps">Step-by-Step Migration</a></li>
+      <li><a href="#sstable">SSTable Import</a></li>
+      <li><a href="#dual-read">Dual-Read Verification</a></li>
+      <li><a href="#s3">S3 Storage Setup</a></li>
+      <li><a href="#differences">Key Differences</a></li>
+      <li><a href="#lwt-migration">LWT &amp; Transaction Migration</a></li>
+      <li><a href="#rollback">Rollback Plan</a></li>
+    </ul>
+  </div>
+
+  <!-- ── Overview ── -->
+  <h2 id="overview">Migration Overview</h2>
+
+  <p>Ferrosa is designed for Cassandra-compatible protocol access where supported, with migrations validated incrementally against your schema, drivers, and workload. The migration strategy is incremental:</p>
+
+  <ol>
+    <li>Start a Ferrosa node alongside your existing Cassandra cluster</li>
+    <li>Point a test workload at Ferrosa to validate compatibility</li>
+    <li>Import existing SSTables directly (Ferrosa reads Cassandra BTI format)</li>
+    <li>For migration evaluations, move keyspaces one at a time with dual-read verification</li>
+    <li>Decommission Cassandra nodes as Ferrosa proves stable</li>
+  </ol>
+
+  <div class="success">
+    <strong>No driver changes required:</strong> Ferrosa speaks the CQL native protocol (negotiated at v4) with SASL authentication,
+    LZ4/Snappy compression, and prepared statement support. Your Python, Java, Go, Node.js, C#, and Rust
+    drivers connect without modification. Driver compatibility is verified by automated smoke tests
+    on every CI build — see <code>tests/drivers/</code> and <code>.github/workflows/driver-tests.yml</code>.
+  </div>
+
+  <!-- ── Compatibility ── -->
+  <h2 id="compatibility">What's Compatible</h2>
+
+  <table>
+    <thead><tr><th>Feature</th><th>Status</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>CQL protocol v4</td><td><span class="check">Compatible</span></td><td>All 16 opcodes; negotiation capped at v4 (v5 STARTUP falls back to v4)</td></tr>
+      <tr><td>SASL authentication</td><td><span class="check">Compatible</span></td><td>PasswordAuthenticator flow</td></tr>
+      <tr><td>Frame compression</td><td><span class="check">Compatible</span></td><td>LZ4, Snappy</td></tr>
+      <tr><td>Prepared statements</td><td><span class="check">Compatible</span></td><td>W-TinyLFU cache</td></tr>
+      <tr><td>Unlogged batches</td><td><span class="check">Compatible</span></td><td>Unlogged and counter batches</td></tr>
+      <tr><td>Logged batches</td><td><span class="check">Compatible</span></td><td>Atomic via commit-log group write (single-node); 3-phase batchlog protocol (cluster). No batchlog table in single-node mode — equivalent crash-recovery via commit log.</td></tr>
+      <tr><td>system_schema.*</td><td><span class="check">Compatible</span></td><td>All standard tables</td></tr>
+      <tr><td>system.local</td><td><span class="check">Compatible</span></td><td>Including tokens column</td></tr>
+      <tr><td>Murmur3Partitioner</td><td><span class="check">Compatible</span></td><td>Same token distribution</td></tr>
+      <tr><td>BTI SSTables</td><td><span class="check">Compatible</span></td><td>Read Cassandra 5.x SSTables directly</td></tr>
+      <tr><td>Consistency levels</td><td><span class="check">Compatible</span></td><td>ONE, TWO, THREE, QUORUM, ALL, LOCAL_ONE, LOCAL_QUORUM, EACH_QUORUM</td></tr>
+      <tr><td>cqlsh</td><td><span class="check">Compatible</span></td><td>Tested with Cassandra cqlsh</td></tr>
+      <tr><td>Hinted handoff</td><td><span class="check">Compatible</span></td><td>Stores hints for down nodes, replays on recovery</td></tr>
+      <tr><td>Node lifecycle</td><td><span class="check">Compatible</span></td><td>Join and decommission via <code>ferrosa-ctl</code></td></tr>
+      <tr><td>Token rebalancing</td><td><span class="check">Compatible</span></td><td>Operator-triggered via <code>ferrosa-ctl rebalance</code></td></tr>
+      <tr><td>Secondary indexes</td><td><span class="check">Compatible</span></td><td>8 index types including vector (HNSW, IVFFlat)</td></tr>
+      <tr><td>UDTs</td><td><span class="check">Supported</span></td><td>CREATE/ALTER/DROP TYPE implemented</td></tr>
+      <tr><td>Materialized views</td><td><span class="cross">Not yet</span></td><td>Planned</td></tr>
+      <tr><td>LWT</td><td><span class="check">Compatible</span></td><td>IF NOT EXISTS, IF conditions, batch CAS — Accord protocol (strict serializable)</td></tr>
+      <tr><td>Transactions</td><td><span class="check">Supported</span></td><td>BEGIN TRANSACTION / COMMIT / ROLLBACK — multi-partition atomic operations</td></tr>
+      <tr><td>Gossip protocol</td><td><span class="cross">Replaced</span></td><td>Ferrosa uses Raft for metadata (not wire-compatible)</td></tr>
+      <tr><td>Internode protocol</td><td><span class="cross">Replaced</span></td><td>Custom binary protocol (not wire-compatible)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>Important:</strong> Ferrosa targets CQL client compatibility for common driver paths
+    but <em>not cluster-compatible</em> (a Ferrosa node cannot join an existing Cassandra ring).
+    Migration is done by importing data, not by mixed-version rolling upgrades.
+  </div>
+
+  <!-- ── Steps ── -->
+  <h2 id="steps">Step-by-Step Migration</h2>
+
+  <div class="step-grid">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      <h3>Audit your schema and queries</h3>
+      <p>Export your Cassandra schema and check for unsupported features.
+        Ferrosa supports all standard CQL types, partition/clustering keys, table options, UDTs,
+        WASM UDFs, and lightweight transactions. The following require code changes:</p>
+      <ul>
+        <li><strong>Materialized views</strong> — not supported; rewrite against base tables.</li>
+        <li><strong>GROUP BY / PER PARTITION LIMIT</strong> — not parsed; restructure queries.</li>
+        <li><strong>Java or JavaScript UDFs</strong> — rejected; recompile to WebAssembly.</li>
+        <li><strong>Schema-change EVENT push</strong> — REGISTER accepted but EVENT frames never sent; configure drivers to poll for schema changes if needed.</li>
+      </ul>
+      <pre><span class="cm"># Export schema from Cassandra</span>
+<span class="kw">cqlsh</span> -e <span class="str">"DESCRIBE SCHEMA"</span> > schema.cql
+
+<span class="cm"># Check for unsupported features</span>
+<span class="kw">grep</span> -iE <span class="str">"MATERIALIZED VIEW|GROUP BY|PER PARTITION LIMIT|LANGUAGE (java|javascript)"</span> schema.cql</pre>
+    </div>
+
+    <div class="step-num">2</div>
+    <div class="step-content">
+      <h3>Start a Ferrosa node</h3>
+      <p>Run Ferrosa alongside your existing cluster. It doesn't need to join the Cassandra ring.</p>
+      <pre><span class="cm"># Build and start. This migration example deliberately exposes CQL to the
+# source Cassandra clients; a fresh local Ferrosa install binds to loopback.</span>
+<span class="kw">cargo</span> build --release
+<span class="kw">FERROSA_CQL_BIND</span>=0.0.0.0:9042 \
+<span class="kw">FERROSA_AUTH_DISABLED</span>=true \
+./target/release/ferrosa</pre>
+    </div>
+
+    <div class="step-num">3</div>
+    <div class="step-content">
+      <h3>Apply your schema</h3>
+      <p>Run your exported schema against Ferrosa. Remove any unsupported objects first.</p>
+      <pre><span class="cm"># Apply schema to Ferrosa</span>
+<span class="kw">cqlsh</span> ferrosa-host 9042 -f schema.cql</pre>
+    </div>
+
+    <div class="step-num">4</div>
+    <div class="step-content">
+      <h3>Import data</h3>
+      <p>Two options: SSTable import (fastest for large datasets) or CQL COPY/INSERT (simpler for smaller datasets).</p>
+      <pre><span class="cm"># Option A: CQL COPY (simple, works for moderate datasets)</span>
+<span class="cm"># Export from Cassandra</span>
+<span class="kw">cqlsh</span> cassandra-host -e <span class="str">"COPY social.users TO '/tmp/users.csv'"</span>
+
+<span class="cm"># Import to Ferrosa</span>
+<span class="kw">cqlsh</span> ferrosa-host -e <span class="str">"COPY social.users FROM '/tmp/users.csv'"</span>
+
+<span class="cm"># Option B: SSTable import (see SSTable Import section below)</span></pre>
+    </div>
+
+    <div class="step-num">5</div>
+    <div class="step-content">
+      <h3>Validate with dual reads</h3>
+      <p>Run your application against both Cassandra and Ferrosa, comparing results.
+        See the <a href="#dual-read">dual-read verification</a> section below.</p>
+    </div>
+
+    <div class="step-num">6</div>
+    <div class="step-content">
+      <h3>Cut over</h3>
+      <p>Once validation passes, update your driver contact points from Cassandra to Ferrosa.</p>
+      <pre><span class="cm"># Your application code — just change the host</span>
+<span class="cm"># Before:</span>
+<span class="cm"># cluster = Cluster(['cassandra-node-1.prod'])</span>
+
+<span class="cm"># After:</span>
+cluster = Cluster([<span class="str">'ferrosa-node-1.prod'</span>])</pre>
+    </div>
+  </div>
+
+  <!-- ── SSTable ── -->
+  <h2 id="sstable">SSTable Import</h2>
+
+  <p>Ferrosa's <code>ferrosa-sstable</code> crate reads Cassandra BTI (Big Trie-Indexed) SSTables
+    natively — the default format in Cassandra 5.x. This means you can import existing SSTable
+    files directly without an intermediate conversion step.</p>
+
+  <h3>What Ferrosa reads</h3>
+  <p>A BTI SSTable consists of 7 component files:</p>
+  <ul>
+    <li><code>*-Data.db</code> — row data</li>
+    <li><code>*-Partitions.db</code> — partition index (on-disk trie)</li>
+    <li><code>*-Rows.db</code> — row-level index</li>
+    <li><code>*-Filter.db</code> — Bloom filter</li>
+    <li><code>*-CompressionInfo.db</code> — compression metadata</li>
+    <li><code>*-Statistics.db</code> — SSTable statistics</li>
+    <li><code>*-TOC.txt</code> — table of contents</li>
+  </ul>
+
+  <p>Copy these files from your Cassandra data directory to Ferrosa's data directory, organized
+    by keyspace and table. Ferrosa will pick them up on next read.</p>
+
+  <div class="note">
+    <strong>Note:</strong> SSTable import is currently a manual file-copy process. A dedicated
+    <code>ferrosa-import</code> CLI tool with validation and progress reporting is planned for a
+    future release.
+  </div>
+
+  <h3>Compression support</h3>
+  <p>Ferrosa supports LZ4 and Zstd compressed SSTables. No decompression step needed — compressed
+    SSTables are read directly.</p>
+
+  <div class="note">
+    <strong>Big format (pre-5.x):</strong> If you're running Cassandra 4.x or earlier with the
+    Big SSTable format, you'll need to upgrade to Cassandra 5.x first (which converts to BTI),
+    or use <code>nodetool upgradesstables</code> to force conversion. Big format read support
+    is planned for a future Ferrosa release.
+  </div>
+
+  <!-- ── Dual Read ── -->
+  <h2 id="dual-read">Dual-Read Verification</h2>
+
+  <p>Before considering any production cutover, run dual reads against both databases and compare results:</p>
+
+  <pre><span class="kw">from</span> cassandra.cluster <span class="kw">import</span> Cluster
+
+<span class="cm"># Connect to both</span>
+cass = Cluster([<span class="str">'cassandra-host'</span>]).connect(<span class="str">'social'</span>)
+ferro = Cluster([<span class="str">'ferrosa-host'</span>]).connect(<span class="str">'social'</span>)
+
+<span class="cm"># Compare results</span>
+query = <span class="str">"SELECT * FROM users WHERE user_id = ?"</span>
+stmt_c = cass.prepare(query)
+stmt_f = ferro.prepare(query)
+
+<span class="kw">for</span> uid <span class="kw">in</span> sample_user_ids:
+    row_c = cass.execute(stmt_c, [uid]).one()
+    row_f = ferro.execute(stmt_f, [uid]).one()
+    <span class="kw">assert</span> row_c == row_f, f<span class="str">"Mismatch for {uid}"</span></pre>
+
+  <p>Run this against a representative sample of your real queries. Cover:</p>
+  <ul>
+    <li>Point reads by partition key</li>
+    <li>Range scans on clustering columns</li>
+    <li>Collection types (list, set, map)</li>
+    <li>Prepared statements with bind variables</li>
+    <li>Batch operations</li>
+    <li>Lightweight transactions (INSERT IF NOT EXISTS, UPDATE IF)</li>
+  </ul>
+
+  <!-- ── S3 ── -->
+  <h2 id="s3">S3 Storage Setup</h2>
+
+  <p>For production-style evaluations, configure S3 or an S3-compatible service as the durable storage backend. Local disk acts as a hot cache.</p>
+
+  <pre><span class="cm"># AWS S3 with IAM instance profile (no explicit keys needed)</span>
+<span class="kw">FERROSA_S3_ENDPOINT</span>=https://s3.amazonaws.com \
+<span class="kw">FERROSA_S3_BUCKET</span>=my-ferrosa-data \
+<span class="kw">FERROSA_S3_REGION</span>=us-east-1 \
+<span class="kw">FERROSA_DATA_DIR</span>=/var/lib/ferrosa \
+./target/release/ferrosa
+
+<span class="cm"># MinIO for local development</span>
+<span class="kw">FERROSA_S3_ENDPOINT</span>=http://localhost:9000 \
+<span class="kw">FERROSA_S3_BUCKET</span>=ferrosa \
+<span class="kw">FERROSA_S3_ACCESS_KEY_ID</span>=minioadmin \
+<span class="kw">FERROSA_S3_SECRET_ACCESS_KEY</span>=minioadmin \
+<span class="kw">FERROSA_S3_ALLOW_HTTP</span>=true \
+./target/release/ferrosa</pre>
+
+  <h3>S3-compatible providers</h3>
+  <p>Ferrosa works with any S3-compatible object store. Set <code>FERROSA_S3_ENDPOINT</code> for non-AWS providers:</p>
+
+  <table>
+    <thead><tr><th>Provider</th><th>Endpoint</th></tr></thead>
+    <tbody>
+      <tr><td>AWS S3</td><td>(default — no endpoint needed)</td></tr>
+      <tr><td>MinIO</td><td><code>http://minio:9000</code></td></tr>
+      <tr><td>Cloudflare R2</td><td><code>https://&lt;account&gt;.r2.cloudflarestorage.com</code></td></tr>
+      <tr><td>DigitalOcean Spaces</td><td><code>https://&lt;region&gt;.digitaloceanspaces.com</code></td></tr>
+      <tr><td>Backblaze B2</td><td><code>https://s3.&lt;region&gt;.backblazeb2.com</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Storage cost comparison</h3>
+  <p>With S3-backed storage, you trade some local disk and snapshot costs for object storage, request costs, lifecycle policy, and restore behavior. The table below is illustrative only; benchmark and price your own workload before making migration decisions:</p>
+
+  <table>
+    <thead><tr><th>Scale</th><th>EBS (gp3, 3 replicas)</th><th>S3 Standard</th><th>Savings</th></tr></thead>
+    <tbody>
+      <tr><td>1 TB</td><td>varies by provider</td><td>model from S3 + requests</td><td>workload-dependent</td></tr>
+      <tr><td>10 TB</td><td>depends on RF + snapshots</td><td>depends on lifecycle policy</td><td>benchmark required</td></tr>
+      <tr><td>100 TB</td><td>depends on retention</td><td>depends on cache misses</td><td>benchmark required</td></tr>
+      <tr><td>1 PB</td><td>depends on topology</td><td>depends on restore SLA</td><td>benchmark required</td></tr>
+    </tbody>
+  </table>
+
+  <p>S3 request costs (GET/PUT), restore latency, and cache misses matter for high-throughput workloads. The local NVMe cache is intended to absorb hot reads, and write-behind uploads batch SSTables to amortize PUT costs, but the preview docs should be treated as a model to validate rather than a guaranteed cost outcome.</p>
+
+  <!-- ── Differences ── -->
+  <h2 id="differences">Key Differences from Cassandra</h2>
+
+  <table>
+    <thead><tr><th>Area</th><th>Cassandra</th><th>Ferrosa</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Cluster membership</td>
+        <td>Gossip protocol</td>
+        <td>Raft (openraft) for metadata consensus</td>
+      </tr>
+      <tr>
+        <td>Internode protocol</td>
+        <td>Cassandra messaging</td>
+        <td>Custom binary protocol with 3 priority lanes, PSK auth</td>
+      </tr>
+      <tr>
+        <td>Storage durability</td>
+        <td>Local disk (EBS/SSD)</td>
+        <td>S3 (local NVMe as cache)</td>
+      </tr>
+      <tr>
+        <td>Node recovery</td>
+        <td>Stream from replicas (hours)</td>
+        <td>Read from S3 (seconds)</td>
+      </tr>
+      <tr>
+        <td>GC pauses</td>
+        <td>JVM stop-the-world</td>
+        <td>None (Rust, no GC)</td>
+      </tr>
+      <tr>
+        <td>Observability</td>
+        <td>JMX + nodetool</td>
+        <td>CQL virtual tables + Prometheus + TUI + Web console</td>
+      </tr>
+      <tr>
+        <td>Real-time pub/sub</td>
+        <td>CDC (requires Kafka/Debezium)</td>
+        <td>Experimental SUBSCRIBE syntax with EVERY/DELTA modes</td>
+      </tr>
+      <tr>
+        <td>Graph queries</td>
+        <td>Not supported</td>
+        <td>Cypher via HTTP/JSON on the same tables</td>
+      </tr>
+      <tr>
+        <td>Transactions</td>
+        <td>LWT via Paxos (Accord in 5.x)</td>
+        <td>LWT via Accord (strict serializable, 1-RTT fast path)</td>
+      </tr>
+      <tr>
+        <td>SSTable format</td>
+        <td>Big + BTI</td>
+        <td>Reads BTI, writes BTI (native format planned)</td>
+      </tr>
+      <tr>
+        <td>Commit log</td>
+        <td>Standard</td>
+        <td>CAS-allocated segments, 3 sync modes, built-in CDC</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── LWT Migration ── -->
+  <h2 id="lwt-migration">LWT &amp; Transaction Migration</h2>
+
+  <h3>Lightweight transactions</h3>
+  <p>Ferrosa fully supports Cassandra's lightweight transaction (LWT) syntax. Your existing
+    LWT queries work without modification:</p>
+
+  <ul>
+    <li><code>INSERT ... IF NOT EXISTS</code> — conditional inserts</li>
+    <li><code>UPDATE ... IF condition</code> — compare-and-set updates</li>
+    <li><code>DELETE ... IF EXISTS</code> / <code>DELETE ... IF condition</code> — conditional deletes</li>
+    <li>Batch CAS — <code>BEGIN BATCH</code> with IF conditions across statements</li>
+    <li><code>SERIAL</code> and <code>LOCAL_SERIAL</code> consistency levels</li>
+  </ul>
+
+  <p>Under the hood, Ferrosa uses the Accord consensus protocol instead of Paxos. This is
+    transparent to your application — the CQL syntax and semantics are identical. Accord
+    provides strict serializability with better performance characteristics: 1-RTT fast path
+    via leaseholder, compared to Paxos's minimum 2-RTT.</p>
+
+  <div class="success">
+    <strong>Temporal compatibility:</strong> Ferrosa implements the LWT patterns used by
+    <a href="https://temporal.io">Temporal</a>'s Cassandra persistence path. If you run Temporal
+    on Cassandra with LWT-based persistence, evaluate Ferrosa against the same
+    INSERT IF NOT EXISTS, conditional UPDATE IF, and batch CAS semantics, with expected
+    configuration changes limited to the Cassandra contact points.
+  </div>
+
+  <h3>Beyond LWT: multi-statement transactions</h3>
+  <p>Ferrosa also supports explicit multi-statement transactions for operations that go beyond
+    what LWT can express:</p>
+
+  <pre><span class="cm">-- Atomic multi-partition operation</span>
+<span class="kw">BEGIN TRANSACTION</span>
+  <span class="kw">UPDATE</span> accounts <span class="kw">SET</span> balance = balance - <span class="var">100</span>
+    <span class="kw">WHERE</span> id = <span class="str">'acct-1'</span> <span class="kw">IF</span> balance >= <span class="var">100</span>;
+  <span class="kw">UPDATE</span> accounts <span class="kw">SET</span> balance = balance + <span class="var">100</span>
+    <span class="kw">WHERE</span> id = <span class="str">'acct-2'</span>;
+<span class="kw">COMMIT TRANSACTION</span>;</pre>
+
+  <p>This is a Ferrosa extension — not available in Apache Cassandra. Use it for new
+    functionality after migration, or to replace application-level two-phase patterns.</p>
+
+  <!-- ── Rollback ── -->
+  <h2 id="rollback">Rollback Plan</h2>
+
+  <p>If you need to roll back to Cassandra:</p>
+
+  <ol>
+    <li><strong>Keep Cassandra running</strong> during the migration period — don't decommission until you're confident</li>
+    <li><strong>Your application code is unchanged</strong> — rolling back is just changing the contact point back to Cassandra</li>
+    <li><strong>Export data from Ferrosa</strong> using <code>cqlsh COPY</code> if you need to sync writes that went only to Ferrosa</li>
+    <li><strong>No schema changes needed</strong> — your schema is the same on both systems</li>
+  </ol>
+
+  <div class="success">
+    <strong>Low risk:</strong> Because Ferrosa uses the same CQL protocol and the same drivers,
+    rollback is a configuration change, not a code change. Keep both systems running during
+    validation and cut over only when you're confident.
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-community">
+    <h2 class="community-title">Join our community</h2>
+    <div class="social-links">
+      <a class="social-link" href="https://discord.gg/fxz9kNJ5a" target="_blank" rel="noopener noreferrer" aria-label="Ferrosa on Discord">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.369a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.009c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.891.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.056c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028ZM8.02 15.331c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418Zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418Z"/></svg>
+      </a>
+      <a class="social-link" href="https://www.linkedin.com/company/ferrosainc/" target="_blank" rel="noopener noreferrer" aria-label="Ferrosa on LinkedIn">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z"/></svg>
+      </a>
+      <a class="social-link" href="https://github.com/ferrosadb" target="_blank" rel="noopener noreferrer" aria-label="Ferrosa on GitHub">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+    </div>
+    </div>
+    <div class="footer-legal">&copy; 2026 Ferrosa, Inc. All rights reserved.</div>
+    <div class="footer-links">
+      <a href="../../ferrosa-memory/">Memory</a>
+      <a href="../../database/">Database</a>
+      <a href="../../forge/">Forge</a>
+    </div>
+  </div>
+  </footer>
+
+</body>
+</html>

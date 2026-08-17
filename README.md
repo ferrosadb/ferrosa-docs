@@ -28,6 +28,33 @@ scripts/                 Local generation, validation, and sync helpers
 specs/                   Architecture notes for this docs repo
 ```
 
+## Adding a docs page
+
+Documentation lives under `docs/productdocs/<product>/`. Every page shares one
+stylesheet, `docs/productdocs/docs.css` — pages carry no `<style>` block of their
+own unless they genuinely need a rule the stylesheet does not provide.
+
+To add a page:
+
+1. Copy `docs/productdocs/database/_template.html` to `docs/productdocs/<product>/<name>.html`.
+   Its relative paths are already correct for any product directory.
+2. Replace the `<title>`, the `<meta name="description">`, the last breadcrumb
+   label, and the body. Leave the header and footer exactly as they are.
+3. Add one `<li>` to that product's `index.html`, in reading order. The link text
+   should match the page's own `<h1>`.
+4. Run `python3 scripts/check-site.py` and confirm it prints `site check passed`.
+
+Notes:
+
+- Do not add colour literals to a page. Use the tokens in `docs.css`; they are the
+  Ferrosa AI design system (see `docs/design-system.html`).
+- `<!-- docs-sidebar -->` markers sit in every docs page. They are intentionally
+  empty. When the section grows enough to need a sidebar, it can be generated into
+  those markers rather than hand-added to each page.
+- Pages that moved out of `docs/database/` left redirect stubs behind at their old
+  URLs. Those stubs must stay: the generated Asciidoctor examples link to the old
+  paths, and that HTML cannot be hand-edited.
+
 ## Local Checks
 
 Install Asciidoctor when regenerating example docs:

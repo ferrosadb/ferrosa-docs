@@ -177,6 +177,22 @@
       pointer-events: none;
     }
 
+    /* Product wordmark — the brand rule: "Ferrosa" SemiBold at full text
+       colour, the product word Regular at the muted colour. Size is the design
+       system's display step, not a one-off.
+       Kept on its own source line, and never merged onto the .hero-badge line:
+       scripts/update-site-versions.sh rewrites that line with a line-based
+       regex, and anything sharing it is in the blast radius. */
+    .product-wordmark {
+      font-size: clamp(2rem, 4vw, 2.75rem);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      margin: 0 auto 1.25rem;
+    }
+    .product-wordmark .co { font-weight: 600; }
+    .product-wordmark .pr { font-weight: 400; color: var(--text-secondary); }
+
     .hero-badge {
       display: inline-flex;
       align-items: center;
@@ -844,6 +860,7 @@
 
 <!-- ═══════════════════ Hero ═══════════════════ -->
 <section class="hero">
+  <div class="product-wordmark"><span class="co">Ferrosa</span> <span class="pr">Database</span></div>
   <div class="hero-badge">
     <span class="dot"></span>
     v0.18.0 — active development

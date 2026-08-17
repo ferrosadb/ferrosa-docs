@@ -1,0 +1,2875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ferrosa Database — Ferrosa AI</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <link rel="stylesheet" href="../../productdocs/docs.css">
+</head>
+<body class="docs-print">
+
+<div class="container">
+
+  <h1>Ferrosa Database</h1>
+
+  <ul class="docs-index print-toc">
+    <li><a href="#getting-started">Getting Started</a></li>
+    <li><a href="#cql-compatibility">CQL Reference</a></li>
+    <li><a href="#postgres">PostgreSQL Wire Protocol</a></li>
+    <li><a href="#cypher">Cypher Reference</a></li>
+    <li><a href="#sparql">SPARQL 1.1 Reference</a></li>
+    <li><a href="#vector-indexes">Vector Indexes</a></li>
+    <li><a href="#clustering">3-Node Cluster Setup</a></li>
+    <li><a href="#migration">Migration Guide</a></li>
+    <li><a href="#releases">Releases</a></li>
+  </ul>
+
+  <article class="print-chapter" id="getting-started">
+
+
+<h1>Getting <span>Started</span></h1>
+  <p class="subtitle">Install Ferrosa and run a single-node instance in minutes. Everything you need to connect existing CQL drivers and start querying.</p>
+
+  <div class="note">
+    <strong>Developer Preview:</strong> Ferrosa is in active development. APIs, packaging, and configuration may change between releases. Evaluate with representative workloads before production use.
+  </div>
+
+  <div class="toc">
+    <h4>On this page</h4>
+    <ul>
+      <li><a href="#getting-started--install">Install</a></li>
+      <li><a href="#getting-started--run">Run Ferrosa</a></li>
+      <li><a href="#getting-started--connect">Connect a CQL Driver</a></li>
+      <li><a href="#getting-started--config">Configuration Reference</a></li>
+      <li><a href="#getting-started--faq">Cluster FAQ</a></li>
+      <li><a href="#getting-started--cli">CLI Tools</a></li>
+      <li><a href="#getting-started--architecture">Architecture Overview</a></li>
+      <li><a href="#getting-started--next">What's Next</a></li>
+    </ul>
+  </div>
+
+  <!-- ── Install ── -->
+  <h2 id="getting-started--install">Installation</h2>
+
+  <p>The installer detects your platform, downloads the latest release binary into <code>~/.ferrosa/bin/</code>, writes a default config to <code>~/.ferrosa/config/</code>, and optionally registers a launchctl/systemd unit and sets CQL admin credentials.</p>
+  <pre><span class="kw">curl</span> -fsSL https://ferrosadb.com/install.sh | bash</pre>
+
+  <h3>Supported platforms</h3>
+  <table>
+    <thead><tr><th>Platform</th><th>Tarball / Package</th></tr></thead>
+    <tbody>
+      <tr><td>macOS Apple Silicon (arm64)</td><td><code>ferrosa-v&lt;version&gt;-aarch64-apple-darwin.tar.gz</code> or Homebrew tap (<code>brew install ferrosadb/tap/ferrosa</code>)</td></tr>
+      <tr><td>macOS Intel (x86_64)</td><td>Not supported — macOS builds are Apple Silicon only. Build from source if needed.</td></tr>
+      <tr><td>Linux x86_64 (static musl)</td><td><code>ferrosa-v&lt;version&gt;-x86_64-unknown-linux-musl.tar.gz</code> or <code>.deb</code></td></tr>
+      <tr><td>Linux aarch64 (static musl)</td><td><code>ferrosa-v&lt;version&gt;-aarch64-unknown-linux-musl.tar.gz</code></td></tr>
+    </tbody>
+  </table>
+  <p>Release tarballs, <code>.deb</code> packages, and Homebrew bottles are published on the <a href="https://github.com/ferrosadb/ferrosa/releases">GitHub Releases page</a>. Each release includes a <code>SHA256SUMS</code> file; verify with <code>sha256sum -c SHA256SUMS --ignore-missing</code>.</p>
+
+  <h3>Build from source</h3>
+  <p>If you prefer to build locally, you need a recent stable Rust toolchain:</p>
+  <pre><span class="kw">git</span> clone https://github.com/ferrosadb/ferrosa
+<span class="kw">cd</span> ferrosa
+<span class="kw">cargo</span> build --release
+<span class="cm"># Binaries land in ./target/release/ferrosa and ./target/release/ferrosa-ctl</span></pre>
+
+
+  <!-- ── Run ── -->
+  <h2 id="getting-started--run">Run Ferrosa</h2>
+
+  <h3>Minimal startup</h3>
+  <pre><span class="cm"># Start with defaults — all user-facing endpoints come up:</span>
+<span class="cm"># CQL :9042 · Postgres :5432 · graph HTTP :7474 + Bolt :7687 · SPARQL :8080 · console :9090</span>
+<span class="kw">ferrosa</span></pre>
+
+  <div class="note">
+    <strong>Local by default.</strong> In the next developer-preview release, every listener in a fresh single-node install binds to <code>127.0.0.1</code>: CQL, Postgres, Graph HTTP and Bolt, SPARQL, Flight, the web console, and internode RPC. Ferrosa does not expose a database on the network until an operator deliberately changes the relevant bind address and configures the deployment boundary.
+  </div>
+
+  <h3>Disable endpoints you don't need (reduce attack surface)</h3>
+  <pre><span class="cm"># Everything is on by default; opt out explicitly.</span>
+<span class="kw">FERROSA_GRAPH_ENABLED</span>=false <span class="kw">FERROSA_SPARQL_ENABLED</span>=false ferrosa</pre>
+
+  <h3>Custom ports and auth disabled (development)</h3>
+  <pre><span class="kw">FERROSA_CQL_BIND</span>=127.0.0.1:9042 \
+<span class="kw">FERROSA_WEB_BIND</span>=127.0.0.1:9090 \
+<span class="kw">FERROSA_AUTH_DISABLED</span>=true \
+ferrosa</pre>
+
+  <div class="note">
+    <strong>Note:</strong> Ferrosa starts in standalone mode by default. Two-node pair mode
+    is available via <code>FERROSA_SEED</code> configuration. Full cluster formation (3+ nodes)
+    uses Raft consensus and a Murmur3 token ring; there is no separate
+    <code>FERROSA_CLUSTER_MODE</code> switch.
+  </div>
+
+  <h3>Operations console</h3>
+  <p>The local operations console is served by the running Ferrosa node. Use it during preview to inspect node status, metrics, and operational tables.</p>
+  <p><a href="../../assets/screenshots/ferrosa-operations-console.png">Open operations console screenshot</a></p>
+  <img src="../../assets/screenshots/ferrosa-operations-console.png" alt="Ferrosa operations console screenshot" style="max-width:100%; border:1px solid var(--border); border-radius:12px; margin:1rem 0;">
+
+  <h3>Default ports</h3>
+  <table>
+    <thead>
+      <tr><th>Service</th><th>Port</th><th>Protocol</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>CQL Server</td><td><code>9042</code></td><td>CQL native protocol (v4)</td></tr>
+      <tr><td>Postgres</td><td><code>5432</code></td><td>PostgreSQL v3 wire protocol (SCRAM-SHA-256)</td></tr>
+      <tr><td>Web Console</td><td><code>9090</code></td><td>HTTP (REST API + static UI + WebSocket)</td></tr>
+      <tr><td>Graph HTTP</td><td><code>7474</code></td><td>HTTP/JSON (Cypher queries)</td></tr>
+      <tr><td>Graph Bolt</td><td><code>7687</code></td><td>Bolt v5 (Neo4j drivers)</td></tr>
+      <tr><td>SPARQL</td><td><code>8080</code></td><td>SPARQL 1.1 protocol over HTTP</td></tr>
+      <tr><td>Prometheus Metrics</td><td><code>9090/metrics</code></td><td>HTTP (text exposition)</td></tr>
+      <tr><td>Internode (cluster)</td><td><code>17000</code></td><td>Custom binary protocol (changed from :7000 in v0.11.0 to avoid macOS ControlCenter conflict)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── Connect ── -->
+  <h2 id="getting-started--connect">Connect a CQL Driver</h2>
+
+  <p>Ferrosa speaks the CQL native protocol (negotiated at v4) — the same wire protocol as Apache Cassandra. Any standard CQL driver works unchanged.</p>
+
+  <h3>Python</h3>
+  <pre><span class="kw">from</span> cassandra.cluster <span class="kw">import</span> Cluster
+
+cluster = Cluster([<span class="str">'127.0.0.1'</span>])
+session = cluster.connect()
+
+<span class="cm"># Create a keyspace</span>
+session.execute(<span class="str">"""
+    CREATE KEYSPACE demo WITH replication = {
+        'class': 'SimpleStrategy',
+        'replication_factor': 1
+    }
+"""</span>)
+
+<span class="cm"># Create a table</span>
+session.execute(<span class="str">"""
+    CREATE TABLE demo.users (
+        user_id uuid PRIMARY KEY,
+        name text,
+        email text
+    )
+"""</span>)
+
+<span class="cm"># Insert and query</span>
+session.execute(<span class="str">"""
+    INSERT INTO demo.users (user_id, name, email)
+    VALUES (uuid(), 'Alice', 'alice@example.com')
+"""</span>)
+
+rows = session.execute(<span class="str">"SELECT * FROM demo.users"</span>)
+<span class="kw">for</span> row <span class="kw">in</span> rows:
+    print(row.name, row.email)</pre>
+
+  <h3>Java</h3>
+  <pre><span class="cm">// Same DataStax Java driver — just change the contact point</span>
+CqlSession session = CqlSession.builder()
+    .addContactPoint(<span class="kw">new</span> InetSocketAddress(<span class="str">"127.0.0.1"</span>, <span class="var">9042</span>))
+    .withLocalDatacenter(<span class="str">"datacenter1"</span>)
+    .build();
+
+ResultSet rs = session.execute(<span class="str">"SELECT * FROM demo.users"</span>);</pre>
+
+  <h3>Go</h3>
+  <pre>cluster := gocql.NewCluster(<span class="str">"127.0.0.1"</span>)
+session, _ := cluster.CreateSession()
+<span class="kw">defer</span> session.Close()
+
+<span class="kw">var</span> name, email <span class="kw">string</span>
+session.Query(<span class="str">"SELECT name, email FROM demo.users LIMIT 1"</span>).Scan(&amp;name, &amp;email)</pre>
+
+  <h3>cqlsh</h3>
+  <pre><span class="cm"># Standard cqlsh connects directly</span>
+<span class="kw">cqlsh</span> 127.0.0.1 9042</pre>
+
+  <h3>Client bootstrap sequence</h3>
+  <p>There is no extra Ferrosa-only client bootstrap ritual beyond normal Cassandra-compatible CQL behavior. A standard driver connects like this:</p>
+  <ol>
+    <li>Open a TCP connection to one configured contact point.</li>
+    <li>Optionally send <code>OPTIONS</code> and read <code>SUPPORTED</code>.</li>
+    <li>Send <code>STARTUP</code>, including compression preferences if the driver uses them.</li>
+    <li>If auth is enabled, complete the standard SASL flow: <code>AUTHENTICATE</code> → <code>AUTH_RESPONSE</code> → <code>AUTH_SUCCESS</code>. If auth is disabled, the server replies with <code>READY</code>.</li>
+    <li>After <code>READY</code> or <code>AUTH_SUCCESS</code>, the driver introspects <code>system.local</code>, <code>system.peers</code>, and <code>system.peers_v2</code> to learn tokens, schema version, and peer CQL endpoints.</li>
+    <li>The driver then opens or reroutes pooled connections to the advertised peer endpoints from those system tables.</li>
+  </ol>
+  <p>In other words, topology discovery happens <em>after</em> the normal CQL handshake. If a client authenticates successfully and then stalls while dialing bad peer addresses, that is a topology advertisement problem, not a missing handshake step.</p>
+  <div class="note">
+    <strong>Important:</strong> An outside client does <em>not</em> send a special <code>OPTIONS</code> payload, startup flag, or Ferrosa-only command to request public addresses. External versus internal peer addresses are chosen automatically from the server side based on the source IP of the connection that is querying <code>system.local</code> / <code>system.peers</code> / <code>system.peers_v2</code>.
+  </div>
+
+  <h3>Transactions</h3>
+  <p>Ferrosa supports strict serializable distributed transactions via the Accord protocol. Lightweight transactions (LWT) work with any CQL driver:</p>
+
+  <pre><span class="cm"># Conditional insert — only succeeds if the row doesn't exist</span>
+session.execute(<span class="str">"""
+    INSERT INTO demo.users (user_id, name, email)
+    VALUES (uuid(), 'Bob', 'bob@example.com')
+    IF NOT EXISTS
+"""</span>)
+
+<span class="cm"># Compare-and-set update</span>
+session.execute(<span class="str">"""
+    UPDATE demo.users SET email = 'newemail@example.com'
+    WHERE user_id = ?
+    IF email = 'bob@example.com'
+"""</span>, [user_id])
+
+<span class="cm"># Multi-partition transaction</span>
+session.execute(<span class="str">"""
+    BEGIN TRANSACTION
+      UPDATE accounts SET balance = balance - 100
+        WHERE id = 'acct-1' IF balance >= 100;
+      UPDATE accounts SET balance = balance + 100
+        WHERE id = 'acct-2';
+    COMMIT TRANSACTION
+"""</span>)</pre>
+
+  <!-- ── Config ── -->
+  <h2 id="getting-started--config">Configuration Reference</h2>
+
+  <p>Ferrosa is configured via environment variables and an optional TOML file. For listener settings, a value in the TOML file wins over the corresponding environment variable, which wins over the built-in default. The tables below cover the customer-facing runtime variables currently honored by the server.</p>
+
+  <h3>Startup, Auth, and CQL</h3>
+  <table>
+    <thead><tr><th>Variable</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>FERROSA_CONFIG</code></td><td><code>/etc/ferrosa/ferrosa.toml</code></td><td>Optional TOML config file loaded at startup</td></tr>
+      <tr><td><code>FERROSA_MODE</code></td><td><code>development</code></td><td>Deployment mode used for production-safety checks</td></tr>
+      <tr><td><code>FERROSA_HOST_ID</code></td><td>auto-generated</td><td>Stable node UUID persisted under the data directory</td></tr>
+      <tr><td><code>FERROSA_CQL_BIND</code></td><td><code>127.0.0.1:9042</code></td><td>CQL server bind address</td></tr>
+      <tr><td><code>FERROSA_CQL_BROADCAST</code></td><td>bind address/port</td><td>Public CQL address advertised to clients via <code>system.local</code> / <code>system.peers_v2</code></td></tr>
+      <tr><td><code>FERROSA_CQL_INTERNAL_CLIENT_CIDRS</code></td><td>—</td><td>Comma-separated CIDRs whose clients should receive the internal topology view instead of the public CQL broadcast</td></tr>
+      <tr><td><code>FERROSA_CQL_MAX_CONNECTIONS</code></td><td><code>1024</code></td><td>Maximum concurrent CQL connections</td></tr>
+      <tr><td><code>FERROSA_CQL_MAX_CONNECTIONS_PER_IP</code></td><td><code>64</code></td><td>Per-client-IP connection cap</td></tr>
+      <tr><td><code>FERROSA_CQL_TLS_CERT</code></td><td>—</td><td>PEM certificate path for CQL TLS</td></tr>
+      <tr><td><code>FERROSA_CQL_TLS_KEY</code></td><td>—</td><td>PEM private-key path for CQL TLS</td></tr>
+      <tr><td><code>FERROSA_CQL_REQUIRE_TLS</code></td><td><code>false</code></td><td>Fail startup if the CQL listener does not have TLS configured</td></tr>
+      <tr><td><code>FERROSA_WEB_BIND</code></td><td><code>127.0.0.1:9090</code></td><td>Web console bind address</td></tr>
+      <tr><td><code>FERROSA_AUTH_ENABLED</code></td><td><code>false</code></td><td>Enable CQL role auth and permission enforcement</td></tr>
+      <tr><td><code>FERROSA_AUTH_WARN</code></td><td><code>false</code></td><td>Soak mode: log auth failures as warnings while still allowing requests</td></tr>
+      <tr><td><code>FERROSA_AUTH_DISABLED</code></td><td><code>false</code></td><td>Development escape hatch that skips the CQL SASL handshake entirely</td></tr>
+      <tr><td><code>FERROSA_SUPERUSER_PASSWORD</code></td><td>—</td><td>Optional override for the seeded <code>ferrosa_admin</code> password during bootstrap</td></tr>
+      <tr><td><code>FERROSA_GRAPH_ENABLED</code></td><td><code>true</code></td><td>Graph engine (HTTP 7474 + Bolt 7687) — on by default; set <code>false</code> to disable</td></tr>
+      <tr><td><code>FERROSA_GRAPH_BIND</code></td><td><code>127.0.0.1:7474</code></td><td>Graph HTTP bind address; Bolt uses the same host</td></tr>
+      <tr><td><code>FERROSA_BOLT_PORT</code></td><td><code>7687</code></td><td>Bolt listener port</td></tr>
+      <tr><td><code>FERROSA_SPARQL_ENABLED</code></td><td><code>true</code></td><td>SPARQL HTTP endpoint (8080) — on by default; set <code>false</code> to disable</td></tr>
+      <tr><td><code>FERROSA_SPARQL_BIND</code></td><td><code>127.0.0.1:8080</code></td><td>SPARQL HTTP listen address</td></tr>
+      <tr><td><code>FERROSA_POSTGRES_BIND</code></td><td><code>127.0.0.1:5432</code></td><td>Postgres wire-protocol bind address</td></tr>
+      <tr><td><code>FERROSA_FLIGHT_BIND</code></td><td><code>127.0.0.1:8815</code></td><td>Arrow Flight bind address when built with the <code>flight</code> feature</td></tr>
+      <tr><td><code>RUST_LOG</code></td><td><code>info</code></td><td>Tracing filter (e.g. <code>debug</code>, <code>ferrosa_cql=trace</code>)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>Production safety gate.</strong> With <code>FERROSA_MODE=production</code>, Ferrosa
+    <em>refuses to start</em> if it would expose an unauthenticated or unencrypted surface —
+    notably authentication disabled or CQL TLS not required. This prevents accidentally
+    running an open admin surface in production; development mode stays permissive.
+    Client paging cursors are HMAC-signed so a forged cursor can't read another partition.
+  </div>
+
+  <h3>Cluster, Internode, and Consensus</h3>
+  <table>
+    <thead><tr><th>Variable</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>FERROSA_CLUSTER_NAME</code></td><td><code>ferrosa</code></td><td>Cluster name (must match across nodes)</td></tr>
+      <tr><td><code>FERROSA_SEED</code></td><td>—</td><td>Comma-separated seed addresses; each entry may be an IP:port or resolvable hostname:port</td></tr>
+      <tr><td><code>FERROSA_INTERNODE_BIND</code></td><td><code>127.0.0.1:17000</code></td><td>Internode protocol bind address</td></tr>
+      <tr><td><code>FERROSA_INTERNODE_BROADCAST</code></td><td><code>127.0.0.1:17000</code></td><td>Address other nodes use to reach this node; also forms the default internal topology view. May be an IP:port or resolvable hostname:port.</td></tr>
+      <tr><td><code>FERROSA_INTERNODE_PSK</code></td><td>—</td><td>Pre-shared key for internode auth (HMAC-SHA256)</td></tr>
+      <tr><td><code>FERROSA_INTERNODE_TLS_CERT</code></td><td>—</td><td>PEM certificate path for internode TLS</td></tr>
+      <tr><td><code>FERROSA_INTERNODE_TLS_KEY</code></td><td>—</td><td>PEM private-key path for internode TLS</td></tr>
+      <tr><td><code>FERROSA_INTERNODE_TLS_CA</code></td><td>—</td><td>CA certificate for mutual-TLS internode verification</td></tr>
+      <tr><td><code>FERROSA_INTERNODE_REQUIRE_TLS</code></td><td><code>false</code></td><td>Fail startup if internode TLS is required but not configured</td></tr>
+      <tr><td><code>FERROSA_HEARTBEAT_INTERVAL_MS</code></td><td><code>500</code></td><td>Heartbeat interval between peers</td></tr>
+      <tr><td><code>FERROSA_HEARTBEAT_TIMEOUT_MS</code></td><td><code>1500</code></td><td>Timeout before marking a peer as suspected down</td></tr>
+      <tr><td><code>FERROSA_MAX_INTERNODE_CONNECTIONS</code></td><td><code>512</code></td><td>Maximum concurrent internode connections</td></tr>
+      <tr><td><code>FERROSA_HANDSHAKE_TIMEOUT_SECS</code></td><td><code>5</code></td><td>Internode handshake timeout</td></tr>
+      <tr><td><code>FERROSA_MAX_FRAME_BODY_SIZE</code></td><td><code>268435456</code></td><td>Maximum internode frame size in bytes</td></tr>
+      <tr><td><code>FERROSA_MAX_STREAMS_PER_LANE</code></td><td><code>128</code></td><td>Maximum concurrent streams per internode connection lane</td></tr>
+      <tr><td><code>FERROSA_DATA_CENTER</code></td><td><code>datacenter1</code></td><td>Data center name</td></tr>
+      <tr><td><code>FERROSA_RACK</code></td><td><code>rack1</code></td><td>Rack name within the data center</td></tr>
+      <tr><td><code>FERROSA_NUM_TOKENS</code></td><td><code>256</code></td><td>Number of tokens on the ring</td></tr>
+      <tr><td><code>FERROSA_DEFAULT_CL</code></td><td><code>QUORUM</code></td><td>Default consistency level</td></tr>
+      <tr><td><code>FERROSA_AUTO_JOIN</code></td><td><code>true</code></td><td>Automatically join the ring on startup (dev mode)</td></tr>
+      <tr><td><code>FERROSA_HINTED_HANDOFF_DIR</code></td><td><code>data/hints</code></td><td>Local directory for hinted handoff files</td></tr>
+      <tr><td><code>FERROSA_HINTED_HANDOFF_MAX_MB</code></td><td><code>1024</code></td><td>Max disk space for hinted handoff per peer (MB)</td></tr>
+      <tr><td><code>FERROSA_FORMATION_TIMEOUT_SECS</code></td><td><code>60</code></td><td>Maximum time to wait in forming state before falling back</td></tr>
+      <tr><td><code>FERROSA_NODE_ROLE</code></td><td><code>both</code></td><td>Node role: <code>data</code>, <code>indexer</code>, or <code>both</code></td></tr>
+      <tr><td><code>FERROSA_RAFT_HEARTBEAT_MS</code></td><td><code>300</code></td><td>Raft heartbeat interval</td></tr>
+      <tr><td><code>FERROSA_RAFT_ELECTION_MIN_MS</code></td><td><code>3000</code></td><td>Lower bound for Raft election timeout</td></tr>
+      <tr><td><code>FERROSA_RAFT_ELECTION_MAX_MS</code></td><td><code>6000</code></td><td>Upper bound for Raft election timeout</td></tr>
+      <tr><td><code>FERROSA_CLOCK_MAX_SKEW_SECS</code></td><td><code>5</code></td><td>Maximum tolerated clock skew for Accord timestamp validation</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Storage and Durability</h3>
+  <table>
+    <thead><tr><th>Variable</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>FERROSA_DATA_DIR</code></td><td><code>/var/lib/ferrosa</code></td><td>Local data directory for SSTables and commit log</td></tr>
+      <tr><td><code>FERROSA_CACHE_MAX_BYTES</code></td><td><code>10737418240</code></td><td>Local LRU cache size (10 GB)</td></tr>
+      <tr><td><code>FERROSA_FLUSH_THRESHOLD_BYTES</code></td><td><code>67108864</code></td><td>Memtable flush threshold (64 MB)</td></tr>
+      <tr><td><code>FERROSA_FLUSH_MAX_AGE_SECS</code></td><td><code>30</code></td><td>Flush memtables after this age even if the size threshold is not reached</td></tr>
+      <tr><td><code>FERROSA_FLUSH_INTERVAL_SECS</code></td><td><code>30</code></td><td>Background maintenance interval for flush and schema sync</td></tr>
+      <tr><td><code>FERROSA_WRITE_VERIFY</code></td><td><code>true</code></td><td>Verify committed writes during the storage pipeline</td></tr>
+      <tr><td><code>FERROSA_S3_ENDPOINT</code></td><td>—</td><td>S3-compatible endpoint URL</td></tr>
+      <tr><td><code>FERROSA_S3_BUCKET</code></td><td>—</td><td>S3 bucket for durable storage</td></tr>
+      <tr><td><code>FERROSA_S3_REGION</code></td><td><code>us-east-1</code></td><td>AWS region for S3</td></tr>
+      <tr><td><code>FERROSA_S3_ACCESS_KEY_ID</code></td><td>—</td><td>Access key (falls back to instance profile)</td></tr>
+      <tr><td><code>FERROSA_S3_SECRET_ACCESS_KEY</code></td><td>—</td><td>Secret access key</td></tr>
+      <tr><td><code>FERROSA_S3_ALLOW_HTTP</code></td><td><code>false</code></td><td>Allow non-TLS for local dev (MinIO)</td></tr>
+      <tr><td><code>FERROSA_S3_PREFIX</code></td><td>—</td><td>Key prefix for multi-tenant separation</td></tr>
+      <tr><td><code>FERROSA_S3_UPLOAD_QUEUE_DEPTH</code></td><td><code>16</code></td><td>Upload backpressure queue depth</td></tr>
+      <tr><td><code>FERROSA_ARCHIVE_ENABLED</code></td><td><code>false</code></td><td>Enable commit-log archiving</td></tr>
+      <tr><td><code>FERROSA_ARCHIVE_POLL_INTERVAL_SECS</code></td><td><code>5</code></td><td>Archive poll interval in seconds</td></tr>
+      <tr><td><code>FERROSA_ARCHIVE_RETENTION_DAYS</code></td><td><code>7</code></td><td>Retention period for archived commit-log segments</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Point-in-Time Restore</h3>
+
+  <p>A node started with <code>FERROSA_RESTORE_SNAPSHOT</code> set opens by restoring that snapshot from object storage instead of opening its local state. Set the variables, then restart the node — the restore happens during startup, before the node accepts connections.</p>
+
+  <table>
+    <thead><tr><th>Variable</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>FERROSA_RESTORE_SNAPSHOT</code></td><td>—</td><td>Name of the snapshot to restore from at startup. When unset, the node starts normally.</td></tr>
+      <tr><td><code>FERROSA_RESTORE_POINT_IN_TIME</code></td><td>snapshot boundary</td><td>RFC 3339 UTC timestamp (for example <code>2026-08-05T12:00:00Z</code>). Archived commit-log segments are replayed up to and including this instant. Without it, the node restores to the snapshot boundary with no replay.</td></tr>
+      <tr><td><code>FERROSA_RESTORE_FORCE</code></td><td><code>false</code></td><td>Accept a snapshot taken by a different node. Required when restoring onto a new node, since snapshots record the node that created them.</td></tr>
+    </tbody>
+  </table>
+
+  <p>Point-in-time replay requires <code>FERROSA_ARCHIVE_ENABLED=true</code> to have been set <em>before</em> the window you want to recover to. Restore can only replay segments that were archived at the time; it cannot recover a window that was never captured.</p>
+
+  <p>The timestamp is validated strictly at startup, before any data is downloaded. Non-UTC offsets, unpadded fields, and space-separated forms are rejected rather than guessed at — a misread cutoff would restore to the wrong moment. A point-in-time with no snapshot is also an error.</p>
+
+  <h4>Applied at most once</h4>
+
+  <p>Environment variables survive a reboot, so a restore is recorded once it succeeds. The node writes a marker to <code>{data_dir}/.restore-applied</code>, and a later start carrying the same values skips the restore rather than repeating it — otherwise every restart would roll the database back again and discard everything written since. Changing the snapshot or the point-in-time makes it a new request, which is applied normally.</p>
+
+  <p>To restore the same snapshot a second time deliberately, remove that marker file before starting the node.</p>
+
+  <div class="note">
+    <p><strong>Use the environment variables, not the HTTP endpoint.</strong> <code>POST /api/restore</code> currently validates a request and returns <code>202 Accepted</code>, but it does not record the intent — restarting after calling it will <em>not</em> restore. Wiring that endpoint to the startup path is tracked for a future release.</p>
+  </div>
+
+  <h3>Secondary Index and Search Backends</h3>
+  <table>
+    <thead><tr><th>Variable</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>FERROSA_INDEX_BACKEND</code></td><td><code>local</code></td><td>Secondary-index backend: <code>local</code>, <code>remote</code>, or <code>off</code></td></tr>
+      <tr><td><code>FERROSA_INDEX_SIDECAR_ENDPOINTS</code></td><td>—</td><td>Comma-separated remote index sidecar URLs when <code>FERROSA_INDEX_BACKEND=remote</code></td></tr>
+      <tr><td><code>FERROSA_INDEX_SIDECAR_TIMEOUT_MS</code></td><td><code>30000</code></td><td>Per-request timeout for the remote index sidecar</td></tr>
+      <tr><td><code>FERROSA_INDEX_SIDECAR_MAX_RETRIES</code></td><td><code>2</code></td><td>Retries per sidecar endpoint</td></tr>
+      <tr><td><code>FERROSA_INDEX_CB_THRESHOLD</code></td><td><code>5</code></td><td>Circuit-breaker failure threshold for remote indexing</td></tr>
+      <tr><td><code>FERROSA_INDEX_CB_RECOVERY_MS</code></td><td><code>60000</code></td><td>Circuit-breaker recovery interval in milliseconds</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Telemetry and Debug Endpoints</h3>
+  <table>
+    <thead><tr><th>Variable</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>FERROSA_TELEMETRY_ENABLED</code></td><td><code>false</code></td><td>Enable sampled tracing telemetry in the observability stack</td></tr>
+      <tr><td><code>FERROSA_TELEMETRY_SAMPLE_RATE</code></td><td><code>0.01</code></td><td>Fraction of spans to sample when telemetry is enabled</td></tr>
+      <tr><td><code>FERROSA_DEBUG_AUTH_TOKEN</code></td><td>—</td><td>Bearer token protecting the debug endpoints</td></tr>
+      <tr><td><code>FERROSA_DEBUG_IP_WHITELIST</code></td><td>—</td><td>Comma-separated IP allowlist for debug endpoints</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Compaction (STCS — default)</h3>
+  <p>Size-Tiered Compaction is the default strategy when no per-table configuration is specified.</p>
+  <table>
+    <thead><tr><th>Variable</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>FERROSA_COMPACTION_MIN_THRESHOLD</code></td><td><code>4</code></td><td>Min SSTables to trigger compaction</td></tr>
+      <tr><td><code>FERROSA_COMPACTION_MAX_THRESHOLD</code></td><td><code>32</code></td><td>Max SSTables per compaction task</td></tr>
+      <tr><td><code>FERROSA_COMPACTION_BUCKET_LOW</code></td><td><code>0.5</code></td><td>Lower size ratio for bucket membership</td></tr>
+      <tr><td><code>FERROSA_COMPACTION_BUCKET_HIGH</code></td><td><code>1.5</code></td><td>Upper size ratio for bucket membership</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Compaction (UCS — per-table)</h3>
+  <p>Unified Compaction Strategy (Cassandra 5.0) uses density-based levels with a configurable fan factor.
+     Configure per-table via DDL:</p>
+  <pre><span class="kw">CREATE TABLE</span> ks.events (id <span class="kw">uuid PRIMARY KEY</span>, data <span class="kw">text</span>)
+  <span class="kw">WITH</span> compaction = {
+    <span class="str">'class'</span>: <span class="str">'UnifiedCompactionStrategy'</span>,
+    <span class="str">'fan_factor'</span>: <span class="str">'4'</span>
+  };</pre>
+  <table>
+    <thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>fan_factor</code></td><td><code>4</code></td><td>SSTables per level before compaction triggers (W=2 aggressive, W=32 lazy)</td></tr>
+      <tr><td><code>min_sstable_size</code></td><td><code>104857600</code></td><td>Minimum SSTable size (bytes) for density calculation</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── CLI ── -->
+  <h2 id="getting-started--cli">CLI Tools</h2>
+
+  <h3>ferrosa-ctl</h3>
+  <p>Admin CLI for querying and monitoring a running Ferrosa node.</p>
+
+  <pre><span class="cm"># Run a CQL query</span>
+<span class="kw">ferrosa-ctl</span> query <span class="str">"SELECT * FROM demo.users"</span>
+
+<span class="cm"># Describe schema</span>
+<span class="kw">ferrosa-ctl</span> describe
+
+<span class="cm"># Show Prometheus metrics</span>
+<span class="kw">ferrosa-ctl</span> metrics
+
+<span class="cm"># Node health status</span>
+<span class="kw">ferrosa-ctl</span> status
+
+<span class="cm"># Active CQL connections</span>
+<span class="kw">ferrosa-ctl</span> connections --sort client_addr
+
+<span class="cm"># Currently running queries (long-running only)</span>
+<span class="kw">ferrosa-ctl</span> queries --long-running
+
+<span class="cm"># Storage engine stats</span>
+<span class="kw">ferrosa-ctl</span> storage
+
+<span class="cm"># Live TUI dashboard (ratatui)</span>
+<span class="kw">ferrosa-ctl</span> monitor
+
+<span class="cm"># Cluster management</span>
+<span class="kw">ferrosa-ctl</span> add-node <span class="str">10.0.0.5:17000</span>        <span class="cm"># Pre-approve a node for cluster join</span>
+<span class="kw">ferrosa-ctl</span> decommission <span class="str">10.0.0.3:17000</span>   <span class="cm"># Gracefully remove a node</span>
+<span class="kw">ferrosa-ctl</span> ring                          <span class="cm"># Show token ring distribution</span>
+<span class="kw">ferrosa-ctl</span> rebalance                     <span class="cm"># Trigger token rebalancing</span></pre>
+
+  <p>The <code>monitor</code> command launches a terminal dashboard with 5 panels showing connections, active queries, storage stats, and more. Navigate with arrow keys, refresh is automatic. Connect to a specific host with <code>--host 10.0.0.1:9042</code>.</p>
+
+  <div class="note">
+    <strong>Prometheus metrics:</strong> The <code>/metrics</code> endpoint is available on the web console port (default <code>9090</code>) without authentication. Scrape it directly from Prometheus or any compatible monitoring system.
+  </div>
+
+  <!-- ── Architecture ── -->
+  <h2 id="getting-started--architecture">Architecture Overview</h2>
+
+  <p>Ferrosa is composed of 12 independent Rust crates that can be used together or embedded individually.</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>ferrosa-common</h4>
+      <p>Shared types: Token, PartitionKey, DecoratedKey, CellValue, Murmur3 partitioner.</p>
+    </div>
+    <div class="card">
+      <h4>ferrosa-sstable</h4>
+      <p>Read/write BTI SSTables. On-disk trie, Bloom filter, LZ4/Zstd compression.</p>
+    </div>
+    <div class="card">
+      <h4>ferrosa-storage</h4>
+      <p>Memtable, commit log with CDC, STCS + UCS compaction, S3 upload manager, NVMe pinning, local LRU cache.</p>
+    </div>
+    <div class="card">
+      <h4>ferrosa-schema</h4>
+      <p>Schema registry with ArcSwap, RBAC auth, column-level permissions, audit logging.</p>
+    </div>
+    <div class="card">
+      <h4>ferrosa-index</h4>
+      <p>Secondary index framework: B-tree, hash, composite, phonetic, vector (HNSW + IVFFlat). Async builds, staleness tracking.</p>
+    </div>
+    <div class="card">
+      <h4>ferrosa-cql</h4>
+      <p>CQL v5 framing, LL(2) parser, prepared cache, LZ4/Snappy compression, and experimental SUBSCRIBE parser work.</p>
+    </div>
+    <div class="card">
+      <h4>ferrosa-udf</h4>
+      <p>WebAssembly UDF executor: WIT contract, Wasmtime sandbox, per-function CPU/memory limits. In development.</p>
+    </div>
+    <div class="card">
+      <h4>ferrosa-graph</h4>
+      <p>Cypher parser, logical/physical planner, expand executor, HTTP/JSON endpoint.</p>
+    </div>
+    <div class="card">
+      <h4>ferrosa-net</h4>
+      <p>Internode protocol: 3 priority lanes, PSK handshake, RPC, heartbeat failure detection.</p>
+    </div>
+    <div class="card">
+      <h4>ferrosa-cluster</h4>
+      <p>Pair mode HA, Raft consensus (openraft + sled), token ring, coordinator with tunable CL.</p>
+    </div>
+    <div class="card">
+      <h4>ferrosa-ctl</h4>
+      <p>CLI admin tool: query, describe, metrics, monitor (ratatui TUI dashboard).</p>
+    </div>
+    <div class="card">
+      <h4>ferrosa (binary)</h4>
+      <p>Composes all crates. CQL on :9042, graph on :7474, web console on :9090 (auth + WebSocket).</p>
+    </div>
+  </div>
+
+  <!-- ── Operational Notes ── -->
+  <h2 id="getting-started--operational-notes">Operational Notes</h2>
+
+  <h3>Durable storage without S3 (single node)</h3>
+  <p>A single-node install no longer requires S3 to be durable. Point Ferrosa at a
+    local directory and it uses a durable local <code>file://</code> object-store backend —
+    flushed SSTables are persisted to that directory and treated as the source of truth
+    (eviction is disabled), so the corpus survives restarts on local disk alone:</p>
+  <pre><span class="kw">FERROSA_LOCAL_STORE_PATH</span>=~/.ferrosa/objectstore ferrosa</pre>
+  <p>This is ideal for laptops, single-VM, and air-gapped deployments. S3 remains the
+    recommended durable backend for multi-node clusters and off-host recovery.</p>
+
+  <h3>S3 Storage Resilience</h3>
+  <p>When S3 is configured as the durable backend, Ferrosa writes asynchronously to S3 via an
+    upload queue. If S3 becomes temporarily unreachable:</p>
+  <ul>
+    <li>Reads and writes continue against local disk and memtables.</li>
+    <li>Uploads are retried automatically when connectivity resumes.</li>
+    <li>Data written during the outage exists only on local disk until the next successful upload.</li>
+  </ul>
+  <div class="note">
+    <strong>Data loss window:</strong> If local disk is lost while S3 is unreachable, data written
+    since the last successful S3 upload may be lost. For production deployments, monitor the S3
+    upload queue depth and alert on sustained failures.
+  </div>
+
+  <h3>Schema Durability</h3>
+  <p>Ferrosa persists all schema changes (keyspaces, tables, indexes, types, functions) to local disk on every flush and to S3 during periodic sync. When a node restarts — even after a binary upgrade with preserved data — the schema is restored automatically. No manual DDL replay is needed.</p>
+
+  <h3>Compaction and S3</h3>
+  <p>The storage pipeline handles compaction end-to-end:</p>
+  <ol>
+    <li>Memtable flushes to local SSTable</li>
+    <li>Compaction strategy (STCS default, or UCS per-table) selects SSTables to merge</li>
+    <li>Compacted output uploads to S3 with confirmation before manifest update</li>
+    <li>Manifest uses compare-and-swap to prevent concurrent update loss</li>
+    <li>Superseded input SSTables are deleted from S3 and local disk</li>
+  </ol>
+
+  <h3>Multi-Node Cluster (Experimental)</h3>
+  <p>Three-node cluster formation uses Raft consensus for metadata and tunable consistency for
+    data. Current limitations:</p>
+  <ul>
+    <li>When one node in a three-node cluster goes down, reads and writes continue at reduced
+      availability depending on the configured consistency level.</li>
+    <li>Schema state on surviving nodes may temporarily diverge until the failed node rejoins and
+      the Raft log is replayed.</li>
+    <li>Automatic rebalancing after node loss is not yet implemented — use <code>ferrosa-ctl</code>
+      for manual recovery.</li>
+  </ul>
+  <div class="note">
+    <strong>Developer Preview:</strong> Multi-node cluster mode is still being validated. For HA evaluations, test two-node pair mode and failover behavior before relying on it.
+  </div>
+
+  <h2 id="getting-started--faq">Cluster FAQ</h2>
+
+  <h3>How do I run one cluster for both host clients and in-network clients?</h3>
+  <p>Use two address families:</p>
+  <ul>
+    <li><code>FERROSA_CQL_BROADCAST</code> should point at the host- or externally-reachable CQL endpoint that off-node clients should dial after topology discovery.</li>
+    <li><code>FERROSA_INTERNODE_BROADCAST</code> should point at the address other Ferrosa nodes use to reach this node. Ferrosa also uses this address family as the internal topology view. Use either a stable IP:port or a hostname:port that resolves correctly from the other nodes.</li>
+    <li><code>FERROSA_CQL_INTERNAL_CLIENT_CIDRS</code> should list the container or pod CIDRs whose clients need the internal topology view.</li>
+  </ul>
+  <p>Clients whose source IP falls inside <code>FERROSA_CQL_INTERNAL_CLIENT_CIDRS</code> receive internal addresses from <code>system.local</code> and <code>system.peers_v2</code>. Other clients receive the public CQL broadcast address.</p>
+  <p>There is no client-side override for this selection. If an outside client is being handed internal addresses, the fix is to correct Ferrosa's advertised public endpoint or the CIDR classification, not to change the driver's handshake messages.</p>
+
+  <h3>Example: host Mac clients plus Podman-network clients</h3>
+  <pre><span class="kw">FERROSA_CQL_BIND</span>=0.0.0.0:9042
+<span class="kw">FERROSA_CQL_BROADCAST</span>=127.0.0.1:19042
+<span class="kw">FERROSA_INTERNODE_BROADCAST</span>=10.89.1.48:17000
+<span class="kw">FERROSA_CQL_INTERNAL_CLIENT_CIDRS</span>=10.89.0.0/16</pre>
+  <p>In that setup, host-side drivers reconnect to <code>127.0.0.1:19042</code> after topology discovery, while clients running on the Podman network see <code>10.89.x.x:9042</code>.</p>
+
+  <h3>Can split-horizon DNS replace this configuration?</h3>
+  <p>Not by itself. Cassandra-compatible topology tables expose <code>inet</code> columns, so drivers ultimately consume concrete IP addresses after topology discovery. Split DNS helps only if both environments can converge on the same reachable advertised IP, such as a shared VIP or proxy.</p>
+
+  <p>
+    For the full architecture spec, see the
+    the project repository.
+  </p>
+
+  <!-- ── Next Steps ── -->
+  <h2 id="getting-started--next">What's Next</h2>
+
+  <div class="card-grid">
+    <a href="../../database/examples/index.html" class="card" style="text-decoration: none;">
+      <h4 style="color: var(--text-primary);">Examples &amp; Tutorials &rarr;</h4>
+      <p>Step-by-step walkthroughs for IoT, analytics, e-commerce, and 10 more use cases — with runnable CQL scripts.</p>
+    </a>
+    <a href="cql-compatibility.html" class="card" style="text-decoration: none;">
+      <h4 style="color: var(--text-primary);">CQL Compatibility &rarr;</h4>
+      <p>Full reference of supported CQL statements, types, and functions.</p>
+    </a>
+    <a href="migration.html" class="card" style="text-decoration: none;">
+      <h4 style="color: var(--text-primary);">Migration Guide &rarr;</h4>
+      <p>Move from Apache Cassandra to Ferrosa without rewriting your application.</p>
+    </a>
+  </div>
+  </article>
+
+  <article class="print-chapter" id="cql-compatibility">
+
+
+<h1>CQL <span>Reference</span></h1>
+  <p class="subtitle">Ferrosa implements the CQL native protocol with negotiation capped at v4, including tested driver paths such as cdrs-tokio. This page documents what's supported, what's different, and what Ferrosa adds on top.</p>
+
+  <div class="note">
+    <strong>Beta:</strong> Ferrosa is currently in beta. CQL compatibility is under active development.
+  </div>
+
+  <div class="toc">
+    <h4>On this page</h4>
+    <ul>
+      <li><a href="#cql-compatibility--protocol">Protocol</a></li>
+      <li><a href="#cql-compatibility--types">Data Types</a></li>
+      <li><a href="#cql-compatibility--ddl">DDL Statements</a></li>
+      <li><a href="#cql-compatibility--dml">DML Statements</a></li>
+      <li><a href="#cql-compatibility--auth-roles">Auth &amp; Roles</a></li>
+      <li><a href="#cql-compatibility--system">System Keyspaces</a></li>
+      <li><a href="#cql-compatibility--indexes">Secondary Indexes</a></li>
+      <li><a href="#cql-compatibility--transactions">Transactions (Accord)</a></li>
+      <li><a href="#cql-compatibility--subscribe">SUBSCRIBE Extension</a></li>
+      <li><a href="#cql-compatibility--graph">Graph (Cypher) Extension</a></li>
+      <li><a href="#cql-compatibility--not-yet">Not Yet Supported</a></li>
+      <li><a href="#cql-compatibility--behavioral-differences">Behavioral Differences</a></li>
+    </ul>
+  </div>
+
+  <!-- ── Protocol ── -->
+  <h2 id="cql-compatibility--protocol">Protocol</h2>
+
+  <h3>Wire protocol</h3>
+  <p>Ferrosa speaks the CQL native protocol with the standard 9-byte frame header and <strong>caps negotiation at protocol v4</strong>. v5 added a modern framing layer that drivers implement inconsistently — some send plain legacy envelopes at v5, others send CRC-checksummed modern frames — so no single server mode serves both. A v5 <code>STARTUP</code> is therefore rejected with a protocol-version error advertising v4 as the maximum, and every compliant driver (gocql, DataStax Java/C#, scylla-rust, cassandra-driver) transparently falls back to the one well-tested v4 transport, including cdrs-tokio. All 16 opcodes are handled:</p>
+
+  <table>
+    <thead><tr><th>Opcode</th><th>Name</th><th>Direction</th></tr></thead>
+    <tbody>
+      <tr><td>0x00</td><td>ERROR</td><td>Response</td></tr>
+      <tr><td>0x01</td><td>STARTUP</td><td>Request</td></tr>
+      <tr><td>0x02</td><td>READY</td><td>Response</td></tr>
+      <tr><td>0x03</td><td>AUTHENTICATE</td><td>Response</td></tr>
+      <tr><td>0x05</td><td>OPTIONS</td><td>Request</td></tr>
+      <tr><td>0x06</td><td>SUPPORTED</td><td>Response</td></tr>
+      <tr><td>0x07</td><td>QUERY</td><td>Request</td></tr>
+      <tr><td>0x08</td><td>RESULT</td><td>Response</td></tr>
+      <tr><td>0x09</td><td>PREPARE</td><td>Request</td></tr>
+      <tr><td>0x0A</td><td>EXECUTE</td><td>Request</td></tr>
+      <tr><td>0x0B</td><td>REGISTER</td><td>Request</td></tr>
+      <tr><td>0x0C</td><td>EVENT</td><td>Response</td></tr>
+      <tr><td>0x0D</td><td>BATCH</td><td>Request</td></tr>
+      <tr><td>0x0E</td><td>AUTH_CHALLENGE</td><td>Response</td></tr>
+      <tr><td>0x0F</td><td>AUTH_RESPONSE</td><td>Request</td></tr>
+      <tr><td>0x10</td><td>AUTH_SUCCESS</td><td>Response</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Compression</h3>
+  <p>Frame-level compression is negotiated during STARTUP via the <code>COMPRESSION</code> option:</p>
+  <ul>
+    <li><strong>LZ4</strong> — recommended for production (fast, low overhead)</li>
+    <li><strong>Snappy</strong> — alternative with good compression ratio</li>
+  </ul>
+  <p>Compression is optional. Uncompressed frames are always accepted.</p>
+
+  <h3>Authentication</h3>
+  <p>SASL PLAIN authentication via the standard <code>org.apache.cassandra.auth.PasswordAuthenticator</code> flow. Passwords are hashed with bcrypt or argon2. Disable with <code>FERROSA_AUTH_DISABLED=true</code> for development.</p>
+
+  <h3>Driver bootstrap and topology discovery</h3>
+  <p>Driver bootstrap follows the standard Cassandra-compatible sequence. There is no Ferrosa-specific handshake required to unlock topology metadata:</p>
+  <ol>
+    <li>Connect to an initial contact point.</li>
+    <li>Optionally exchange <code>OPTIONS</code> / <code>SUPPORTED</code>.</li>
+    <li>Send <code>STARTUP</code>.</li>
+    <li>If auth is enabled, complete <code>AUTHENTICATE</code> → <code>AUTH_RESPONSE</code> → <code>AUTH_SUCCESS</code>. Otherwise the server returns <code>READY</code> directly.</li>
+    <li>Only after the connection reaches <code>READY</code> or <code>AUTH_SUCCESS</code> does the driver query <code>system.local</code>, <code>system.peers</code>, and <code>system.peers_v2</code>.</li>
+    <li>The driver uses those system-table rows to discover tokens, schema version, and the peer endpoints it should dial next.</li>
+  </ol>
+  <p>This means post-auth hangs that occur while a driver is opening peer connections usually indicate bad topology metadata, not a missing bootstrap message. Ferrosa must advertise peer addresses that are reachable from the client's network.</p>
+  <p><strong>Explicitly:</strong> <code>OPTIONS</code> does not control whether the client receives public or internal peer addresses. Neither do <code>STARTUP</code>, compression settings, or any Ferrosa-specific extension flag. The server chooses which addresses to return based on the source IP of the established client connection when servicing the topology queries.</p>
+
+  <!-- ── Types ── -->
+  <h2 id="cql-compatibility--types">Data Types</h2>
+
+  <table>
+    <thead><tr><th>CQL Type</th><th>Protocol ID</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>ascii</td><td>0x0001</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>bigint</td><td>0x0002</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>blob</td><td>0x0003</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>boolean</td><td>0x0004</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>counter</td><td>0x0005</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>decimal</td><td>0x0006</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>double</td><td>0x0007</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>float</td><td>0x0008</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>int</td><td>0x0009</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>timestamp</td><td>0x000B</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>uuid</td><td>0x000C</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>varchar / text</td><td>0x000D</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>varint</td><td>0x000E</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>timeuuid</td><td>0x000F</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>inet</td><td>0x0010</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>date</td><td>0x0011</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>time</td><td>0x0012</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>smallint</td><td>0x0013</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>tinyint</td><td>0x0014</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>list&lt;T&gt;</td><td>0x0020</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>map&lt;K, V&gt;</td><td>0x0021</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>set&lt;T&gt;</td><td>0x0022</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>tuple&lt;...&gt;</td><td>0x0031</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>frozen&lt;T&gt;</td><td>—</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>duration</td><td>0x0015</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>UDT</td><td>0x0030</td><td><span class="check">Supported</span></td></tr>
+      <tr><td>vector&lt;float, N&gt;</td><td>0x0033</td><td><span class="check">Supported</span></td></tr>
+    </tbody>
+  </table>
+
+  <p>Collection bind values in prepared statements are fully supported. Map, set, and list values bound via <code>EXECUTE</code> are stored in Cassandra-compatible wire format and survive flush, compaction, and S3 upload without format loss.</p>
+
+  <!-- ── DDL ── -->
+  <h2 id="cql-compatibility--ddl">DDL Statements</h2>
+
+  <table>
+    <thead><tr><th>Statement</th><th>Status</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>CREATE KEYSPACE</td><td><span class="check">Supported</span></td><td>WITH replication (SimpleStrategy / NetworkTopologyStrategy), IF NOT EXISTS, DURABLE_WRITES. Transient replication (<code>'DC1': '3/1'</code>) is rejected — Ferrosa does not implement it, and accepting it would corrupt driver schema metadata.</td></tr>
+      <tr><td>ALTER KEYSPACE</td><td><span class="check">Supported</span></td><td>Change replication, durable_writes</td></tr>
+      <tr><td>DROP KEYSPACE</td><td><span class="check">Supported</span></td><td>IF EXISTS</td></tr>
+      <tr><td>CREATE TABLE</td><td><span class="check">Supported</span></td><td>Partition key, clustering key with order, IF NOT EXISTS, table options (compaction, compression, comment, TTL, gc_grace)</td></tr>
+      <tr><td>ALTER TABLE</td><td><span class="check">Supported</span></td><td>ADD column, DROP column</td></tr>
+      <tr><td>DROP TABLE</td><td><span class="check">Supported</span></td><td>IF EXISTS</td></tr>
+      <tr><td>CREATE INDEX</td><td><span class="check">Supported</span></td><td>USING type, WITH OPTIONS, IF NOT EXISTS — <a href="#cql-compatibility--indexes">see below</a></td></tr>
+      <tr><td>DROP INDEX</td><td><span class="check">Supported</span></td><td>IF EXISTS</td></tr>
+      <tr><td>DROP (without TABLE keyword)</td><td><span class="check">Supported</span></td><td>DROP keyspace_name.table_name shorthand</td></tr>
+      <tr><td>CREATE MATERIALIZED VIEW</td><td><span class="cross">Not yet</span></td><td>—</td></tr>
+      <tr><td>CREATE TYPE (UDT)</td><td><span class="check">Supported</span></td><td>CREATE TYPE, ALTER TYPE, DROP TYPE — full UDT DDL lifecycle</td></tr>
+      <tr><td>CREATE FUNCTION / AGGREGATE</td><td><span class="check">Supported</span></td><td>CREATE/DROP FUNCTION, CREATE/DROP AGGREGATE — full DDL lifecycle with cluster replication. UDFs are <strong>WebAssembly</strong> components (<code>LANGUAGE wasm AS '&lt;hex&gt;' | AS FILE '…' | AS URL '…' WITH SHA256 = '…'</code>); Java UDFs are not supported. Keyspace-qualified calls (<code>ks.fn(args)</code>) work in SELECT.</td></tr>
+    </tbody>
+  </table>
+
+  <p class="note">Prepared statements remain valid after <code>ALTER TABLE ADD</code> or <code>DROP</code> column — the schema snapshot updates atomically and subsequent <code>PREPARE</code> calls reflect the current column set.</p>
+
+  <h3>Example</h3>
+  <pre><span class="kw">CREATE KEYSPACE</span> <span class="type">social</span> <span class="kw">WITH</span> replication = {
+  <span class="str">'class'</span>: <span class="str">'SimpleStrategy'</span>,
+  <span class="str">'replication_factor'</span>: <span class="var">3</span>
+} <span class="kw">AND</span> durable_writes = <span class="kw">true</span>;
+
+<span class="kw">CREATE TABLE</span> <span class="type">social.users</span> (
+  user_id <span class="type">uuid</span>,
+  name <span class="type">text</span>,
+  email <span class="type">text</span>,
+  created_at <span class="type">timestamp</span>,
+  tags <span class="type">set&lt;text&gt;</span>,
+  <span class="kw">PRIMARY KEY</span> (user_id)
+);
+
+<span class="cm">-- Per-table compaction strategy (default: STCS)</span>
+<span class="kw">CREATE TABLE</span> <span class="type">social.events</span> (
+  event_id <span class="type">uuid</span>,
+  payload <span class="type">text</span>,
+  <span class="kw">PRIMARY KEY</span> (event_id)
+) <span class="kw">WITH</span> compaction = {
+  <span class="str">'class'</span>: <span class="str">'UnifiedCompactionStrategy'</span>,
+  <span class="str">'fan_factor'</span>: <span class="str">'4'</span>
+};</pre>
+
+  <h3>Compaction Strategies</h3>
+  <table>
+    <thead><tr><th>Strategy</th><th>DDL Class Name</th><th>Behavior</th></tr></thead>
+    <tbody>
+      <tr><td>STCS (default)</td><td><em>none required</em></td><td>Size-Tiered — groups SSTables by similar size</td></tr>
+      <tr><td>UCS</td><td><code>UnifiedCompactionStrategy</code></td><td>Density-based levels with fan factor: W=2 (LCS-like), W=4 (balanced), W=32 (STCS-like)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── DML ── -->
+  <h2 id="cql-compatibility--dml">DML Statements</h2>
+
+  <table>
+    <thead><tr><th>Statement</th><th>Status</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>SELECT</td><td><span class="check">Supported</span></td><td>WHERE, ORDER BY, LIMIT, DISTINCT, bind markers (?), named bind markers (:name), IN clause, ALLOW FILTERING, token(), CONTAINS / CONTAINS KEY, LIKE, SOUNDS LIKE, fts_match()</td></tr>
+      <tr><td>INSERT</td><td><span class="check">Supported</span></td><td>IF NOT EXISTS (LWT), USING TTL, USING TIMESTAMP</td></tr>
+      <tr><td>UPDATE</td><td><span class="check">Supported</span></td><td>SET, WHERE, IF conditions (LWT), collection +/- operators, counter increment/decrement</td></tr>
+      <tr><td>DELETE</td><td><span class="check">Supported</span></td><td>WHERE, IF EXISTS / IF conditions (LWT), column-level delete, map element delete syntax</td></tr>
+      <tr><td>BATCH</td><td><span class="check">Supported</span></td><td>BEGIN BATCH ... APPLY BATCH (unlogged), batch CAS (conditional batch)</td></tr>
+      <tr><td>BEGIN TRANSACTION</td><td><span class="check">Supported</span></td><td>BEGIN TRANSACTION ... COMMIT TRANSACTION / ROLLBACK TRANSACTION (Accord)</td></tr>
+      <tr><td>TRUNCATE</td><td><span class="check">Supported</span></td><td>—</td></tr>
+      <tr><td>USE</td><td><span class="check">Supported</span></td><td>Set default keyspace for session</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Built-in functions</h3>
+  <table>
+    <thead><tr><th>Function</th><th>Status</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>toJson()</td><td><span class="check">Supported</span></td><td>Serialize any column to JSON string</td></tr>
+      <tr><td>token()</td><td><span class="check">Supported</span></td><td>Token-range queries in WHERE clauses</td></tr>
+      <tr><td>uuid()</td><td><span class="check">Supported</span></td><td>Generate random UUID</td></tr>
+      <tr><td>now()</td><td><span class="check">Supported</span></td><td>Current timeuuid</td></tr>
+      <tr><td>toTimestamp()</td><td><span class="check">Supported</span></td><td>Convert timeuuid to timestamp</td></tr>
+      <tr><td>currentDate()</td><td><span class="check">Supported</span></td><td>Today's date (for temporal arithmetic in WHERE)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Durations &amp; temporal arithmetic</h3>
+  <p>The <code>duration</code> type accepts both literal forms — compact
+  (<code>2d</code>, <code>1mo3d</code>, <code>89h4m48s</code>) and ISO-8601
+  (<code>P1Y2M3D</code>, <code>PT4H5M6S</code>). A WHERE predicate may add or
+  subtract a duration from a <code>date</code> or <code>timestamp</code>; months
+  and days are applied calendar-aware (e.g. Jan&nbsp;31&nbsp;+&nbsp;1mo clamps to
+  the last day of February).</p>
+  <pre><span class="cm">-- rows from the last two days</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="type">events</span>
+  <span class="kw">WHERE</span> day &gt;= <span class="fn">currentDate</span>() <span class="kw">-</span> <span class="str">2d</span> <span class="kw">ALLOW FILTERING</span>;</pre>
+
+  <h3>Prepared statements</h3>
+  <p>Full PREPARE/EXECUTE support with positional bind values. PREPARE responses include <code>pk_count</code> metadata for driver routing. The prepared statement cache uses moka with W-TinyLFU eviction (64 MB default). Bind markers (<code>?</code>) and named bind markers (<code>:name</code>) are both supported.</p>
+
+  <p>Bind values are fully supported in <code>QUERY</code> frames — positional (<code>?</code>) and named (<code>:name</code>) markers work in all statement types: SELECT, INSERT, UPDATE, DELETE. Collection-typed bind values (map, set, list) are passed through in Cassandra wire format for correct round-trip storage.</p>
+
+  <pre><span class="cm">-- Prepare</span>
+<span class="kw">PREPARE</span> stmt <span class="kw">FROM</span> <span class="str">'SELECT * FROM social.users WHERE user_id = ?'</span>;
+
+<span class="cm">-- Execute with positional bind</span>
+<span class="kw">EXECUTE</span> stmt <span class="kw">USING</span> <span class="var">550e8400-e29b-41d4-a716-446655440000</span>;</pre>
+
+  <h3>Comparison operators</h3>
+  <p>WHERE clauses support: <code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>, <code>!=</code>, <code>IN</code>, <code>CONTAINS</code>, <code>CONTAINS KEY</code>, <code>LIKE</code></p>
+  <p><code>LIKE</code> matches text patterns with the <code>%</code> wildcard (any sequence of characters) — <code>'pre%'</code> (prefix), <code>'%suf'</code> (suffix), <code>'%mid%'</code> (contains), or an exact literal. Matching is case-sensitive. As a non-key predicate it is evaluated as a post-scan filter and requires <code>ALLOW FILTERING</code>.</p>
+  <pre><span class="cm">-- names beginning with 'M'</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="type">cycling.cyclist_name</span>
+  <span class="kw">WHERE</span> firstname <span class="kw">LIKE</span> <span class="str">'M%'</span> <span class="kw">ALLOW FILTERING</span>;</pre>
+
+  <h3>Consistency levels</h3>
+  <p>Ferrosa supports the following consistency levels for reads and writes:</p>
+  <ul>
+    <li><code>ONE</code></li>
+    <li><code>TWO</code></li>
+    <li><code>THREE</code></li>
+    <li><code>QUORUM</code></li>
+    <li><code>ALL</code></li>
+    <li><code>LOCAL_ONE</code></li>
+    <li><code>LOCAL_QUORUM</code></li>
+    <li><code>EACH_QUORUM</code></li>
+    <li><code>SERIAL</code> — for lightweight transaction reads (linearizable)</li>
+    <li><code>LOCAL_SERIAL</code> — for lightweight transaction reads (local DC linearizable)</li>
+  </ul>
+  <p>Set per-query via the standard CQL protocol flags, or configure a default with <code>FERROSA_DEFAULT_CL</code> (default: <code>QUORUM</code>).</p>
+
+  <h3>Conflict resolution</h3>
+  <p>Cells reconcile by last-write-wins on timestamp: the higher write timestamp wins. When two writes to the same cell share the same timestamp, the lexicographically greater value wins, so the result is deterministic regardless of replica or compaction order.</p>
+  <div class="note">
+    <strong>Difference from Cassandra:</strong> when a write and a delete carry the <em>same</em> timestamp, Ferrosa favors the <strong>write</strong> — the data is preserved. Apache Cassandra resolves the same tie in favor of the <strong>delete</strong> (the tombstone wins). If you depend on Cassandra's delete-wins-on-tie behavior, use distinct timestamps for the delete.
+  </div>
+
+  <!-- ── Auth ── -->
+  <h2 id="cql-compatibility--auth-roles">Auth &amp; Roles</h2>
+
+  <table>
+    <thead><tr><th>Statement</th><th>Status</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>CREATE ROLE</td><td><span class="check">Supported</span></td><td>WITH PASSWORD, HASHED PASSWORD, SUPERUSER, LOGIN, OPTIONS, IF NOT EXISTS</td></tr>
+      <tr><td>ALTER ROLE</td><td><span class="check">Supported</span></td><td>Change PASSWORD / HASHED PASSWORD, SUPERUSER, LOGIN</td></tr>
+      <tr><td>CREATE USER / ALTER USER</td><td><span class="check">Supported</span></td><td>Legacy alias; WITH [HASHED] PASSWORD, SUPERUSER / NOSUPERUSER</td></tr>
+      <tr><td>DROP ROLE</td><td><span class="check">Supported</span></td><td>IF EXISTS</td></tr>
+      <tr><td>GRANT</td><td><span class="check">Supported</span></td><td>GRANT perm[, perm…] ON resource TO role. Resource: <code>ON TABLE ks.t</code> / <code>ks.t</code>, <code>ON KEYSPACE</code>, <code>ON ALL KEYSPACES</code>, <code>ON ALL ROLES</code>, <code>ON FUNCTION</code>. Unknown permissions are rejected (no silent partial grant).</td></tr>
+      <tr><td>REVOKE</td><td><span class="check">Supported</span></td><td>REVOKE perm[, perm…] ON resource FROM role (same resource forms as GRANT)</td></tr>
+      <tr><td>GRANT / REVOKE role</td><td><span class="check">Supported</span></td><td><code>GRANT &lt;role&gt; TO &lt;member&gt;</code> / <code>REVOKE &lt;role&gt; FROM &lt;member&gt;</code> — role hierarchy (the member inherits the role's permissions). Replicated additively (one membership edge per op) and cycle-checked at apply, so concurrent grants never clobber and a revoke is never lost to a racing grant.</td></tr>
+      <tr><td>LIST ROLES</td><td><span class="check">Supported</span></td><td><code>LIST ROLES [OF &lt;role&gt;] [NORECURSIVE]</code>; <code>LIST USERS</code> alias</td></tr>
+      <tr><td>LIST PERMISSIONS</td><td><span class="check">Supported</span></td><td><code>LIST [ALL | &lt;permission&gt;] PERMISSIONS [ON &lt;resource&gt;] [OF &lt;role&gt;] [NORECURSIVE]</code> — gated on DESCRIBE over all roles</td></tr>
+      <tr><td>ACCESS TO/FROM (network auth)</td><td><span class="cross">Rejected</span></td><td>ACCESS TO DATACENTERS / FROM CIDRS is parsed but rejected — ferrosa has no network authorizer, so an unenforced access restriction fails loud rather than being silently accepted</td></tr>
+    </tbody>
+  </table>
+
+  <p><strong>HASHED PASSWORD.</strong> <code>CREATE ROLE … WITH HASHED PASSWORD = '&lt;hash&gt;'</code> (and the legacy <code>CREATE USER … WITH HASHED PASSWORD '&lt;hash&gt;'</code>) stores a pre-computed bcrypt or argon2id hash verbatim — it is not re-hashed, which lets you migrate existing credentials. The hash format is validated on the coordinator and rejected if unsupported, so a role can never hold a credential the authenticator cannot verify. Password and hash literals are redacted from any log line or error message.</p>
+
+  <pre><span class="cm">-- Plaintext password — hashed server-side with bcrypt / argon2id</span>
+<span class="kw">CREATE ROLE</span> app_writer <span class="kw">WITH PASSWORD</span> = <span class="str">'S3cret-Pass!'</span> <span class="kw">AND LOGIN</span> = <span class="kw">true</span>;
+
+<span class="cm">-- Migrate an existing credential: a pre-computed hash, stored verbatim</span>
+<span class="kw">CREATE ROLE</span> legacy_user
+  <span class="kw">WITH HASHED PASSWORD</span> = <span class="str">'$2a$10$JSJEMFm6GeaW9XxT5JIheuEtPvat6i7uKbnTcxX3c1wshIIsGyUtG'</span>
+  <span class="kw">AND LOGIN</span> = <span class="kw">true</span>;
+
+<span class="cm">-- Custom authenticator OPTIONS (accepted; not interpreted by the default authenticator)</span>
+<span class="kw">CREATE ROLE</span> svc <span class="kw">WITH PASSWORD</span> = <span class="str">'p'</span> <span class="kw">AND OPTIONS</span> = { <span class="str">'ttl'</span> : <span class="str">'3600'</span> };
+
+<span class="cm">-- Rotate to a new hashed credential, or toggle superuser/login</span>
+<span class="kw">ALTER ROLE</span> app_writer <span class="kw">WITH HASHED PASSWORD</span> = <span class="str">'$argon2id$v=19$m=19456,t=2,p=1$c29tZXNhbHQ$aGFzaA'</span>;
+
+<span class="cm">-- Legacy USER alias: no '=', trailing SUPERUSER / NOSUPERUSER</span>
+<span class="kw">CREATE USER</span> ops <span class="kw">WITH HASHED PASSWORD</span> <span class="str">'$2a$10$JSJEMFm6GeaW9XxT5JIheuEtPvat6i7uKbnTcxX3c1wshIIsGyUtG'</span> <span class="kw">NOSUPERUSER</span>;
+
+<span class="cm">-- Network authorization is parsed but REJECTED (no network authorizer):</span>
+<span class="cm">--   CREATE ROLE r WITH PASSWORD = 'p' AND ACCESS TO DATACENTERS {'DC1'};  -- error</span></pre>
+
+  <p>Ferrosa supports column-level permissions, rate limiting per role, and audit logging to configurable sinks (log file, audit table).</p>
+
+  <!-- ── System ── -->
+  <h2 id="cql-compatibility--system">System Keyspaces</h2>
+
+  <h3>system_schema</h3>
+  <p>Standard Cassandra system schema tables for driver compatibility:</p>
+  <ul>
+    <li><code>system_schema.keyspaces</code></li>
+    <li><code>system_schema.tables</code></li>
+    <li><code>system_schema.columns</code></li>
+    <li><code>system_schema.types</code></li>
+    <li><code>system_schema.functions</code></li>
+    <li><code>system_schema.aggregates</code></li>
+    <li><code>system_schema.triggers</code></li>
+    <li><code>system_schema.views</code></li>
+    <li><code>system_schema.indexes</code></li>
+  </ul>
+
+  <h3>system.local</h3>
+  <p>Node metadata including <code>tokens</code> column for driver topology awareness. Drivers typically read this immediately after <code>READY</code> or <code>AUTH_SUCCESS</code> as part of topology discovery.</p>
+
+  <h3>system_observability (Ferrosa extension)</h3>
+  <p>Virtual tables backed by live in-memory state, not persisted:</p>
+  <ul>
+    <li><code>system_observability.connections</code> — active CQL client connections</li>
+    <li><code>system_observability.active_queries</code> — currently executing queries</li>
+    <li><code>system_observability.storage_stats</code> — storage engine metrics</li>
+    <li><code>system_views.secondary_indexes</code> — per-index build status, staleness, pending work</li>
+  </ul>
+
+  <pre><span class="cm">-- Check active connections</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> system_observability.connections;
+
+<span class="cm">-- Monitor running queries</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> system_observability.active_queries;
+
+<span class="cm">-- Storage engine stats</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> system_observability.storage_stats;</pre>
+
+  <!-- ── Secondary Indexes ── -->
+  <h2 id="cql-compatibility--indexes">Secondary Indexes</h2>
+
+  <div class="extension">
+    <strong>Beyond Cassandra:</strong> Ferrosa's secondary index framework goes far beyond Cassandra's SAI
+    or legacy 2i indexes. Eight pluggable index types cover traditional queries, full-text phonetic
+    search, and AI/ML vector similarity — all built into the database without requiring a separate search service for the preview path.
+  </div>
+
+  <h3>Index types</h3>
+  <table>
+    <thead><tr><th>Type</th><th>USING clause</th><th>Use case</th></tr></thead>
+    <tbody>
+      <tr><td>B-tree</td><td><code>'btree'</code> (default)</td><td>Ordered range queries and sorted scans</td></tr>
+      <tr><td>Hash</td><td><code>'hash'</code></td><td>O(1) equality point lookups</td></tr>
+      <tr><td>Composite</td><td><code>'composite'</code></td><td>Multi-column prefix-based lookups</td></tr>
+      <tr><td>Phonetic</td><td><code>'phonetic'</code></td><td>Fuzzy name matching (Soundex, Metaphone, Double Metaphone, Caverphone)</td></tr>
+      <tr><td>Filtered</td><td>Any + <code>WHERE</code></td><td>Partial index over a subset of rows</td></tr>
+      <tr><td>Vector (HNSW)</td><td><code>'vector'</code></td><td>Approximate nearest neighbor — graph-based, best query performance</td></tr>
+      <tr><td>Vector (IVFFlat)</td><td><code>'vector'</code></td><td>Approximate nearest neighbor — k-means clustering, faster builds</td></tr>
+      <tr><td>Vector (HVQ)</td><td><code>'vector' WITH OPTIONS = {'method':'hvq'}</code></td><td>Quantized approximate nearest neighbor — reads far fewer bytes per query (<a href="vector-indexes.html">evaluation</a>)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Creating indexes</h3>
+  <pre><span class="cm">-- B-tree index (default when USING is omitted)</span>
+<span class="kw">CREATE INDEX</span> idx_email <span class="kw">ON</span> <span class="type">users</span> (email) <span class="kw">USING</span> <span class="str">'btree'</span>;
+
+<span class="cm">-- Hash index for fast equality lookups</span>
+<span class="kw">CREATE INDEX</span> idx_user_id <span class="kw">ON</span> <span class="type">sessions</span> (user_id) <span class="kw">USING</span> <span class="str">'hash'</span>;
+
+<span class="cm">-- Composite index across multiple columns</span>
+<span class="kw">CREATE INDEX</span> idx_name <span class="kw">ON</span> <span class="type">users</span> (last_name, first_name) <span class="kw">USING</span> <span class="str">'composite'</span>;
+
+<span class="cm">-- Phonetic index for "sounds like" matching</span>
+<span class="kw">CREATE INDEX</span> idx_name_phonetic <span class="kw">ON</span> <span class="type">users</span> (last_name)
+  <span class="kw">USING</span> <span class="str">'phonetic'</span> <span class="kw">WITH OPTIONS</span> = {<span class="str">'algorithm'</span>: <span class="str">'double_metaphone'</span>};
+
+<span class="cm">-- Filtered index — only index active users</span>
+<span class="kw">CREATE INDEX</span> idx_active_email <span class="kw">ON</span> <span class="type">users</span> (email)
+  <span class="kw">USING</span> <span class="str">'btree'</span> <span class="kw">WHERE</span> status = <span class="str">'active'</span>;
+
+<span class="cm">-- IF NOT EXISTS is supported</span>
+<span class="kw">CREATE INDEX IF NOT EXISTS</span> idx_email <span class="kw">ON</span> <span class="type">users</span> (email);
+
+<span class="cm">-- Drop an index</span>
+<span class="kw">DROP INDEX</span> idx_email;
+<span class="kw">DROP INDEX IF EXISTS</span> idx_email;</pre>
+
+  <h3>Vector indexes for AI and similarity search</h3>
+  <p>Ferrosa includes two vector index algorithms for approximate nearest neighbor (ANN) search, supporting AI embeddings, semantic search, and recommendation systems:</p>
+
+  <pre><span class="cm">-- HNSW index — best query performance, incremental builds</span>
+<span class="kw">CREATE INDEX</span> idx_embed <span class="kw">ON</span> <span class="type">documents</span> (embedding)
+  <span class="kw">USING</span> <span class="str">'vector'</span> <span class="kw">WITH OPTIONS</span> = {
+    <span class="str">'method'</span>: <span class="str">'hnsw'</span>,
+    <span class="str">'metric'</span>: <span class="str">'cosine'</span>,
+    <span class="str">'dimensions'</span>: <span class="str">'768'</span>,
+    <span class="str">'m'</span>: <span class="str">'16'</span>,
+    <span class="str">'ef_construction'</span>: <span class="str">'200'</span>
+  };
+
+<span class="cm">-- IVFFlat index — faster builds, good for batch imports</span>
+<span class="kw">CREATE INDEX</span> idx_embed_ivf <span class="kw">ON</span> <span class="type">documents</span> (embedding)
+  <span class="kw">USING</span> <span class="str">'vector'</span> <span class="kw">WITH OPTIONS</span> = {
+    <span class="str">'method'</span>: <span class="str">'ivfflat'</span>,
+    <span class="str">'metric'</span>: <span class="str">'l2'</span>,
+    <span class="str">'dimensions'</span>: <span class="str">'1536'</span>,
+    <span class="str">'lists'</span>: <span class="str">'100'</span>
+  };</pre>
+
+  <h3>Distance metrics</h3>
+  <table>
+    <thead><tr><th>Metric</th><th>Value</th><th>Use case</th></tr></thead>
+    <tbody>
+      <tr><td>L2 (Euclidean)</td><td><code>'l2'</code></td><td>Standard distance — smaller = more similar</td></tr>
+      <tr><td>Cosine</td><td><code>'cosine'</code></td><td>Angle-based similarity — ideal for text embeddings</td></tr>
+      <tr><td>Inner product</td><td><code>'inner_product'</code></td><td>Dot product — larger = more similar</td></tr>
+    </tbody>
+  </table>
+  <p>Supports up to 4,096 dimensions (f32) or 8,192 dimensions (f16 half-precision).</p>
+
+  <h3>Full-text search indexes</h3>
+  <p>Ferrosa includes built-in full-text search with inverted index sidecars and BM25 ranked retrieval. No external search engine required.</p>
+
+  <pre><span class="cm">-- Create a full-text index on a text column</span>
+<span class="kw">CREATE INDEX</span> idx_body <span class="kw">ON</span> <span class="type">articles</span> (body)
+  <span class="kw">USING</span> <span class="str">'fulltext'</span>;
+
+<span class="cm">-- Query with fts_match() — boolean operators, phrase, prefix</span>
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="type">articles</span>
+  <span class="kw">WHERE</span> body = fts_match(<span class="str">'distributed AND database'</span>);
+
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="type">articles</span>
+  <span class="kw">WHERE</span> body = fts_match(<span class="str">'"S3 backed storage"'</span>);
+
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="type">articles</span>
+  <span class="kw">WHERE</span> body = fts_match(<span class="str">'compac*'</span>);
+
+<span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="type">articles</span>
+  <span class="kw">WHERE</span> body = fts_match(<span class="str">'NOT deprecated'</span>);</pre>
+
+  <table>
+    <thead><tr><th>Query syntax</th><th>Example</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>Single term</td><td><code>'rust'</code></td><td>Match documents containing the analyzed term</td></tr>
+      <tr><td>AND</td><td><code>'rust AND database'</code></td><td>Both terms must be present</td></tr>
+      <tr><td>OR</td><td><code>'rust OR go'</code></td><td>Either term must be present</td></tr>
+      <tr><td>NOT</td><td><code>'NOT deprecated'</code></td><td>Exclude documents matching the term</td></tr>
+      <tr><td>Phrase</td><td><code>'"exact phrase"'</code></td><td>All words must appear (proximity approximation)</td></tr>
+      <tr><td>Prefix</td><td><code>'compac*'</code></td><td>Wildcard prefix expansion (capped at 10K terms)</td></tr>
+    </tbody>
+  </table>
+  <p>Results are ranked by BM25 relevance score. The default analyzer lowercases, removes English stop words, and applies Porter stemming. Custom stop words can be configured via index options.</p>
+
+  <h3>NVMe table pinning</h3>
+  <p>Pin hot tables to local NVMe storage for latency-sensitive reads, avoiding object-store fetches on the hot path:</p>
+
+  <pre><span class="cm">-- Create a pinned table</span>
+<span class="kw">CREATE TABLE</span> <span class="type">session_cache</span> (
+  session_id <span class="type">uuid</span> <span class="kw">PRIMARY KEY</span>,
+  user_id <span class="type">uuid</span>,
+  data <span class="type">blob</span>
+) <span class="kw">WITH</span> extensions = {<span class="str">'storage.pin'</span>: <span class="str">'nvme'</span>};
+
+<span class="cm">-- Pin with size cap (evict oldest beyond 10 GB)</span>
+<span class="kw">CREATE TABLE</span> <span class="type">hot_lookups</span> (
+  key <span class="type">text</span> <span class="kw">PRIMARY KEY</span>,
+  value <span class="type">blob</span>
+) <span class="kw">WITH</span> extensions = {<span class="str">'storage.pin'</span>: <span class="str">'nvme'</span>,
+  <span class="str">'storage.pin_max_bytes'</span>: <span class="str">'10737418240'</span>};
+
+<span class="cm">-- Toggle pin on a live table</span>
+<span class="kw">ALTER TABLE</span> <span class="type">session_cache</span>
+  <span class="kw">WITH</span> extensions = {<span class="str">'storage.pin'</span>: <span class="str">'none'</span>};</pre>
+
+  <p>Pinned tables trade durability for latency — data is lost on node replacement unless replicated. Commit log still provides crash recovery within a single node.</p>
+
+  <h3>Phonetic algorithms</h3>
+  <table>
+    <thead><tr><th>Algorithm</th><th>Value</th><th>Best for</th></tr></thead>
+    <tbody>
+      <tr><td>Soundex</td><td><code>'soundex'</code></td><td>Standard American English names</td></tr>
+      <tr><td>Metaphone</td><td><code>'metaphone'</code></td><td>General English pronunciation</td></tr>
+      <tr><td>Double Metaphone</td><td><code>'double_metaphone'</code></td><td>Multi-origin names (returns primary + alternate codes)</td></tr>
+      <tr><td>Caverphone</td><td><code>'caverphone'</code></td><td>New Zealand English names</td></tr>
+    </tbody>
+  </table>
+
+  <h3>How indexes work</h3>
+  <p>Ferrosa indexes are <strong>storage-attached</strong> — built as companion files alongside SSTables. Indexes are built <strong>asynchronously</strong> after memtable flush, off the foreground write acknowledgement path. This means:</p>
+  <ul>
+    <li><strong>Foreground write acknowledgements are not blocked</strong> by index maintenance</li>
+    <li><strong>Indexes are eventually consistent</strong> — there's a brief window between write and index availability</li>
+    <li><strong>Per-index staleness tracking</strong> via <code>system_views.secondary_indexes</code> lets you monitor how far behind each index is</li>
+    <li><strong>Best-effort queries</strong> — queries union indexed SSTable results with scans of not-yet-indexed SSTables, so results are always complete</li>
+  </ul>
+
+  <h3>Monitoring index status</h3>
+  <pre><span class="cm">-- Check index build status and staleness</span>
+<span class="kw">SELECT</span> index_name, status, pending_sstable_count, lag_seconds
+<span class="kw">FROM</span> system_views.secondary_indexes;
+
+<span class="cm">-- View index metadata</span>
+<span class="kw">SELECT</span> index_name, kind, target, options
+<span class="kw">FROM</span> system_schema.indexes
+<span class="kw">WHERE</span> keyspace_name = <span class="str">'myapp'</span>;</pre>
+
+  <h3>Multi-node replication</h3>
+  <p>All index DDL (CREATE INDEX, DROP INDEX) replicates automatically in pair mode. Each node independently builds indexes for its local SSTables — no cross-node index coordination needed.</p>
+
+  <!-- ── Transactions ── -->
+  <h2 id="cql-compatibility--transactions">Transactions (Accord)</h2>
+
+  <div class="extension">
+    <strong>Strict Serializable:</strong> Ferrosa implements distributed transactions via the
+    Accord consensus protocol — providing strict serializability without Paxos. All Cassandra
+    lightweight transaction (LWT) patterns are supported, plus multi-statement transactions.
+  </div>
+
+  <h3>Lightweight transactions (LWT)</h3>
+  <p>Supported conditional-mutation patterns for lightweight transactions:</p>
+
+  <table>
+    <thead><tr><th>Pattern</th><th>Status</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>INSERT ... IF NOT EXISTS</td><td><span class="check">Supported</span></td><td>Returns [applied] boolean column</td></tr>
+      <tr><td>UPDATE ... IF condition</td><td><span class="check">Supported</span></td><td>Compare-and-set on any column; supports =, !=, &lt;, &gt;, &lt;=, &gt;=, IN</td></tr>
+      <tr><td>DELETE ... IF EXISTS</td><td><span class="check">Supported</span></td><td>Conditional delete</td></tr>
+      <tr><td>DELETE ... IF condition</td><td><span class="check">Supported</span></td><td>Conditional delete with column checks</td></tr>
+      <tr><td>Batch CAS</td><td><span class="check">Supported</span></td><td>BEGIN BATCH with IF conditions across statements</td></tr>
+    </tbody>
+  </table>
+
+  <pre><span class="cm">-- Insert only if the row doesn't exist</span>
+<span class="kw">INSERT INTO</span> <span class="type">accounts</span> (id, balance, owner)
+<span class="kw">VALUES</span> (<span class="str">'acct-1'</span>, <span class="var">1000</span>, <span class="str">'Alice'</span>)
+<span class="kw">IF NOT EXISTS</span>;
+
+<span class="cm">-- Conditional update (compare-and-set)</span>
+<span class="kw">UPDATE</span> <span class="type">accounts</span> <span class="kw">SET</span> balance = <span class="var">900</span>
+<span class="kw">WHERE</span> id = <span class="str">'acct-1'</span>
+<span class="kw">IF</span> balance = <span class="var">1000</span>;
+
+<span class="cm">-- Conditional delete</span>
+<span class="kw">DELETE FROM</span> <span class="type">accounts</span>
+<span class="kw">WHERE</span> id = <span class="str">'acct-1'</span>
+<span class="kw">IF</span> balance = <span class="var">0</span>;</pre>
+
+  <h3>Multi-statement transactions</h3>
+  <p>Ferrosa extends CQL with explicit transaction blocks for multi-partition atomic operations:</p>
+
+  <pre><span class="cm">-- Atomic transfer across partitions</span>
+<span class="kw">BEGIN TRANSACTION</span>
+  <span class="kw">UPDATE</span> <span class="type">accounts</span> <span class="kw">SET</span> balance = balance - <span class="var">100</span>
+    <span class="kw">WHERE</span> id = <span class="str">'acct-1'</span> <span class="kw">IF</span> balance >= <span class="var">100</span>;
+  <span class="kw">UPDATE</span> <span class="type">accounts</span> <span class="kw">SET</span> balance = balance + <span class="var">100</span>
+    <span class="kw">WHERE</span> id = <span class="str">'acct-2'</span>;
+<span class="kw">COMMIT TRANSACTION</span>;
+
+<span class="cm">-- Rollback on failure</span>
+<span class="kw">ROLLBACK TRANSACTION</span>;</pre>
+
+  <h3>Consistency levels for transactions</h3>
+  <p>LWT operations use <code>SERIAL</code> or <code>LOCAL_SERIAL</code> consistency for the read phase, combined with any standard write consistency level. This matches Cassandra's LWT behavior exactly.</p>
+
+  <h3>How it works</h3>
+  <p>Ferrosa uses the Accord consensus protocol (not Paxos) for transaction coordination:</p>
+  <ul>
+    <li><strong>Fast path (1-RTT):</strong> When a leaseholder can coordinate, transactions commit in a single round trip</li>
+    <li><strong>Slow path (2-RTT):</strong> When coordination is needed across shards, a second round trip resolves conflicts</li>
+    <li><strong>Linearizable reads:</strong> Dependency-checked reads through a conflict index ensure read-after-write consistency</li>
+    <li><strong>Crash recovery:</strong> Protocol log replay and .accord sidecar files ensure no committed transactions are lost</li>
+  </ul>
+
+  <!-- ── SUBSCRIBE ── -->
+  <h2 id="cql-compatibility--subscribe">SUBSCRIBE Extension</h2>
+
+  <div class="extension">
+    <strong>Developer-preview note:</strong> SUBSCRIBE is a Ferrosa-specific CQL extension under active verification.
+    Table-level polling/subscription examples are design targets; arbitrary SELECT streaming and driver behavior are not yet public compatibility guarantees.
+  </div>
+
+  <h3>Syntax</h3>
+  <pre><span class="cm">-- Subscribe to a table with polling interval</span>
+<span class="kw">SUBSCRIBE</span> keyspace.table <span class="kw">EVERY</span> <span class="var">5</span>s;
+
+<span class="cm">-- Subscribe with push-on-write (change data capture)</span>
+<span class="kw">SUBSCRIBE</span> keyspace.table <span class="kw">DELTA</span>;
+
+<span class="cm">-- Arbitrary SELECT and observability subscriptions remain verification work</span>
+
+<span class="cm">-- Unsubscribe from a specific stream</span>
+<span class="kw">UNSUBSCRIBE</span> <span class="var">42</span>;
+
+<span class="cm">-- Unsubscribe from all streams</span>
+<span class="kw">UNSUBSCRIBE</span>;</pre>
+
+  <h3>Modes</h3>
+  <table>
+    <thead><tr><th>Mode</th><th>Syntax</th><th>Behavior</th></tr></thead>
+    <tbody>
+      <tr><td>EVERY</td><td><code>EVERY 5s</code></td><td>Server re-executes the query at the given interval and pushes results</td></tr>
+      <tr><td>DELTA</td><td><code>DELTA</code></td><td>Push-on-write via SubscriptionObserver in the commit log; only changed rows are sent</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Backward compatibility</h3>
+  <p>SUBSCRIBE response framing is still being verified against real drivers. Treat this extension as experimental until compatibility evidence is attached.</p>
+
+  <!-- ── Graph ── -->
+  <h2 id="cql-compatibility--graph">Graph (Cypher) Extension</h2>
+
+  <div class="extension">
+    <strong>Ferrosa Extension:</strong> Cypher graph queries run against CQL tables annotated with
+    graph schema extensions. Queries are sent to a separate HTTP/JSON endpoint on port 7474.
+  </div>
+
+  <h3>Schema extensions</h3>
+  <pre><span class="cm">-- Mark a table as a vertex type</span>
+<span class="kw">ALTER TABLE</span> social.users
+  <span class="kw">WITH</span> extensions = {<span class="str">'graph.type'</span>: <span class="str">'vertex'</span>, <span class="str">'graph.label'</span>: <span class="str">'Person'</span>};
+
+<span class="cm">-- Mark a table as an edge type</span>
+<span class="kw">ALTER TABLE</span> social.follows
+  <span class="kw">WITH</span> extensions = {
+    <span class="str">'graph.type'</span>: <span class="str">'edge'</span>,
+    <span class="str">'graph.label'</span>: <span class="str">'FOLLOWS'</span>,
+    <span class="str">'graph.source'</span>: <span class="str">'Person'</span>,
+    <span class="str">'graph.target'</span>: <span class="str">'Person'</span>
+  };</pre>
+
+  <h3>Supported Cypher statements</h3>
+  <table>
+    <thead><tr><th>Statement</th><th>Status</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>MATCH ... RETURN</td><td><span class="check">Supported</span></td><td>Pattern matching, WHERE clause, multi-hop</td></tr>
+      <tr><td>CREATE</td><td><span class="check">Parsed</span></td><td>Parsed; mutate via CQL INSERT (see <a href="cypher.html#create-set-delete">Cypher reference</a>)</td></tr>
+      <tr><td>SET</td><td><span class="check">Parsed</span></td><td>Parsed; mutate via CQL UPDATE</td></tr>
+      <tr><td>DELETE / DETACH DELETE</td><td><span class="check">Parsed</span></td><td>Parsed; mutate via CQL DELETE</td></tr>
+      <tr><td>SUBSCRIBE MATCH</td><td><span class="warn">Experimental</span></td><td>Graph streaming syntax is documented as a developer-preview target pending verification</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Graph SUBSCRIBE</h3>
+  <p>Graph SUBSCRIBE examples are retained as experimental syntax, not a public production guarantee.</p>
+  <pre><span class="cm">-- Experimental graph traversal subscription</span>
+<span class="kw">SUBSCRIBE MATCH</span> (a:<span class="type">Person</span> {name: <span class="str">'Alice'</span>})-[:<span class="type">FOLLOWS</span>]->(b:<span class="type">Person</span>)
+<span class="kw">RETURN</span> b.name, b.email
+<span class="kw">EVERY</span> <span class="var">10</span>s;
+
+<span class="cm">-- Push-on-write for graph changes</span>
+<span class="kw">SUBSCRIBE MATCH</span> (a:<span class="type">Person</span>)-[r:<span class="type">FOLLOWS</span>]->(b:<span class="type">Person</span>)
+<span class="kw">RETURN</span> a.name, b.name
+<span class="kw">DELTA</span>;</pre>
+
+  <!-- ── Not Yet ── -->
+  <h2 id="cql-compatibility--not-yet">Not Yet Supported</h2>
+
+  <p>The following Cassandra features are not yet implemented. Applications that use them require code changes before migrating:</p>
+
+  <table>
+    <thead><tr><th>Feature</th><th>Status</th><th>Impact</th></tr></thead>
+    <tbody>
+      <tr><td>GROUP BY</td><td>Not supported</td><td>SELECT statements with GROUP BY are rejected at parse time; queries must be restructured or aggregation moved to the application layer.</td></tr>
+      <tr><td>PER PARTITION LIMIT</td><td>Not supported</td><td>The <code>PER PARTITION LIMIT n</code> clause is not parsed; rewrite as application-side limiting or use clustering key range predicates.</td></tr>
+      <tr><td>Query tracing</td><td>Not supported</td><td>The TRACING flag in QUERY/EXECUTE frames is accepted but silently ignored — no <code>system_traces</code> rows are written. Tools that depend on tracing data (DevCenter, some observability agents) will see empty trace results.</td></tr>
+      <tr><td>Schema-change EVENT push</td><td>Wired but inert</td><td>REGISTER is accepted and READY is returned, but Ferrosa never sends EVENT frames to registered clients. Drivers that rely on server-push schema invalidation (some DataStax driver versions with <code>schema_event_refresh_delay</code> disabled) must be configured to poll instead, or schema changes will not be reflected until the connection is recycled.</td></tr>
+      <tr><td>Materialized views</td><td>Not supported</td><td>CREATE MATERIALIZED VIEW is rejected; queries that read from materialized views must be rewritten against base tables.</td></tr>
+      <tr><td>Java / JavaScript UDFs</td><td>Not supported</td><td>Cassandra <code>CREATE FUNCTION ... LANGUAGE java</code> and <code>LANGUAGE javascript</code> are rejected. Ferrosa supports <code>LANGUAGE wasm</code> and <code>LANGUAGE assemblyscript</code> only; existing Java UDFs must be recompiled to WebAssembly.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── Behavioral Differences ── -->
+  <h2 id="cql-compatibility--behavioral-differences">Behavioral Differences</h2>
+
+  <p>These features exist in both Cassandra and Ferrosa but behave differently. Applications that depend on the Cassandra behavior may produce incorrect results without code changes:</p>
+
+  <table>
+    <thead><tr><th>Area</th><th>Cassandra behavior</th><th>Ferrosa behavior</th><th>Impact</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Write-vs-delete tie on same timestamp</td>
+        <td>Tombstone wins (delete beats write)</td>
+        <td>Write wins (data is preserved)</td>
+        <td>Applications that delete and re-insert with the same client timestamp may observe stale data. Use distinct timestamps for deletes.</td>
+      </tr>
+      <tr>
+        <td>LOGGED batch crash recovery</td>
+        <td>Uses a batchlog table on a coordinator peer for replay on coordinator failure</td>
+        <td>Single-node: atomic group commit in the commit log (no batchlog). Cluster: full 3-phase batchlog protocol.</td>
+        <td>No application behavior difference in the non-crash path. Single-node Ferrosa provides equivalent crash recovery via the commit log without a separate batchlog table.</td>
+      </tr>
+      <tr>
+        <td>Secondary index consistency window</td>
+        <td>SAI indexes are updated synchronously on the write path</td>
+        <td>Indexes are built asynchronously after memtable flush; a brief staleness window exists between write acknowledgement and index availability</td>
+        <td>Queries immediately after a write may not see the new row via an index. Use partition-key reads for read-your-writes guarantees. Monitor staleness via <code>system_views.secondary_indexes</code>.</td>
+      </tr>
+      <tr>
+        <td>Counter multi-node reconciliation</td>
+        <td>Distributed sharded counters with per-replica local increments and reconciliation</td>
+        <td>Counter increment/decrement is executed via the standard write path; full distributed counter reconciliation semantics are not independently verified</td>
+        <td>Counter values may diverge under concurrent multi-node increments. Validate counter workloads before production migration.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>Driver compatibility:</strong> Ferrosa's core CQL paths — DDL, DML, prepared statements,
+    unlogged and logged batches, LWT, system keyspaces, and SASL authentication — are exercised by
+    automated driver smoke tests on every CI build across six language drivers: Python
+    (<code>cassandra-driver</code>), Go (<code>gocql</code>), Node.js (<code>cassandra-driver</code>),
+    Java (DataStax Java Driver), C# (DataStax C# Driver), and Rust (<code>scylla-rust-driver</code>).
+    Applications that limit themselves to these paths connect and run without driver changes.
+    See <code>.github/workflows/driver-tests.yml</code> and <code>tests/drivers/</code> for the
+    test matrix.
+  </div>
+  </article>
+
+  <article class="print-chapter" id="postgres">
+
+
+<h1>PostgreSQL <span>Wire Protocol</span></h1>
+  <p class="subtitle">Alongside CQL, Ferrosa speaks the PostgreSQL frontend/backend protocol (v3) with SCRAM-SHA-256 authentication — so <code>psql</code>, <code>psycopg2</code>, <code>tokio-postgres</code>, and other standard clients can connect to the same data. This page documents what works today, how it is tested, and where it is headed.</p>
+
+  <div class="note">
+    <strong>Developer preview:</strong> the Postgres front-end is newer than the CQL surface and covers a focused subset of SQL. Validate against your workload before relying on it. Its behavior is continuously cross-checked against a real PostgreSQL 16 (see <a href="#postgres--testing">Differential testing</a>).
+  </div>
+
+  <div class="toc">
+    <h4>On this page</h4>
+    <ul>
+      <li><a href="#postgres--protocol">Protocol &amp; connecting</a></li>
+      <li><a href="#postgres--select">Queries (SELECT)</a></li>
+      <li><a href="#postgres--dml">Writes (INSERT / UPDATE / DELETE)</a></li>
+      <li><a href="#postgres--transactions">Transactions</a></li>
+      <li><a href="#postgres--testing">Differential testing</a></li>
+      <li><a href="#postgres--not-yet">Not yet supported</a></li>
+    </ul>
+  </div>
+
+  <!-- ── Protocol ── -->
+  <h2 id="postgres--protocol">Protocol &amp; connecting</h2>
+  <p>Ferrosa implements the PostgreSQL v3 wire protocol on port <code>5432</code> with SCRAM-SHA-256 authentication. Both the <strong>simple query</strong> protocol and the <strong>extended query</strong> protocol (Parse / Bind / Describe / Execute / Sync) are supported.</p>
+  <pre><span class="cm"># Any standard PostgreSQL client connects:</span>
+psql "host=127.0.0.1 port=5432 user=ferrosa_user dbname=ferrosa"
+
+<span class="cm"># psycopg2 / tokio-postgres / Postgrex use the same wire + SCRAM auth.</span></pre>
+  <p>The active transaction status (<code>I</code> idle, <code>T</code> in-transaction, <code>E</code> failed) is reported in <code>ReadyForQuery</code> exactly as PostgreSQL does, so drivers track transaction state correctly.</p>
+
+  <!-- ── SELECT ── -->
+  <h2 id="postgres--select">Queries (SELECT)</h2>
+  <p>The query surface is verified row-for-row against PostgreSQL across a fixed corpus:</p>
+  <table>
+    <thead><tr><th>Capability</th><th>Status</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Projection &amp; <code>*</code></td><td><span class="check">✓</span></td><td>column lists and star</td></tr>
+      <tr><td>WHERE</td><td><span class="check">✓</span></td><td><code>=</code>, <code>!=</code>, <code>&lt;</code>/<code>&lt;=</code>/<code>&gt;</code>/<code>&gt;=</code>, <code>AND</code>/<code>OR</code>/<code>NOT</code>, parentheses</td></tr>
+      <tr><td>Three-valued logic</td><td><span class="check">✓</span></td><td>comparisons with <code>NULL</code> are UNKNOWN → excluded (Kleene <code>AND</code>/<code>OR</code>/<code>NOT</code>)</td></tr>
+      <tr><td>JOIN</td><td><span class="check">✓</span></td><td>inner equi-join</td></tr>
+      <tr><td>GROUP BY + aggregates</td><td><span class="check">✓</span></td><td><code>COUNT</code>, <code>SUM</code>, <code>MIN</code>, <code>MAX</code>, <code>AVG</code>; empty <code>SUM</code>/<code>MIN</code> → <code>NULL</code></td></tr>
+      <tr><td>HAVING / DISTINCT</td><td><span class="check">✓</span></td><td></td></tr>
+      <tr><td>ORDER BY / LIMIT / OFFSET</td><td><span class="check">✓</span></td><td><code>ASC</code>/<code>DESC</code>, multi-key; text orders by <code>C</code> collation (byte order)</td></tr>
+      <tr><td>Expression selects</td><td><span class="check">✓</span></td><td><code>SELECT 1</code>, <code>version()</code>, <code>current_database()</code> (simple + extended)</td></tr>
+      <tr><td>Scalar types</td><td><span class="check">✓</span></td><td>int, text, bool, float8, numeric, uuid, bytea, inet, timestamp, date, time</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── DML ── -->
+  <h2 id="postgres--dml">Writes (INSERT / UPDATE / DELETE)</h2>
+  <p>Single-row DML writes through the same storage engine the CQL path uses, sharing one canonical row encoder so a row written over Postgres reads back identically over CQL.</p>
+  <pre><span class="kw">INSERT INTO</span> kv (id, v, n) <span class="kw">VALUES</span> (<span class="var">1</span>, <span class="str">'one'</span>, <span class="var">10</span>);   <span class="cm">-- INSERT 0 1</span>
+<span class="kw">UPDATE</span> kv <span class="kw">SET</span> v = <span class="str">'ONE'</span> <span class="kw">WHERE</span> id = <span class="var">1</span>;            <span class="cm">-- UPDATE 1</span>
+<span class="kw">DELETE FROM</span> kv <span class="kw">WHERE</span> id = <span class="var">1</span>;                     <span class="cm">-- DELETE 1</span></pre>
+  <ul>
+    <li>Values are converted per the target column type; out-of-range or type-mismatched values are rejected with a SQLSTATE error rather than coerced.</li>
+    <li><code>NULL</code> deletes the cell (it reads back as SQL <code>NULL</code>, not <code>""</code> / <code>0</code>).</li>
+    <li>Following Cassandra-storage semantics, <code>UPDATE</code> of a non-existent key is an upsert. The <code>WHERE</code> clause must specify the full primary key.</li>
+    <li><strong>Parameterized DML over the extended protocol:</strong> <code>INSERT</code>/<code>UPDATE</code>/<code>DELETE</code> accept <code>$N</code> bind parameters, and <code>INSERT … RETURNING</code> returns the written row — so ORMs that prepare statements (e.g. Ecto/Postgrex) drive inserts/updates/deletes the way they expect.</li>
+  </ul>
+
+  <!-- ── Transactions ── -->
+  <h2 id="postgres--transactions">Transactions</h2>
+  <p><code>BEGIN</code> / <code>COMMIT</code> / <code>ROLLBACK</code> are honored at the protocol level: the connection moves through idle → in-transaction → (on error) failed, and a failed transaction rejects further statements with SQLSTATE <code>25P02</code> until <code>ROLLBACK</code>.</p>
+  <div class="note">
+    <strong>Atomic transactions:</strong> multi-statement transactions commit through Accord, Ferrosa's strict-serializable transaction engine. Writes inside <code>BEGIN</code>…<code>COMMIT</code> are buffered and applied <em>atomically</em> at <code>COMMIT</code>; <code>ROLLBACK</code> discards them, so nothing is ever partially applied. Atomic multi-statement <em>write</em> transactions require Accord (cluster mode); a standalone single node fails <code>COMMIT</code> loudly rather than apply non-atomically. Read-your-writes inside an open transaction is not yet supported.
+  </div>
+
+  <!-- ── Testing ── -->
+  <h2 id="postgres--testing">Differential testing</h2>
+  <p>Every CI build runs a <strong>differential oracle</strong>: the same data and the same SQL are executed against a real PostgreSQL 16 <em>and</em> the Ferrosa front-end, and the result sets must agree. It is the cross-check that catches the front-end silently diverging from PostgreSQL.</p>
+  <div class="extension">
+    <strong>How it stays honest:</strong> three verdicts (Match / Mismatch / Out-of-scope, never a silent pass); a sound value comparator (exact match first, a numeric tolerance only for genuine float-vs-numeric text formatting); a restricted-query oracle proving unsupported SQL fails loud rather than returning wrong rows; a self-contained NULL/3VL known-answer corpus; and a declared <code>COLLATE "C"</code> ordering contract. The corpus covers SELECT, the full INSERT/UPDATE/DELETE lifecycle, and temporal/numeric/inet types.
+  </div>
+  <p>See the <code>postgres-oracle</code> job in <code>.github/workflows/ci.yml</code> and <code>ferrosa-postgres/tests/differential_oracle.rs</code>.</p>
+
+  <!-- ── Not yet ── -->
+  <h2 id="postgres--not-yet">Not yet supported</h2>
+  <p>These surface a clean driver error today rather than silently-wrong results, and are tracked on the roadmap:</p>
+  <table>
+    <thead><tr><th>Feature</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td><code>ON CONFLICT</code>, <code>UPDATE/DELETE … RETURNING</code>, <code>= ANY($N)</code></td><td><span class="cross">planned</span></td></tr>
+      <tr><td><code>IS [NOT] NULL</code></td><td><span class="cross">planned</span></td></tr>
+      <tr><td>Subqueries, <code>WITH</code>, <code>UNION</code>, window functions</td><td><span class="cross">not supported</span></td></tr>
+      <tr><td>Non-<code>C</code> collations</td><td><span class="cross">v1 is <code>COLLATE "C"</code> only</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>CQL is the mature surface.</strong> For the broadest compatibility today, see the <a href="cql-compatibility.html">CQL Reference</a>. The Postgres front-end shares the same storage, schema, and transaction engine underneath.
+  </div>
+  </article>
+
+  <article class="print-chapter" id="cypher">
+
+
+<h1>Cypher <span>Reference</span></h1>
+  <p class="subtitle">Ferrosa's native graph query layer. Run Cypher queries against your CQL tables — without requiring a separate graph database for the supported preview path.</p>
+
+  <div class="note">
+    <strong>Beta:</strong> Ferrosa's Cypher support is in beta. The query language subset and HTTP API are stabilizing but may change between releases.
+  </div>
+
+  <div class="extension">
+    <strong>Ferrosa Extension:</strong> Cypher support is Ferrosa's native graph query layer built on top of your existing CQL data model. Mark any CQL table as a vertex or edge type, and query it with Cypher via a standard HTTP/JSON API on port 7474.
+  </div>
+
+  <div class="toc">
+    <h4>On this page</h4>
+    <ul>
+      <li><a href="#cypher--overview">Overview</a></li>
+      <li><a href="#cypher--http-api">HTTP API</a></li>
+      <li><a href="#cypher--schema-setup">Schema Setup</a></li>
+      <li><a href="#cypher--match">MATCH</a></li>
+      <li><a href="#cypher--node-patterns">Node Patterns</a></li>
+      <li><a href="#cypher--relationship-patterns">Relationship Patterns</a></li>
+      <li><a href="#cypher--where">WHERE Clause</a></li>
+      <li><a href="#cypher--return">RETURN Clause</a></li>
+      <li><a href="#cypher--create-set-delete">CREATE, SET, DELETE</a></li>
+      <li><a href="#cypher--subscribe">SUBSCRIBE</a></li>
+      <li><a href="#cypher--resource-limits">Resource Limits</a></li>
+      <li><a href="#cypher--adjacency-index">Adjacency Index</a></li>
+      <li><a href="#cypher--drivers">Drivers &amp; Integration</a></li>
+      <li><a href="#cypher--not-yet">Not Yet Supported</a></li>
+    </ul>
+  </div>
+
+  <!-- ── Overview ── -->
+  <h2 id="cypher--overview">Overview</h2>
+
+  <p>Ferrosa lets you run graph queries against your existing CQL tables without a separate graph database. The workflow is:</p>
+  <ol>
+    <li>Create your tables with standard CQL (CREATE TABLE, INSERT, etc.)</li>
+    <li>Annotate tables as vertices or edges using <code>ALTER TABLE ... WITH extensions</code></li>
+    <li>Query the graph with Cypher via the HTTP API on port 7474</li>
+  </ol>
+
+  <p>Ferrosa automatically maintains an adjacency index for efficient multi-hop traversals. Your CQL tables remain the source of truth — the graph layer is a query interface, not a separate data store.</p>
+
+  <!-- ── HTTP API ── -->
+  <h2 id="cypher--http-api">HTTP API</h2>
+
+  <h3>Endpoints</h3>
+  <table>
+    <thead><tr><th>Method</th><th>Path</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>POST</td><td>/graph/query</td><td>Execute a Cypher query</td></tr>
+      <tr><td>POST</td><td>/graph/explain</td><td>Show query execution plan</td></tr>
+      <tr><td>GET</td><td>/graph/schema</td><td>List vertex and edge labels</td></tr>
+      <tr><td>GET</td><td>/graph/health</td><td>Health check (no auth required)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Authentication</h3>
+  <p>All endpoints except <code>/graph/health</code> require HTTP Basic authentication using the same credentials as CQL (default: <code>cassandra:cassandra</code>). Disable with <code>FERROSA_AUTH_DISABLED=true</code> for development.</p>
+
+  <h3>Request format</h3>
+  <p>Queries are sent as JSON with a <code>query</code> string and an optional <code>keyspace</code>:</p>
+  <pre><span class="cm">// POST /graph/query</span>
+{
+  <span class="str">"query"</span>: <span class="str">"MATCH (n:Person) RETURN n"</span>,
+  <span class="str">"keyspace"</span>: <span class="str">"social"</span>
+}</pre>
+
+  <h3>Response format</h3>
+  <p>Responses are JSON with a <code>columns</code> array and a <code>rows</code> array:</p>
+  <pre>{
+  <span class="str">"columns"</span>: [<span class="str">"n.name"</span>, <span class="str">"n.email"</span>],
+  <span class="str">"rows"</span>: [
+    [<span class="str">"Alice"</span>, <span class="str">"alice@example.com"</span>],
+    [<span class="str">"Bob"</span>, <span class="str">"bob@example.com"</span>]
+  ]
+}</pre>
+
+  <h3>Default port</h3>
+  <p>The graph HTTP API listens on port <strong>7474</strong> by default. Configure with <code>FERROSA_GRAPH_PORT</code>.</p>
+
+  <!-- ── Schema Setup ── -->
+  <h2 id="cypher--schema-setup">Schema Setup</h2>
+
+  <p>Ferrosa's graph layer works on top of existing CQL tables. You annotate tables as vertex or edge types using the <code>extensions</code> table property:</p>
+
+  <h3>Vertex tables</h3>
+  <pre><span class="cm">-- Mark a table as a graph vertex type</span>
+<span class="kw">ALTER TABLE</span> social.users
+  <span class="kw">WITH</span> extensions = {<span class="str">'graph.type'</span>: <span class="str">'vertex'</span>, <span class="str">'graph.label'</span>: <span class="str">'Person'</span>};</pre>
+
+  <p>The <code>graph.label</code> becomes the node label used in Cypher patterns (e.g., <code>(:Person)</code>). The table's primary key columns become the vertex identifier.</p>
+
+  <h3>Edge tables</h3>
+  <pre><span class="cm">-- Mark a table as a graph edge type</span>
+<span class="kw">ALTER TABLE</span> social.follows
+  <span class="kw">WITH</span> extensions = {
+    <span class="str">'graph.type'</span>: <span class="str">'edge'</span>,
+    <span class="str">'graph.label'</span>: <span class="str">'FOLLOWS'</span>,
+    <span class="str">'graph.source'</span>: <span class="str">'Person'</span>,
+    <span class="str">'graph.target'</span>: <span class="str">'Person'</span>
+  };</pre>
+
+  <p>Edge tables require <code>graph.source</code> and <code>graph.target</code> to specify which vertex labels the edge connects. Source and target can be different labels (e.g., <code>Person</code> to <code>Company</code>).</p>
+
+  <h3>Full example</h3>
+  <pre><span class="cm">-- Create the keyspace and tables</span>
+<span class="kw">CREATE KEYSPACE</span> <span class="type">social</span> <span class="kw">WITH</span> replication = {
+  <span class="str">'class'</span>: <span class="str">'SimpleStrategy'</span>,
+  <span class="str">'replication_factor'</span>: <span class="var">3</span>
+};
+
+<span class="kw">CREATE TABLE</span> <span class="type">social.users</span> (
+  user_id <span class="type">uuid</span>,
+  name <span class="type">text</span>,
+  email <span class="type">text</span>,
+  age <span class="type">int</span>,
+  <span class="kw">PRIMARY KEY</span> (user_id)
+);
+
+<span class="kw">CREATE TABLE</span> <span class="type">social.follows</span> (
+  follower_id <span class="type">uuid</span>,
+  followed_id <span class="type">uuid</span>,
+  since <span class="type">timestamp</span>,
+  <span class="kw">PRIMARY KEY</span> (follower_id, followed_id)
+);
+
+<span class="cm">-- Annotate as graph types</span>
+<span class="kw">ALTER TABLE</span> social.users
+  <span class="kw">WITH</span> extensions = {<span class="str">'graph.type'</span>: <span class="str">'vertex'</span>, <span class="str">'graph.label'</span>: <span class="str">'Person'</span>};
+
+<span class="kw">ALTER TABLE</span> social.follows
+  <span class="kw">WITH</span> extensions = {
+    <span class="str">'graph.type'</span>: <span class="str">'edge'</span>,
+    <span class="str">'graph.label'</span>: <span class="str">'FOLLOWS'</span>,
+    <span class="str">'graph.source'</span>: <span class="str">'Person'</span>,
+    <span class="str">'graph.target'</span>: <span class="str">'Person'</span>
+  };</pre>
+
+  <!-- ── MATCH ── -->
+  <h2 id="cypher--match">MATCH</h2>
+
+  <p>MATCH is the primary read statement in Cypher. It describes a pattern to find in the graph and returns matching results.</p>
+
+  <pre><span class="cm">-- Simple node match</span>
+<span class="kw">MATCH</span> (n:<span class="type">Person</span>) <span class="kw">RETURN</span> n
+
+<span class="cm">-- Traversal with filter</span>
+<span class="kw">MATCH</span> (a:<span class="type">Person</span>)-[:<span class="type">KNOWS</span>]->(b:<span class="type">Person</span>)
+<span class="kw">WHERE</span> a.age > <span class="var">30</span>
+<span class="kw">RETURN</span> a.name, b.name
+<span class="kw">ORDER BY</span> a.age <span class="kw">DESC</span> <span class="kw">LIMIT</span> <span class="var">10</span>
+
+<span class="cm">-- Multi-hop traversal</span>
+<span class="kw">MATCH</span> (a:<span class="type">Person</span>)-[:<span class="type">FOLLOWS</span>]->(b:<span class="type">Person</span>)-[:<span class="type">FOLLOWS</span>]->(c:<span class="type">Person</span>)
+<span class="kw">WHERE</span> a.name = <span class="str">'Alice'</span>
+<span class="kw">RETURN</span> c.name</pre>
+
+  <p>Patterns are compiled into a query plan that resolves vertex lookups via the CQL tables and edge traversals via the adjacency index.</p>
+
+  <!-- ── Node Patterns ── -->
+  <h2 id="cypher--node-patterns">Node Patterns</h2>
+
+  <p>Nodes are enclosed in parentheses. A node pattern can include a variable name, a label, and inline property filters:</p>
+
+  <table>
+    <thead><tr><th>Pattern</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>(n)</td><td>Any node, bound to variable <code>n</code></td></tr>
+      <tr><td>(n:Person)</td><td>Node with label <code>Person</code></td></tr>
+      <tr><td>(:Person)</td><td>Node with label, no variable binding</td></tr>
+      <tr><td>(n:Person {name: 'Alice'})</td><td>Node with inline property filter</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Inline property filters</h3>
+  <p>Properties specified inside <code>{}</code> are equality checks applied during pattern matching:</p>
+  <pre><span class="cm">-- Find a specific person and their followers</span>
+<span class="kw">MATCH</span> (n:<span class="type">Person</span> {name: <span class="str">'Alice'</span>})-[:<span class="type">FOLLOWS</span>]->(f:<span class="type">Person</span>)
+<span class="kw">RETURN</span> f.name, f.email</pre>
+
+  <!-- ── Relationship Patterns ── -->
+  <h2 id="cypher--relationship-patterns">Relationship Patterns</h2>
+
+  <p>Relationships (edges) connect two nodes with an arrow indicating direction:</p>
+
+  <table>
+    <thead><tr><th>Pattern</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>(a)-[r]->(b)</td><td>Directed relationship from <code>a</code> to <code>b</code></td></tr>
+      <tr><td>(a)<-[r]-(b)</td><td>Directed relationship from <code>b</code> to <code>a</code></td></tr>
+      <tr><td>(a)-[r]-(b)</td><td>Undirected — matches either direction</td></tr>
+      <tr><td>(a)-[:FOLLOWS]->(b)</td><td>Relationship with type <code>FOLLOWS</code></td></tr>
+      <tr><td>(a)-[r:FOLLOWS]->(b)</td><td>Typed relationship bound to variable <code>r</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Examples</h3>
+  <pre><span class="cm">-- Directed: who does Alice follow?</span>
+<span class="kw">MATCH</span> (a:<span class="type">Person</span> {name: <span class="str">'Alice'</span>})-[:<span class="type">FOLLOWS</span>]->(b:<span class="type">Person</span>)
+<span class="kw">RETURN</span> b.name
+
+<span class="cm">-- Reverse direction: who follows Alice?</span>
+<span class="kw">MATCH</span> (a:<span class="type">Person</span> {name: <span class="str">'Alice'</span>})<-[:<span class="type">FOLLOWS</span>]-(b:<span class="type">Person</span>)
+<span class="kw">RETURN</span> b.name
+
+<span class="cm">-- Undirected: all connections regardless of direction</span>
+<span class="kw">MATCH</span> (a:<span class="type">Person</span>)-[:<span class="type">WORKS_AT</span>]-(b:<span class="type">Company</span>)
+<span class="kw">RETURN</span> a, b</pre>
+
+  <!-- ── WHERE ── -->
+  <h2 id="cypher--where">WHERE Clause</h2>
+
+  <p>WHERE filters the results of a MATCH pattern. It supports comparison operators, boolean logic, and null checks.</p>
+
+  <h3>Operators</h3>
+  <table>
+    <thead><tr><th>Operator</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>=</td><td>Equals</td></tr>
+      <tr><td><></td><td>Not equals</td></tr>
+      <tr><td><</td><td>Less than</td></tr>
+      <tr><td>></td><td>Greater than</td></tr>
+      <tr><td><=</td><td>Less than or equal</td></tr>
+      <tr><td>>=</td><td>Greater than or equal</td></tr>
+      <tr><td>AND</td><td>Logical AND</td></tr>
+      <tr><td>OR</td><td>Logical OR</td></tr>
+      <tr><td>NOT</td><td>Logical negation</td></tr>
+      <tr><td>IS NULL</td><td>Check for null value</td></tr>
+      <tr><td>IS NOT NULL</td><td>Check for non-null value</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Examples</h3>
+  <pre><span class="cm">-- Comparison operators</span>
+<span class="kw">MATCH</span> (n:<span class="type">Person</span>)
+<span class="kw">WHERE</span> n.age >= <span class="var">21</span> <span class="kw">AND</span> n.age < <span class="var">65</span>
+<span class="kw">RETURN</span> n.name, n.age
+
+<span class="cm">-- Boolean logic</span>
+<span class="kw">MATCH</span> (n:<span class="type">Person</span>)
+<span class="kw">WHERE</span> n.city = <span class="str">'NYC'</span> <span class="kw">OR</span> n.city = <span class="str">'SF'</span>
+<span class="kw">RETURN</span> n.name
+
+<span class="cm">-- NOT and null checks</span>
+<span class="kw">MATCH</span> (n:<span class="type">Person</span>)
+<span class="kw">WHERE</span> <span class="kw">NOT</span> n.email <span class="kw">IS NULL</span>
+<span class="kw">RETURN</span> n.name, n.email</pre>
+
+  <!-- ── RETURN ── -->
+  <h2 id="cypher--return">RETURN Clause</h2>
+
+  <p>RETURN specifies which variables and properties to include in the result set. It supports aliases, DISTINCT, ORDER BY, and LIMIT.</p>
+
+  <h3>Syntax</h3>
+  <pre><span class="cm">-- Return specific properties</span>
+<span class="kw">MATCH</span> (n:<span class="type">Person</span>) <span class="kw">RETURN</span> n.name, n.email
+
+<span class="cm">-- Aliases with AS</span>
+<span class="kw">MATCH</span> (n:<span class="type">Person</span>) <span class="kw">RETURN</span> n.name <span class="kw">AS</span> person_name
+
+<span class="cm">-- DISTINCT to remove duplicates</span>
+<span class="kw">MATCH</span> (a:<span class="type">Person</span>)-[:<span class="type">FOLLOWS</span>]->(b:<span class="type">Person</span>)
+<span class="kw">RETURN DISTINCT</span> b.name
+
+<span class="cm">-- ORDER BY and LIMIT</span>
+<span class="kw">MATCH</span> (n:<span class="type">Person</span>)
+<span class="kw">RETURN</span> n.name, n.age
+<span class="kw">ORDER BY</span> n.age <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> <span class="var">25</span>
+
+<span class="cm">-- Return entire node</span>
+<span class="kw">MATCH</span> (n:<span class="type">Person</span>) <span class="kw">RETURN</span> n</pre>
+
+  <!-- ── CREATE, SET, DELETE ── -->
+  <h2 id="cypher--create-set-delete">CREATE, SET, DELETE</h2>
+
+  <div class="note">
+    <strong>Coming Soon:</strong> CREATE, SET, and DELETE statements are fully parsed by the Cypher parser. Execution is coming in Phase 2. For now, use CQL INSERT/UPDATE/DELETE to mutate data — the graph layer will reflect the changes automatically via the adjacency index.
+  </div>
+
+  <h3>CREATE</h3>
+  <pre><span class="cm">-- Create a vertex</span>
+<span class="kw">CREATE</span> (n:<span class="type">Person</span> {name: <span class="str">'Alice'</span>, age: <span class="var">30</span>})
+
+<span class="cm">-- Create a relationship</span>
+<span class="kw">MATCH</span> (a:<span class="type">Person</span> {name: <span class="str">'Alice'</span>}), (b:<span class="type">Person</span> {name: <span class="str">'Bob'</span>})
+<span class="kw">CREATE</span> (a)-[:<span class="type">FOLLOWS</span>]->(b)</pre>
+
+  <h3>SET</h3>
+  <pre><span class="cm">-- Update a property</span>
+<span class="kw">MATCH</span> (n:<span class="type">Person</span> {name: <span class="str">'Alice'</span>})
+<span class="kw">SET</span> n.age = <span class="var">31</span></pre>
+
+  <h3>DELETE</h3>
+  <pre><span class="cm">-- Delete a node (must have no relationships)</span>
+<span class="kw">MATCH</span> (n) <span class="kw">WHERE</span> n.status = <span class="str">'inactive'</span>
+<span class="kw">DELETE</span> n
+
+<span class="cm">-- Delete a node and all its relationships</span>
+<span class="kw">MATCH</span> (n) <span class="kw">WHERE</span> n.status = <span class="str">'inactive'</span>
+<span class="kw">DETACH DELETE</span> n</pre>
+
+  <!-- ── SUBSCRIBE ── -->
+  <h2 id="cypher--subscribe">SUBSCRIBE</h2>
+
+  <div class="extension">
+    <strong>Developer-preview note:</strong> SUBSCRIBE syntax for Cypher is experimental.
+    Arbitrary MATCH-pattern streaming remains verification work, not a production guarantee.
+  </div>
+
+  <p>The proposed SUBSCRIBE syntax has two modes for graph change streaming:</p>
+
+  <table>
+    <thead><tr><th>Mode</th><th>Syntax</th><th>Behavior</th></tr></thead>
+    <tbody>
+      <tr><td>EVERY</td><td><code>EVERY 5s</code></td><td>Re-executes the graph query at the given interval and pushes results</td></tr>
+      <tr><td>DELTA</td><td><code>DELTA</code></td><td>Push-on-write design target pending verification</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Experimental examples</h3>
+  <pre><span class="cm">-- Poll for changes every 5 seconds</span>
+<span class="kw">SUBSCRIBE MATCH</span> (n:<span class="type">Person</span>) <span class="kw">RETURN</span> n <span class="kw">EVERY</span> <span class="var">5</span>s
+
+<span class="cm">-- Push-on-write for relationship changes</span>
+<span class="kw">SUBSCRIBE MATCH</span> (a)-[:<span class="type">FOLLOWS</span>]->(b) <span class="kw">RETURN</span> a, b <span class="kw">DELTA</span>
+
+<span class="cm">-- Subscribe to a filtered traversal</span>
+<span class="kw">SUBSCRIBE MATCH</span> (a:<span class="type">Person</span> {name: <span class="str">'Alice'</span>})-[:<span class="type">FOLLOWS</span>]->(b:<span class="type">Person</span>)
+<span class="kw">RETURN</span> b.name, b.email
+<span class="kw">EVERY</span> <span class="var">10</span>s</pre>
+
+  <!-- ── Resource Limits ── -->
+  <h2 id="cypher--resource-limits">Resource Limits</h2>
+
+  <p>Ferrosa enforces resource limits on graph queries to prevent unbounded traversals from impacting cluster stability:</p>
+
+  <table>
+    <thead><tr><th>Limit</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>Query timeout</td><td>30 seconds</td><td>Maximum wall-clock time for a single query</td></tr>
+      <tr><td>Max result rows</td><td>10,000</td><td>Maximum rows returned in a single response</td></tr>
+      <tr><td>Max fan-out per hop</td><td>10,000</td><td>Maximum edges traversed at each hop in a multi-hop pattern</td></tr>
+    </tbody>
+  </table>
+
+  <p>These defaults are tunable per query or globally via configuration. When a limit is reached, the query returns a partial result set with a <code>truncated: true</code> flag in the response.</p>
+
+  <!-- ── Adjacency Index ── -->
+  <h2 id="cypher--adjacency-index">Adjacency Index</h2>
+
+  <p>When you annotate an edge table with <code>graph.type: 'edge'</code>, Ferrosa automatically creates and maintains a system adjacency table for efficient graph traversals:</p>
+
+  <pre><span class="cm">-- Automatically created by Ferrosa:</span>
+<span class="cm">-- system_graph_&lt;keyspace&gt;.adjacency</span>
+<span class="cm">--</span>
+<span class="cm">-- Schema (internal):</span>
+<span class="cm">--   source_label text</span>
+<span class="cm">--   source_id    blob</span>
+<span class="cm">--   direction    text   (OUT or IN)</span>
+<span class="cm">--   edge_label   text</span>
+<span class="cm">--   target_label text</span>
+<span class="cm">--   target_id    blob</span></pre>
+
+  <h3>How it works</h3>
+  <ul>
+    <li><strong>Dual-direction indexing</strong> — every edge is indexed in both OUT and IN directions, so traversals in either direction are equally fast</li>
+    <li><strong>WriteObserver pattern</strong> — the adjacency index is kept in sync with edge mutations through the WriteObserver hook in the storage engine, not through polling or background jobs</li>
+    <li><strong>Automatic lifecycle</strong> — the index is created when you add <code>graph.type: 'edge'</code> to a table and dropped when you remove it</li>
+    <li><strong>Transparent to CQL</strong> — the adjacency table lives in a <code>system_graph_*</code> keyspace and is invisible to normal CQL queries</li>
+  </ul>
+
+  <p>This design means that MATCH traversals resolve edge lookups via efficient partition-key reads on the adjacency table, rather than scanning the edge table.</p>
+
+  <!-- ── Drivers & Integration ── -->
+  <h2 id="cypher--drivers">Drivers &amp; Integration</h2>
+
+  <p>Ferrosa's graph endpoint is a standard HTTP/JSON API — any language with an HTTP client works. No special driver required.</p>
+
+  <h3>curl</h3>
+  <pre>curl -X POST http://localhost:<span class="var">7474</span>/graph/query \
+  -u cassandra:cassandra \
+  -H <span class="str">'Content-Type: application/json'</span> \
+  -d <span class="str">'{"query": "MATCH (n:Person) RETURN n", "keyspace": "social"}'</span></pre>
+
+  <h3>Python</h3>
+  <pre><span class="kw">import</span> requests
+
+r = requests.post(<span class="str">'http://localhost:7474/graph/query'</span>,
+    auth=(<span class="str">'cassandra'</span>, <span class="str">'cassandra'</span>),
+    json={<span class="str">'query'</span>: <span class="str">'MATCH (n:Person) RETURN n'</span>, <span class="str">'keyspace'</span>: <span class="str">'social'</span>})
+
+data = r.json()
+<span class="kw">for</span> row <span class="kw">in</span> data[<span class="str">'rows'</span>]:
+    print(row)</pre>
+
+  <h3>JavaScript (Node.js / fetch)</h3>
+  <pre><span class="kw">const</span> resp = <span class="kw">await</span> fetch(<span class="str">'http://localhost:7474/graph/query'</span>, {
+  method: <span class="str">'POST'</span>,
+  headers: {
+    <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span>,
+    <span class="str">'Authorization'</span>: <span class="str">'Basic '</span> + btoa(<span class="str">'cassandra:cassandra'</span>)
+  },
+  body: JSON.stringify({
+    query: <span class="str">'MATCH (n:Person) RETURN n'</span>,
+    keyspace: <span class="str">'social'</span>
+  })
+});
+
+<span class="kw">const</span> data = <span class="kw">await</span> resp.json();</pre>
+
+  <h3>Query plan inspection</h3>
+  <pre>curl -X POST http://localhost:<span class="var">7474</span>/graph/explain \
+  -u cassandra:cassandra \
+  -H <span class="str">'Content-Type: application/json'</span> \
+  -d <span class="str">'{"query": "MATCH (a:Person)-[:FOLLOWS]->(b:Person) RETURN b.name", "keyspace": "social"}'</span></pre>
+
+  <!-- ── Not Yet ── -->
+  <h2 id="cypher--not-yet">Not Yet Supported</h2>
+
+  <p>The following Cypher features are planned for future releases:</p>
+
+  <table>
+    <thead><tr><th>Feature</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Variable-length paths (-[*]->)</td><td>Planned</td></tr>
+      <tr><td>Aggregation functions (COUNT, SUM, AVG, MIN, MAX)</td><td>Planned</td></tr>
+      <tr><td>UNION</td><td>Planned</td></tr>
+      <tr><td>WITH (query chaining)</td><td>Planned</td></tr>
+      <tr><td>CASE expressions</td><td>Planned</td></tr>
+      <tr><td>Full property retrieval on RETURN n</td><td>Planned — Phase 1 returns vertex IDs</td></tr>
+      <tr><td>Subqueries</td><td>Planned</td></tr>
+      <tr><td>MERGE (upsert)</td><td>Planned</td></tr>
+      <tr><td>OPTIONAL MATCH</td><td>Planned</td></tr>
+      <tr><td>Path expressions</td><td>Planned</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>Note:</strong> Even without these features, Ferrosa's Cypher support covers the most common
+    graph query patterns: node lookups, directed and undirected traversals, multi-hop paths,
+    property filters, sorting, and pagination. For mutations, use CQL directly — the graph layer
+    reflects changes automatically.
+  </div>
+  </article>
+
+  <article class="print-chapter" id="sparql">
+
+
+<h1>SPARQL 1.1 <span>Reference</span></h1>
+  <p class="subtitle">
+    Ferrosa includes a native SPARQL 1.1 endpoint for semantic web and RDF workloads.
+    Query your CQL tables with W3C-standard SPARQL, including property paths,
+    aggregations, and RDF* annotations. No separate triple store needed.
+  </p>
+
+  <h2>Endpoint</h2>
+
+  <p>
+    SPARQL queries are submitted over HTTP to port <code>8080</code> (configurable via
+    <code>FERROSA_SPARQL_BIND</code>). Enable with <code>FERROSA_SPARQL_ENABLED=true</code>.
+  </p>
+
+  <h3>HTTP Methods</h3>
+
+  <table>
+    <tr><th>Method</th><th>Path</th><th>Content-Type</th><th>Description</th></tr>
+    <tr>
+      <td><code>POST</code></td>
+      <td><code>/sparql</code></td>
+      <td><code>application/sparql-query</code></td>
+      <td>Execute a SPARQL query (raw text body)</td>
+    </tr>
+    <tr>
+      <td><code>GET</code></td>
+      <td><code>/sparql?query=...</code></td>
+      <td>-</td>
+      <td>Execute a SPARQL query (URL-encoded)</td>
+    </tr>
+    <tr>
+      <td><code>GET</code></td>
+      <td><code>/sparql/health</code></td>
+      <td>-</td>
+      <td>Health check</td>
+    </tr>
+  </table>
+
+  <h2>Query Examples</h2>
+
+  <h3>Basic Triple Pattern</h3>
+<pre><span class="keyword">PREFIX</span> foaf: &lt;<span class="uri">http://xmlns.com/foaf/0.1/</span>&gt;
+
+<span class="keyword">SELECT</span> ?name ?email
+<span class="keyword">WHERE</span> {
+  ?person foaf:name ?name .
+  ?person foaf:mbox ?email .
+}
+<span class="keyword">LIMIT</span> 10</pre>
+
+  <h3>Property Path (Transitive Closure)</h3>
+<pre><span class="keyword">PREFIX</span> foaf: &lt;<span class="uri">http://xmlns.com/foaf/0.1/</span>&gt;
+
+<span class="comment"># Find all people reachable through "knows" chains</span>
+<span class="keyword">SELECT DISTINCT</span> ?person ?friend
+<span class="keyword">WHERE</span> {
+  ?person foaf:knows+ ?friend .
+}</pre>
+
+  <h3>Aggregation</h3>
+<pre><span class="keyword">PREFIX</span> schema: &lt;<span class="uri">http://schema.org/</span>&gt;
+
+<span class="keyword">SELECT</span> ?city (<span class="keyword">COUNT</span>(?person) <span class="keyword">AS</span> ?count)
+<span class="keyword">WHERE</span> {
+  ?person schema:address ?addr .
+  ?addr schema:addressLocality ?city .
+}
+<span class="keyword">GROUP BY</span> ?city
+<span class="keyword">ORDER BY DESC</span>(?count)</pre>
+
+  <h3>INSERT DATA</h3>
+<pre><span class="keyword">PREFIX</span> foaf: &lt;<span class="uri">http://xmlns.com/foaf/0.1/</span>&gt;
+
+<span class="keyword">INSERT DATA</span> {
+  &lt;<span class="uri">http://example.org/alice</span>&gt; foaf:name <span class="string">"Alice"</span> .
+  &lt;<span class="uri">http://example.org/alice</span>&gt; foaf:knows &lt;<span class="uri">http://example.org/bob</span>&gt; .
+}</pre>
+
+  <h3>FILTER and OPTIONAL</h3>
+<pre><span class="keyword">PREFIX</span> foaf: &lt;<span class="uri">http://xmlns.com/foaf/0.1/</span>&gt;
+<span class="keyword">PREFIX</span> xsd: &lt;<span class="uri">http://www.w3.org/2001/XMLSchema#</span>&gt;
+
+<span class="keyword">SELECT</span> ?name ?email
+<span class="keyword">WHERE</span> {
+  ?person foaf:name ?name .
+  <span class="keyword">OPTIONAL</span> { ?person foaf:mbox ?email }
+  <span class="keyword">FILTER</span>(STRSTARTS(?name, <span class="string">"A"</span>))
+}</pre>
+
+  <h2>Feature Matrix</h2>
+
+  <table>
+    <tr><th>Feature</th><th>Status</th><th>Notes</th></tr>
+    <tr><td>SELECT</td><td>Available</td><td>Basic graph patterns, joins</td></tr>
+    <tr><td>WHERE / FILTER</td><td>Available</td><td>Predicate evaluation on bindings</td></tr>
+    <tr><td>ORDER BY / LIMIT / OFFSET</td><td>Available</td><td>Post-processing on result set</td></tr>
+    <tr><td>ASK</td><td>Available</td><td>Boolean existence</td></tr>
+    <tr><td>Property paths (+, *, ?)</td><td>Planned</td><td>Server-side BFS/DFS via adjacency index</td></tr>
+    <tr><td>OPTIONAL / UNION</td><td>Planned</td><td>Left-join, concat semantics</td></tr>
+    <tr><td>CONSTRUCT / DESCRIBE</td><td>Planned</td><td>RDF graph construction</td></tr>
+    <tr><td>INSERT DATA / DELETE DATA</td><td>Planned</td><td>SPARQL Update</td></tr>
+    <tr><td>RDF* annotations</td><td>Planned</td><td>Statement-about-statement queries</td></tr>
+    <tr><td>Aggregates (COUNT, SUM, AVG)</td><td>Planned</td><td>GROUP BY support</td></tr>
+  </table>
+
+  <h2>Response Formats</h2>
+
+  <table>
+    <tr><th>Format</th><th>Content-Type</th><th>Status</th></tr>
+    <tr><td>SPARQL JSON Results</td><td><code>application/sparql-results+json</code></td><td>Available</td></tr>
+    <tr><td>Turtle</td><td><code>text/turtle</code></td><td>Planned</td></tr>
+    <tr><td>N-Triples</td><td><code>application/n-triples</code></td><td>Planned</td></tr>
+    <tr><td>JSON-LD</td><td><code>application/ld+json</code></td><td>Planned</td></tr>
+  </table>
+
+  <h2>Architecture</h2>
+
+  <p>
+    SPARQL queries are parsed by the <code>spargebra</code> crate into an algebra tree,
+    then translated by the ferrosa-sparql planner into storage reads against CQL-backed
+    triple tables. Property path queries delegate to the graph engine's BFS/DFS traversal
+    via the adjacency index. Results are serialized to W3C SPARQL JSON Results format.
+  </p>
+
+  <p>
+    RDF triples are stored in standard CQL tables with composite primary keys. Secondary
+    indexes on predicate and object enable efficient pattern matching beyond simple subject
+    lookups. The same storage engine, S3 durability, and distributed consensus that power
+    CQL queries also power SPARQL.
+  </p>
+
+  <h2>Configuration</h2>
+
+  <table>
+    <tr><th>Environment Variable</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>FERROSA_SPARQL_ENABLED</code></td><td><code>true</code></td><td>SPARQL endpoint (8080) — on by default; set <code>false</code> to disable</td></tr>
+    <tr><td><code>FERROSA_SPARQL_BIND</code></td><td><code>127.0.0.1:8080</code></td><td>SPARQL HTTP listen address; set a non-loopback address only for a deliberate shared deployment</td></tr>
+  </table>
+
+  <div class="note" style="margin-top:1.5rem">
+    <strong>Authentication &amp; authorization.</strong> The <code>/sparql</code> and <code>/sparql/update</code>
+    endpoints authenticate via HTTP Basic auth against Ferrosa roles and enforce
+    <em>per-keyspace</em> authorization — read (<code>SELECT</code>) for queries, write
+    (<code>MODIFY</code>) for updates. Requests without valid credentials are rejected.
+    Grant access with <code>GRANT&nbsp;SELECT/MODIFY&nbsp;ON&nbsp;KEYSPACE&nbsp;… TO&nbsp;role</code>.
+    When auth is disabled (development), the endpoint serves as superuser.
+  </div>
+
+  <p style="margin-top: 4rem; color: var(--text-muted); font-size: 0.8rem;">
+    Ferrosa SPARQL is currently in beta. Feature availability reflects the current release.
+  </p>
+  </article>
+
+  <article class="print-chapter" id="vector-indexes">
+
+
+<h1>Vector <span>Indexes</span></h1>
+  <p class="subtitle">Ferrosa runs approximate nearest-neighbour search over embeddings directly in the database. Choose the full-precision HNSW index for maximum recall, or the quantized HVQ index to read far fewer bytes per query when the index outgrows memory.</p>
+
+  <div class="note">
+    <strong>Beta:</strong> Vector indexing is under active development. HVQ (hybrid vector quantization) is a developer-preview path; the numbers below are reproducible from the in-tree evaluation harness.
+  </div>
+
+  <div class="toc">
+    <h4>On this page</h4>
+    <ul>
+      <li><a href="#vector-indexes--strategies">Index strategies</a></li>
+      <li><a href="#vector-indexes--quantization">Quantization &amp; staged rerank</a></li>
+      <li><a href="#vector-indexes--cql">CQL reference</a></li>
+      <li><a href="#vector-indexes--evaluation">Evaluation: HNSW vs HVQ</a></li>
+      <li><a href="#vector-indexes--example">Runnable example</a></li>
+    </ul>
+  </div>
+
+  <!-- ── Strategies ── -->
+  <h2 id="vector-indexes--strategies">Index strategies</h2>
+
+  <p>A vector index answers "find the rows whose embedding is closest to this query vector". Ferrosa offers three strategies, all created through ordinary CQL DDL.</p>
+
+  <table>
+    <thead><tr><th>Strategy</th><th>CQL</th><th>Best for</th></tr></thead>
+    <tbody>
+      <tr><td>HNSW</td><td><code>USING 'vector'</code> (default)</td><td>Highest recall. A navigable small-world graph; stores every vector in a sidecar.</td></tr>
+      <tr><td>IVFFlat</td><td>engine internal</td><td>k-means clustered lists; faster builds than HNSW.</td></tr>
+      <tr><td>HVQ</td><td><code>USING 'vector' WITH OPTIONS = {'method':'hvq'}</code></td><td>Near-HNSW recall while reading far fewer bytes per query — when the index is larger than memory or lives in object storage.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="extension">
+    <strong>Beyond Cassandra:</strong> HVQ stores vectors as page-addressable quantized artifacts. A query routes to a few centroid lists and reads only the pages it needs, instead of materializing the whole index — the foundation for serving indexes that live in S3.
+  </div>
+
+  <!-- ── Quantization ── -->
+  <h2 id="vector-indexes--quantization">Quantization &amp; staged rerank</h2>
+
+  <p>HVQ compresses each vector with scalar quantization, trading a little precision for a large reduction in size and bytes moved. Multiple code widths are available:</p>
+
+  <table>
+    <thead><tr><th>Codec</th><th>Bits / dim</th><th>Role</th></tr></thead>
+    <tbody>
+      <tr><td>Q8</td><td>8</td><td>Refinement tier — 1 byte per dimension.</td></tr>
+      <tr><td>Q4</td><td>4</td><td>Candidate tier — 2 dimensions per byte.</td></tr>
+      <tr><td>Q2</td><td>2</td><td>Coarse routing (behind a benchmark gate).</td></tr>
+      <tr><td>Q1</td><td>1</td><td>Experimental ultra-low-bit.</td></tr>
+      <tr><td>F32</td><td>32</td><td>Optional exact-rerank tier for survivors.</td></tr>
+    </tbody>
+  </table>
+
+  <p>Search is <strong>staged</strong>: cheap quantized codes narrow the candidate set, then an exact rerank over the survivors restores ranking quality. Because the reader only fetches the pages for the probed lists, the bytes it moves scale with the query, not the index.</p>
+
+  <!-- ── CQL ── -->
+  <h2 id="vector-indexes--cql">CQL reference</h2>
+
+  <h3>Vector columns</h3>
+  <pre><span class="cm">-- A fixed-dimension float vector column</span>
+<span class="kw">CREATE TABLE</span> <span class="type">documents</span> (
+  id <span class="type">int</span> <span class="kw">PRIMARY KEY</span>,
+  embedding <span class="type">vector</span>&lt;<span class="type">float</span>, <span class="var">4</span>&gt;
+);</pre>
+
+  <h3>Creating a vector index</h3>
+  <pre><span class="cm">-- Default: full-precision HNSW</span>
+<span class="kw">CREATE INDEX</span> docs_ann <span class="kw">ON</span> <span class="type">documents</span> (embedding) <span class="kw">USING</span> <span class="str">'vector'</span>;
+
+<span class="cm">-- Quantized HVQ — select the method explicitly</span>
+<span class="kw">CREATE INDEX</span> docs_ann <span class="kw">ON</span> <span class="type">documents</span> (embedding)
+  <span class="kw">USING</span> <span class="str">'vector'</span> <span class="kw">WITH OPTIONS</span> = {<span class="str">'method'</span>: <span class="str">'hvq'</span>};</pre>
+
+  <div class="note">
+    <strong>Note:</strong> <code>method</code> accepts <code>'hnsw'</code> (the default) or <code>'hvq'</code>. Any other value is rejected at DDL time — there is no silent fallback.
+  </div>
+
+  <h3>Nearest-neighbour query</h3>
+  <pre><span class="cm">-- Return the 3 rows closest to the query vector</span>
+<span class="kw">SELECT</span> id, title <span class="kw">FROM</span> <span class="type">documents</span>
+  <span class="kw">ORDER BY</span> embedding <span class="kw">ANN OF</span> [<span class="var">0.90</span>, <span class="var">0.10</span>, <span class="var">0.00</span>, <span class="var">0.00</span>] <span class="kw">LIMIT</span> <span class="var">3</span>;</pre>
+
+  <!-- ── Evaluation ── -->
+  <h2 id="vector-indexes--evaluation">Evaluation: HNSW vs HVQ</h2>
+
+  <p>Measured by the in-tree harness <code>ferrosa-index/tests/eval_comparison.rs</code> on a shared clustered corpus of 192 vectors (16 dimensions, 18 queries, 4 of 12 lists probed), against exact brute-force truth. Reproduce with:</p>
+
+  <pre><span class="kw">cargo</span> test -p ferrosa-index --test eval_comparison -- --nocapture</pre>
+
+  <table>
+    <thead><tr><th>Index</th><th>Size (bytes)</th><th>Bytes read / query</th><th>p50</th><th>p95</th><th>recall@10</th></tr></thead>
+    <tbody>
+      <tr><td>HNSW (full sidecar)</td><td>48,515</td><td>48,515</td><td>2102&nbsp;µs</td><td>2166&nbsp;µs</td><td>1.000</td></tr>
+      <tr><td>HVQ (staged quantized IVF)</td><td>45,089</td><td class="win">15,068</td><td class="win">609&nbsp;µs</td><td class="win">614&nbsp;µs</td><td>1.000</td></tr>
+    </tbody>
+  </table>
+
+  <p>On this corpus HVQ reads <span class="win">3.2&times; fewer bytes per query</span> and answers about <span class="win">3.5&times; faster</span> at p50/p95, with <strong>identical recall</strong>. The win comes from staged reads: HVQ fetches only the probed pages, while the HNSW path decodes the whole sidecar per query.</p>
+
+  <div class="note">
+    <strong>Honest caveats:</strong> this is a small single-artifact microbenchmark. The bytes-read advantage grows with corpus size and with multi-sidecar reads — the design target is &ge;5&times; on larger corpora. The on-disk <em>size</em> is near parity here because the developer-preview staged format still retains full-precision vectors for exact rerank; the larger storage win comes from the production binary <code>.qvec</code> container with quantized-only tiers.
+  </div>
+
+  <!-- ── Example ── -->
+  <h2 id="vector-indexes--example">Runnable example</h2>
+
+  <p>The <a href="../../database/examples/vector-indexes.html">Vector Indexes example</a> is a complete, CI-executed walkthrough: it creates a BTree secondary index, an HNSW vector index, and an HVQ vector index, loads clustered embeddings, and runs the same ANN query against each — all from plain CQL.</p>
+  </article>
+
+  <article class="print-chapter" id="clustering">
+
+
+<h1>3-Node <span>Cluster</span> Setup</h1>
+  <p class="subtitle">Run a production-shaped 3-node Ferrosa cluster. This guide covers prerequisites, per-node configuration, formation, verification, and expected cold-start behavior after a full restart.</p>
+
+  <div class="warning">
+    <strong>Developer Preview &mdash; Clustering durability caveat:</strong>
+    Ferrosa clustering is in active hardening. Data written during cluster formation may have reduced durability until the Raft state machine commits topology and bootstrap streaming completes data redistribution across all replicas. Do not use this configuration for production data until you have run your own durability validation with a representative workload. See <a href="getting-started.html#operational-notes">Operational Notes</a> for general durability considerations.
+  </div>
+
+  <div class="toc">
+    <h4>On this page</h4>
+    <ul>
+      <li><a href="#clustering--prerequisites">Prerequisites</a></li>
+      <li><a href="#clustering--architecture">How 3-node clustering works</a></li>
+      <li><a href="#clustering--per-node-config">Per-node configuration</a></li>
+      <li><a href="#clustering--formation">Formation procedure</a></li>
+      <li><a href="#clustering--verify">Verification</a></li>
+      <li><a href="#clustering--cold-start">Expected cold-start behavior</a></li>
+      <li><a href="#clustering--readiness-probe">Readiness probe</a></li>
+      <li><a href="#clustering--docker-compose">Docker Compose quickstart</a></li>
+      <li><a href="#clustering--troubleshooting">Troubleshooting</a></li>
+    </ul>
+  </div>
+
+  <!-- ── Prerequisites ── -->
+  <h2 id="clustering--prerequisites">Prerequisites</h2>
+
+  <ul>
+    <li>Three machines (or containers) with stable hostnames or IP addresses that can reach each other on TCP port <strong>7000</strong> (internode protocol).</li>
+    <li>Each node must be able to resolve the other nodes' <code>FERROSA_INTERNODE_BROADCAST</code> addresses at startup and on reconnect. Use hostnames where possible — they survive container IP churn. Static IPs are acceptable for bare-metal deployments.</li>
+    <li>Port <strong>9042</strong> (CQL) and port <strong>9090</strong> (web console / readiness probe) open for client and operator access on each node.</li>
+    <li>Shared S3-compatible storage (or a local MinIO instance) configured identically on all three nodes. All nodes must point at the same bucket.</li>
+    <li>Clocks synchronized (NTP or equivalent). Ferrosa tolerates up to 5 seconds of skew by default (<code>FERROSA_CLOCK_MAX_SKEW_SECS</code>). Larger skew causes Accord transaction validation failures.</li>
+  </ul>
+
+  <!-- ── Architecture ── -->
+  <h2 id="clustering--architecture">How 3-node clustering works</h2>
+
+  <p>A Ferrosa cluster uses two layers:</p>
+  <ol>
+    <li><strong>Raft consensus</strong> (via openraft) for cluster metadata: membership, schema, token assignments, and DDL replication. One node acts as the Raft leader; all DDL and membership changes are serialized through it.</li>
+    <li><strong>CQL coordinator</strong> with a Murmur3 token ring for data routing. Reads and writes are routed to the subset of nodes that own the token range for each partition key, subject to the configured consistency level.</li>
+  </ol>
+
+  <p>Formation proceeds through three states:</p>
+  <table>
+    <thead><tr><th>State</th><th>Condition</th><th>CQL ready?</th></tr></thead>
+    <tbody>
+      <tr><td>Standalone</td><td>No seeds configured or seeds unreachable</td><td>Yes</td></tr>
+      <tr><td>Forming</td><td>Peers connected; waiting for Raft leader election</td><td>No</td></tr>
+      <tr><td>Cluster</td><td>Raft leader elected; data routing active</td><td>Yes</td></tr>
+    </tbody>
+  </table>
+
+  <p>A Raft quorum of 2 out of 3 nodes is required for leader election and for DDL operations. Data reads and writes at <code>LOCAL_QUORUM</code> also require 2 of 3 replicas.</p>
+
+  <!-- ── Per-node Config ── -->
+  <h2 id="clustering--per-node-config">Per-node configuration</h2>
+
+  <p>The following environment variables are required on every node. Values differ per node where indicated.</p>
+
+  <table>
+    <thead><tr><th>Variable</th><th>node1</th><th>node2</th><th>node3</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>FERROSA_INTERNODE_BIND</code></td>
+        <td colspan="3"><code>0.0.0.0:7000</code> (same on all)</td>
+      </tr>
+      <tr>
+        <td><code>FERROSA_INTERNODE_BROADCAST</code></td>
+        <td><code>node1:7000</code></td>
+        <td><code>node2:7000</code></td>
+        <td><code>node3:7000</code></td>
+      </tr>
+      <tr>
+        <td><code>FERROSA_SEED</code></td>
+        <td><code>node2:7000,node3:7000</code></td>
+        <td><code>node1:7000,node3:7000</code></td>
+        <td><code>node1:7000,node2:7000</code></td>
+      </tr>
+      <tr>
+        <td><code>FERROSA_CLUSTER_NAME</code></td>
+        <td colspan="3"><code>my-cluster</code> (must match across all nodes)</td>
+      </tr>
+      <tr>
+        <td><code>FERROSA_DATA_DIR</code></td>
+        <td colspan="3"><code>/var/lib/ferrosa</code> (local per-node volume)</td>
+      </tr>
+      <tr>
+        <td><code>FERROSA_S3_ENDPOINT</code></td>
+        <td colspan="3">Same S3 endpoint on all nodes</td>
+      </tr>
+      <tr>
+        <td><code>FERROSA_S3_BUCKET</code></td>
+        <td colspan="3">Same bucket on all nodes</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>Set the seeds list to include the <em>other</em> nodes — never list a node as its own seed. Each entry is a <code>hostname:port</code> or <code>ip:port</code> on the internode port (default <strong>7000</strong>).</p>
+
+  <h3>Minimal node1 environment (bare-metal example)</h3>
+  <pre><span class="cm"># node1</span>
+<span class="kw">FERROSA_DATA_DIR</span>=/var/lib/ferrosa
+<span class="kw">FERROSA_CLUSTER_NAME</span>=my-cluster
+<span class="kw">FERROSA_INTERNODE_BIND</span>=0.0.0.0:7000
+<span class="kw">FERROSA_INTERNODE_BROADCAST</span>=node1.internal:7000
+<span class="kw">FERROSA_SEED</span>=node2.internal:7000,node3.internal:7000
+<span class="kw">FERROSA_S3_ENDPOINT</span>=https://s3.us-east-1.amazonaws.com
+<span class="kw">FERROSA_S3_BUCKET</span>=my-ferrosa-cluster
+<span class="kw">FERROSA_S3_REGION</span>=us-east-1</pre>
+
+  <pre><span class="cm"># node2</span>
+<span class="kw">FERROSA_DATA_DIR</span>=/var/lib/ferrosa
+<span class="kw">FERROSA_CLUSTER_NAME</span>=my-cluster
+<span class="kw">FERROSA_INTERNODE_BIND</span>=0.0.0.0:7000
+<span class="kw">FERROSA_INTERNODE_BROADCAST</span>=node2.internal:7000
+<span class="kw">FERROSA_SEED</span>=node1.internal:7000,node3.internal:7000
+<span class="kw">FERROSA_S3_ENDPOINT</span>=https://s3.us-east-1.amazonaws.com
+<span class="kw">FERROSA_S3_BUCKET</span>=my-ferrosa-cluster
+<span class="kw">FERROSA_S3_REGION</span>=us-east-1</pre>
+
+  <pre><span class="cm"># node3</span>
+<span class="kw">FERROSA_DATA_DIR</span>=/var/lib/ferrosa
+<span class="kw">FERROSA_CLUSTER_NAME</span>=my-cluster
+<span class="kw">FERROSA_INTERNODE_BIND</span>=0.0.0.0:7000
+<span class="kw">FERROSA_INTERNODE_BROADCAST</span>=node3.internal:7000
+<span class="kw">FERROSA_SEED</span>=node1.internal:7000,node2.internal:7000
+<span class="kw">FERROSA_S3_ENDPOINT</span>=https://s3.us-east-1.amazonaws.com
+<span class="kw">FERROSA_S3_BUCKET</span>=my-ferrosa-cluster
+<span class="kw">FERROSA_S3_REGION</span>=us-east-1</pre>
+
+  <div class="note">
+    <strong>Broadcast address:</strong> <code>FERROSA_INTERNODE_BROADCAST</code> is the address other nodes use to connect back to this node. Use a hostname (not an IP) wherever possible so the address remains valid if the container or VM gets a new IP. Ferrosa re-resolves broadcast hostnames on each connection attempt.
+  </div>
+
+  <!-- ── Formation ── -->
+  <h2 id="clustering--formation">Formation procedure</h2>
+
+  <p>Ferrosa cluster formation is automatic once all three nodes can reach each other. Start all three nodes simultaneously (or within the election timeout window — see <a href="#clustering--cold-start">cold-start behavior</a>):</p>
+
+  <ol>
+    <li>Start node1, node2, and node3 with the configuration above.</li>
+    <li>Each node connects to its seeds and transitions from Standalone to Forming.</li>
+    <li>Raft leader election runs automatically among the three nodes. No operator action is required.</li>
+    <li>Once a leader is elected, Ferrosa transitions to Cluster mode and begins routing CQL traffic through the token ring.</li>
+    <li>Bootstrap streaming redistributes any data written in standalone mode to the correct token owners.</li>
+  </ol>
+
+  <div class="note">
+    <strong>Simultaneous start:</strong> Starting all three nodes within a few seconds of each other gives the fastest convergence. If node3 is delayed by more than the election timeout window (~6 seconds at default settings), the other two may elect a leader before node3 joins — which is fine, but node3 will receive a snapshot from the leader on its first connection.
+  </div>
+
+  <p>There is no explicit "join" command. Set the seeds, start the node, and formation happens automatically.</p>
+
+  <!-- ── Verify ── -->
+  <h2 id="clustering--verify">Verification</h2>
+
+  <h3>Readiness probe</h3>
+  <p>Check the <code>/readyz</code> endpoint on each node's web console port (default <strong>9090</strong>). It returns <code>200 OK</code> with <code>{"ready":true}</code> once a Raft leader is present and the node is serving CQL traffic:</p>
+  <pre><span class="cm"># Check node1</span>
+<span class="kw">curl</span> -s http://node1:9090/readyz | python3 -m json.tool
+
+<span class="cm"># Expected output when ready:</span>
+<span class="str">{"ready": true}
+
+# Expected output while Raft is still converging:</span>
+<span class="str">{"ready": false, "waiting_for": "raft_leader", "detail": "no raft leader elected yet"}</span></pre>
+
+  <div class="note">
+    <strong>HTTP status:</strong> <code>/readyz</code> returns <code>200</code> when ready, <code>503</code> when not ready. Orchestrators should check the HTTP status code, not just the body.
+  </div>
+
+  <h3>Cluster mode via API</h3>
+  <pre><span class="kw">curl</span> -s http://node1:9090/api/cluster/status | python3 -m json.tool
+<span class="cm"># Shows: {"mode": "Cluster", "role": null, "host_id": "..."}</span></pre>
+
+  <h3>Cluster status via ferrosa-ctl</h3>
+  <pre><span class="kw">ferrosa-ctl</span> status
+<span class="kw">ferrosa-ctl</span> topology   <span class="cm"># Shows token ring with all 3 nodes in Normal state</span></pre>
+
+  <h3>Peer list via CQL</h3>
+  <pre><span class="kw">cqlsh</span> node1 9042
+cqlsh&gt; SELECT peer, data_center, rack FROM system.peers;
+
+<span class="cm"># Should show 2 rows — the other two nodes</span></pre>
+
+  <h3>Write a row and read it back across nodes</h3>
+  <pre><span class="cm"># On node1: create keyspace with RF=3 for full data distribution</span>
+<span class="kw">cqlsh</span> node1 9042 -e "
+  CREATE KEYSPACE demo WITH replication = {
+    'class': 'SimpleStrategy',
+    'replication_factor': 3
+  };
+  CREATE TABLE demo.ping (id text PRIMARY KEY, ts timestamp);
+  INSERT INTO demo.ping (id, ts) VALUES ('ok', toTimestamp(now()));
+"
+
+<span class="cm"># Read from node3 at QUORUM to confirm replication</span>
+<span class="kw">cqlsh</span> node3 9042 -e "
+  CONSISTENCY QUORUM;
+  SELECT * FROM demo.ping;
+"</pre>
+
+  <!-- ── Cold Start ── -->
+  <h2 id="clustering--cold-start">Expected cold-start behavior</h2>
+
+  <p>After a full cluster restart (all three nodes stopped and restarted), Ferrosa nodes go through this sequence:</p>
+
+  <ol>
+    <li><strong>Listeners bind</strong> — CQL (:9042), web (:9090), and internode (:7000) listeners accept connections. The node is not yet ready to serve CQL.</li>
+    <li><strong>Peer connections form</strong> — Nodes dial their seeds and establish internode connections. This typically takes 5&ndash;30 seconds depending on container startup ordering.</li>
+    <li><strong>Raft leader election</strong> — openraft pre-vote rounds run until one node wins a quorum of votes. In normal conditions this converges in 3&ndash;15 seconds after peer connections form.</li>
+    <li><strong>DDL path activates</strong> — The winning leader swaps the DDL path to Cluster mode. Schema is re-applied from the Raft log. This produces the log line: <code>raft leader elected, swapping DDL path to Cluster</code>.</li>
+    <li><strong>Cluster mode active</strong> — <code>/readyz</code> returns <code>200</code>. CQL clients can connect and execute queries.</li>
+  </ol>
+
+  <div class="warning">
+    <strong>Pre-vote convergence can take up to several minutes in some conditions.</strong>
+    A known edge case: if all three nodes have a non-empty Raft log from before the restart, pre-vote rounds may back off for up to ~3 minutes before a leader is elected. This is caused by openraft 0.9&rsquo;s pre-vote quorum check interacting with the full-cluster restart sequence. During this window, <code>/readyz</code> returns <code>503</code> and CQL requests return errors.
+    <br><br>
+    The TCP port is bound and containers appear &ldquo;healthy&rdquo; by naive TCP probes immediately &mdash; this is why the readiness probe exists. Scripts that wait for &ldquo;all containers healthy&rdquo; should use <code>/readyz</code>, not a TCP check.
+    <br><br>
+    If convergence takes longer than 5 minutes, restart the cluster again. A second restart from the same persisted state usually converges quickly.
+  </div>
+
+  <!-- ── Readiness Probe ── -->
+  <h2 id="clustering--readiness-probe">Readiness probe reference</h2>
+
+  <p>The <code>/readyz</code> endpoint is available on the web console port (default 9090) without authentication.</p>
+
+  <table>
+    <thead><tr><th>Mode</th><th>HTTP status</th><th>Condition</th></tr></thead>
+    <tbody>
+      <tr><td>Standalone</td><td>200</td><td>Always ready (no peers)</td></tr>
+      <tr><td>Pair / Degraded</td><td>200</td><td>Ready (pair HA or stale reads)</td></tr>
+      <tr><td>Forming (no Raft)</td><td>503</td><td>Raft not yet initialized</td></tr>
+      <tr><td>Forming / Cluster (no leader)</td><td>503</td><td>Leader election in progress</td></tr>
+      <tr><td>Cluster (leader present)</td><td>200</td><td>Ready to serve CQL</td></tr>
+    </tbody>
+  </table>
+
+  <p>Response body when not ready:</p>
+  <pre><span class="str">{"ready": false, "waiting_for": "raft_leader", "detail": "no raft leader elected yet"}</span></pre>
+
+  <p>The <code>waiting_for</code> field always names the blocking condition so log-scraping scripts and operators can distinguish &ldquo;Raft not initialized&rdquo; from &ldquo;election in progress&rdquo;.</p>
+
+  <!-- ── Docker Compose ── -->
+  <h2 id="clustering--docker-compose">Docker Compose quickstart</h2>
+
+  <p>The repository&rsquo;s <code>docker-compose.yml</code> runs a 3-node cluster with a local RustFS (S3-compatible) backend. Use it for local integration testing. It uses <code>/readyz</code> as the healthcheck:</p>
+
+  <pre><span class="cm"># Start all services</span>
+<span class="kw">docker compose up -d</span>
+
+<span class="cm"># Wait for all three nodes to report ready</span>
+<span class="kw">for</span> port in 9090 9091 9092; <span class="kw">do</span>
+  <span class="kw">echo</span> -n "node (port $port): "
+  <span class="kw">until</span> curl -sf http://127.0.0.1:$port/readyz &gt;/dev/null 2&gt;&amp;1; <span class="kw">do</span>
+    <span class="kw">sleep</span> 5; printf ".";
+  <span class="kw">done</span>
+  <span class="kw">echo</span> " ready"
+<span class="kw">done</span>
+
+<span class="cm"># Connect to node1</span>
+<span class="kw">cqlsh</span> 127.0.0.1 9042</pre>
+
+  <div class="note">
+    <strong>Auth in Docker Compose:</strong> The default <code>docker-compose.yml</code> runs with <code>FERROSA_AUTH_DISABLED=true</code> for local development convenience. To enable auth, use the included overlay:
+    <pre style="margin-top:0.75rem;"><span class="kw">docker compose</span> -f docker-compose.yml -f docker-compose.secure.yml up -d</pre>
+    After formation, rotate the default <code>ferrosa_admin</code> password via <code>cqlsh</code>:
+    <pre><span class="kw">cqlsh</span> -u ferrosa_admin -p ferrosa_admin 127.0.0.1 9042
+cqlsh&gt; ALTER ROLE ferrosa_admin WITH PASSWORD='<span class="var">your-strong-password</span>';</pre>
+  </div>
+
+  <!-- ── Troubleshooting ── -->
+  <h2 id="clustering--troubleshooting">Troubleshooting</h2>
+
+  <h3>/readyz returns 503 for more than 5 minutes</h3>
+  <p>Check the logs for the blocking condition:</p>
+  <pre><span class="kw">docker logs</span> &lt;node&gt; | grep -E "pre-vote|leader|forming|raft"</pre>
+  <ul>
+    <li>Repeated <code>pre-vote round did not reach quorum</code> lines: nodes cannot reach each other on port 7000. Check firewall rules and DNS resolution of the <code>FERROSA_INTERNODE_BROADCAST</code> addresses.</li>
+    <li><code>raft not yet initialized</code> in the <code>/readyz</code> body: the background Raft init task has not yet completed. Wait 10&ndash;30 seconds after peer connections appear in the logs.</li>
+    <li>No log output from all three nodes: at least one node has not started. Check <code>docker compose ps</code>.</li>
+  </ul>
+
+  <h3>One node is stuck in Forming after the other two have a leader</h3>
+  <p>The lagging node will receive an <code>InstallSnapshot</code> from the leader and catch up automatically. If it has not caught up after 2 minutes:</p>
+  <pre><span class="kw">docker compose restart</span> node3   <span class="cm"># or whichever node is lagging</span></pre>
+  <p>The restarted node re-dials its seeds, loads the Raft snapshot, and joins the cluster. It does not need a clean data directory.</p>
+
+  <h3>Cluster mode but reads return errors</h3>
+  <p>Verify that bootstrap streaming has completed by checking that all three nodes are in <code>Normal</code> state:</p>
+  <pre><span class="kw">ferrosa-ctl</span> topology</pre>
+  <p>If a node shows <code>Joining</code> state, bootstrap streaming is still in progress. CQL reads at <code>QUORUM</code> will succeed once all replicas are in <code>Normal</code> state.</p>
+
+  <!-- ── Nav back ── -->
+  <h2 id="clustering--next">Next steps</h2>
+  <p>
+    <a href="getting-started.html">Getting Started guide &rarr;</a> &mdash; single-node setup, CQL drivers, configuration reference, and architecture overview.
+  </p>
+  <p>
+    <a href="cql-compatibility.html">CQL Compatibility reference &rarr;</a> &mdash; full list of supported statements, types, and functions.
+  </p>
+  </article>
+
+  <article class="print-chapter" id="migration">
+
+
+<h1>Migration <span>Guide</span></h1>
+  <p class="subtitle">Move from Apache Cassandra to Ferrosa with the same CQL protocol, the same drivers, and the same LWT semantics. Most core application paths migrate without code changes; a small set of features — GROUP BY, PER PARTITION LIMIT, Java UDFs, and server-push schema events — require changes described below.</p>
+
+  <div class="note">
+    <strong>Developer Preview:</strong> Ferrosa is in active development. Run representative dual-read and failure-recovery tests before migrating production traffic.
+  </div>
+
+  <div class="toc">
+    <h4>On this page</h4>
+    <ul>
+      <li><a href="#migration--overview">Migration Overview</a></li>
+      <li><a href="#migration--compatibility">What's Compatible</a></li>
+      <li><a href="#migration--steps">Step-by-Step Migration</a></li>
+      <li><a href="#migration--sstable">SSTable Import</a></li>
+      <li><a href="#migration--dual-read">Dual-Read Verification</a></li>
+      <li><a href="#migration--s3">S3 Storage Setup</a></li>
+      <li><a href="#migration--differences">Key Differences</a></li>
+      <li><a href="#migration--lwt-migration">LWT &amp; Transaction Migration</a></li>
+      <li><a href="#migration--rollback">Rollback Plan</a></li>
+    </ul>
+  </div>
+
+  <!-- ── Overview ── -->
+  <h2 id="migration--overview">Migration Overview</h2>
+
+  <p>Ferrosa is designed for Cassandra-compatible protocol access where supported, with migrations validated incrementally against your schema, drivers, and workload. The migration strategy is incremental:</p>
+
+  <ol>
+    <li>Start a Ferrosa node alongside your existing Cassandra cluster</li>
+    <li>Point a test workload at Ferrosa to validate compatibility</li>
+    <li>Import existing SSTables directly (Ferrosa reads Cassandra BTI format)</li>
+    <li>For migration evaluations, move keyspaces one at a time with dual-read verification</li>
+    <li>Decommission Cassandra nodes as Ferrosa proves stable</li>
+  </ol>
+
+  <div class="success">
+    <strong>No driver changes required:</strong> Ferrosa speaks the CQL native protocol (negotiated at v4) with SASL authentication,
+    LZ4/Snappy compression, and prepared statement support. Your Python, Java, Go, Node.js, C#, and Rust
+    drivers connect without modification. Driver compatibility is verified by automated smoke tests
+    on every CI build — see <code>tests/drivers/</code> and <code>.github/workflows/driver-tests.yml</code>.
+  </div>
+
+  <!-- ── Compatibility ── -->
+  <h2 id="migration--compatibility">What's Compatible</h2>
+
+  <table>
+    <thead><tr><th>Feature</th><th>Status</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>CQL protocol v4</td><td><span class="check">Compatible</span></td><td>All 16 opcodes; negotiation capped at v4 (v5 STARTUP falls back to v4)</td></tr>
+      <tr><td>SASL authentication</td><td><span class="check">Compatible</span></td><td>PasswordAuthenticator flow</td></tr>
+      <tr><td>Frame compression</td><td><span class="check">Compatible</span></td><td>LZ4, Snappy</td></tr>
+      <tr><td>Prepared statements</td><td><span class="check">Compatible</span></td><td>W-TinyLFU cache</td></tr>
+      <tr><td>Unlogged batches</td><td><span class="check">Compatible</span></td><td>Unlogged and counter batches</td></tr>
+      <tr><td>Logged batches</td><td><span class="check">Compatible</span></td><td>Atomic via commit-log group write (single-node); 3-phase batchlog protocol (cluster). No batchlog table in single-node mode — equivalent crash-recovery via commit log.</td></tr>
+      <tr><td>system_schema.*</td><td><span class="check">Compatible</span></td><td>All standard tables</td></tr>
+      <tr><td>system.local</td><td><span class="check">Compatible</span></td><td>Including tokens column</td></tr>
+      <tr><td>Murmur3Partitioner</td><td><span class="check">Compatible</span></td><td>Same token distribution</td></tr>
+      <tr><td>BTI SSTables</td><td><span class="check">Compatible</span></td><td>Read Cassandra 5.x SSTables directly</td></tr>
+      <tr><td>Consistency levels</td><td><span class="check">Compatible</span></td><td>ONE, TWO, THREE, QUORUM, ALL, LOCAL_ONE, LOCAL_QUORUM, EACH_QUORUM</td></tr>
+      <tr><td>cqlsh</td><td><span class="check">Compatible</span></td><td>Tested with Cassandra cqlsh</td></tr>
+      <tr><td>Hinted handoff</td><td><span class="check">Compatible</span></td><td>Stores hints for down nodes, replays on recovery</td></tr>
+      <tr><td>Node lifecycle</td><td><span class="check">Compatible</span></td><td>Join and decommission via <code>ferrosa-ctl</code></td></tr>
+      <tr><td>Token rebalancing</td><td><span class="check">Compatible</span></td><td>Operator-triggered via <code>ferrosa-ctl rebalance</code></td></tr>
+      <tr><td>Secondary indexes</td><td><span class="check">Compatible</span></td><td>8 index types including vector (HNSW, IVFFlat)</td></tr>
+      <tr><td>UDTs</td><td><span class="check">Supported</span></td><td>CREATE/ALTER/DROP TYPE implemented</td></tr>
+      <tr><td>Materialized views</td><td><span class="cross">Not yet</span></td><td>Planned</td></tr>
+      <tr><td>LWT</td><td><span class="check">Compatible</span></td><td>IF NOT EXISTS, IF conditions, batch CAS — Accord protocol (strict serializable)</td></tr>
+      <tr><td>Transactions</td><td><span class="check">Supported</span></td><td>BEGIN TRANSACTION / COMMIT / ROLLBACK — multi-partition atomic operations</td></tr>
+      <tr><td>Gossip protocol</td><td><span class="cross">Replaced</span></td><td>Ferrosa uses Raft for metadata (not wire-compatible)</td></tr>
+      <tr><td>Internode protocol</td><td><span class="cross">Replaced</span></td><td>Custom binary protocol (not wire-compatible)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>Important:</strong> Ferrosa targets CQL client compatibility for common driver paths
+    but <em>not cluster-compatible</em> (a Ferrosa node cannot join an existing Cassandra ring).
+    Migration is done by importing data, not by mixed-version rolling upgrades.
+  </div>
+
+  <!-- ── Steps ── -->
+  <h2 id="migration--steps">Step-by-Step Migration</h2>
+
+  <div class="step-grid">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      <h3>Audit your schema and queries</h3>
+      <p>Export your Cassandra schema and check for unsupported features.
+        Ferrosa supports all standard CQL types, partition/clustering keys, table options, UDTs,
+        WASM UDFs, and lightweight transactions. The following require code changes:</p>
+      <ul>
+        <li><strong>Materialized views</strong> — not supported; rewrite against base tables.</li>
+        <li><strong>GROUP BY / PER PARTITION LIMIT</strong> — not parsed; restructure queries.</li>
+        <li><strong>Java or JavaScript UDFs</strong> — rejected; recompile to WebAssembly.</li>
+        <li><strong>Schema-change EVENT push</strong> — REGISTER accepted but EVENT frames never sent; configure drivers to poll for schema changes if needed.</li>
+      </ul>
+      <pre><span class="cm"># Export schema from Cassandra</span>
+<span class="kw">cqlsh</span> -e <span class="str">"DESCRIBE SCHEMA"</span> > schema.cql
+
+<span class="cm"># Check for unsupported features</span>
+<span class="kw">grep</span> -iE <span class="str">"MATERIALIZED VIEW|GROUP BY|PER PARTITION LIMIT|LANGUAGE (java|javascript)"</span> schema.cql</pre>
+    </div>
+
+    <div class="step-num">2</div>
+    <div class="step-content">
+      <h3>Start a Ferrosa node</h3>
+      <p>Run Ferrosa alongside your existing cluster. It doesn't need to join the Cassandra ring.</p>
+      <pre><span class="cm"># Build and start. This migration example deliberately exposes CQL to the
+# source Cassandra clients; a fresh local Ferrosa install binds to loopback.</span>
+<span class="kw">cargo</span> build --release
+<span class="kw">FERROSA_CQL_BIND</span>=0.0.0.0:9042 \
+<span class="kw">FERROSA_AUTH_DISABLED</span>=true \
+./target/release/ferrosa</pre>
+    </div>
+
+    <div class="step-num">3</div>
+    <div class="step-content">
+      <h3>Apply your schema</h3>
+      <p>Run your exported schema against Ferrosa. Remove any unsupported objects first.</p>
+      <pre><span class="cm"># Apply schema to Ferrosa</span>
+<span class="kw">cqlsh</span> ferrosa-host 9042 -f schema.cql</pre>
+    </div>
+
+    <div class="step-num">4</div>
+    <div class="step-content">
+      <h3>Import data</h3>
+      <p>Two options: SSTable import (fastest for large datasets) or CQL COPY/INSERT (simpler for smaller datasets).</p>
+      <pre><span class="cm"># Option A: CQL COPY (simple, works for moderate datasets)</span>
+<span class="cm"># Export from Cassandra</span>
+<span class="kw">cqlsh</span> cassandra-host -e <span class="str">"COPY social.users TO '/tmp/users.csv'"</span>
+
+<span class="cm"># Import to Ferrosa</span>
+<span class="kw">cqlsh</span> ferrosa-host -e <span class="str">"COPY social.users FROM '/tmp/users.csv'"</span>
+
+<span class="cm"># Option B: SSTable import (see SSTable Import section below)</span></pre>
+    </div>
+
+    <div class="step-num">5</div>
+    <div class="step-content">
+      <h3>Validate with dual reads</h3>
+      <p>Run your application against both Cassandra and Ferrosa, comparing results.
+        See the <a href="#migration--dual-read">dual-read verification</a> section below.</p>
+    </div>
+
+    <div class="step-num">6</div>
+    <div class="step-content">
+      <h3>Cut over</h3>
+      <p>Once validation passes, update your driver contact points from Cassandra to Ferrosa.</p>
+      <pre><span class="cm"># Your application code — just change the host</span>
+<span class="cm"># Before:</span>
+<span class="cm"># cluster = Cluster(['cassandra-node-1.prod'])</span>
+
+<span class="cm"># After:</span>
+cluster = Cluster([<span class="str">'ferrosa-node-1.prod'</span>])</pre>
+    </div>
+  </div>
+
+  <!-- ── SSTable ── -->
+  <h2 id="migration--sstable">SSTable Import</h2>
+
+  <p>Ferrosa's <code>ferrosa-sstable</code> crate reads Cassandra BTI (Big Trie-Indexed) SSTables
+    natively — the default format in Cassandra 5.x. This means you can import existing SSTable
+    files directly without an intermediate conversion step.</p>
+
+  <h3>What Ferrosa reads</h3>
+  <p>A BTI SSTable consists of 7 component files:</p>
+  <ul>
+    <li><code>*-Data.db</code> — row data</li>
+    <li><code>*-Partitions.db</code> — partition index (on-disk trie)</li>
+    <li><code>*-Rows.db</code> — row-level index</li>
+    <li><code>*-Filter.db</code> — Bloom filter</li>
+    <li><code>*-CompressionInfo.db</code> — compression metadata</li>
+    <li><code>*-Statistics.db</code> — SSTable statistics</li>
+    <li><code>*-TOC.txt</code> — table of contents</li>
+  </ul>
+
+  <p>Copy these files from your Cassandra data directory to Ferrosa's data directory, organized
+    by keyspace and table. Ferrosa will pick them up on next read.</p>
+
+  <div class="note">
+    <strong>Note:</strong> SSTable import is currently a manual file-copy process. A dedicated
+    <code>ferrosa-import</code> CLI tool with validation and progress reporting is planned for a
+    future release.
+  </div>
+
+  <h3>Compression support</h3>
+  <p>Ferrosa supports LZ4 and Zstd compressed SSTables. No decompression step needed — compressed
+    SSTables are read directly.</p>
+
+  <div class="note">
+    <strong>Big format (pre-5.x):</strong> If you're running Cassandra 4.x or earlier with the
+    Big SSTable format, you'll need to upgrade to Cassandra 5.x first (which converts to BTI),
+    or use <code>nodetool upgradesstables</code> to force conversion. Big format read support
+    is planned for a future Ferrosa release.
+  </div>
+
+  <!-- ── Dual Read ── -->
+  <h2 id="migration--dual-read">Dual-Read Verification</h2>
+
+  <p>Before considering any production cutover, run dual reads against both databases and compare results:</p>
+
+  <pre><span class="kw">from</span> cassandra.cluster <span class="kw">import</span> Cluster
+
+<span class="cm"># Connect to both</span>
+cass = Cluster([<span class="str">'cassandra-host'</span>]).connect(<span class="str">'social'</span>)
+ferro = Cluster([<span class="str">'ferrosa-host'</span>]).connect(<span class="str">'social'</span>)
+
+<span class="cm"># Compare results</span>
+query = <span class="str">"SELECT * FROM users WHERE user_id = ?"</span>
+stmt_c = cass.prepare(query)
+stmt_f = ferro.prepare(query)
+
+<span class="kw">for</span> uid <span class="kw">in</span> sample_user_ids:
+    row_c = cass.execute(stmt_c, [uid]).one()
+    row_f = ferro.execute(stmt_f, [uid]).one()
+    <span class="kw">assert</span> row_c == row_f, f<span class="str">"Mismatch for {uid}"</span></pre>
+
+  <p>Run this against a representative sample of your real queries. Cover:</p>
+  <ul>
+    <li>Point reads by partition key</li>
+    <li>Range scans on clustering columns</li>
+    <li>Collection types (list, set, map)</li>
+    <li>Prepared statements with bind variables</li>
+    <li>Batch operations</li>
+    <li>Lightweight transactions (INSERT IF NOT EXISTS, UPDATE IF)</li>
+  </ul>
+
+  <!-- ── S3 ── -->
+  <h2 id="migration--s3">S3 Storage Setup</h2>
+
+  <p>For production-style evaluations, configure S3 or an S3-compatible service as the durable storage backend. Local disk acts as a hot cache.</p>
+
+  <pre><span class="cm"># AWS S3 with IAM instance profile (no explicit keys needed)</span>
+<span class="kw">FERROSA_S3_ENDPOINT</span>=https://s3.amazonaws.com \
+<span class="kw">FERROSA_S3_BUCKET</span>=my-ferrosa-data \
+<span class="kw">FERROSA_S3_REGION</span>=us-east-1 \
+<span class="kw">FERROSA_DATA_DIR</span>=/var/lib/ferrosa \
+./target/release/ferrosa
+
+<span class="cm"># MinIO for local development</span>
+<span class="kw">FERROSA_S3_ENDPOINT</span>=http://localhost:9000 \
+<span class="kw">FERROSA_S3_BUCKET</span>=ferrosa \
+<span class="kw">FERROSA_S3_ACCESS_KEY_ID</span>=minioadmin \
+<span class="kw">FERROSA_S3_SECRET_ACCESS_KEY</span>=minioadmin \
+<span class="kw">FERROSA_S3_ALLOW_HTTP</span>=true \
+./target/release/ferrosa</pre>
+
+  <h3>S3-compatible providers</h3>
+  <p>Ferrosa works with any S3-compatible object store. Set <code>FERROSA_S3_ENDPOINT</code> for non-AWS providers:</p>
+
+  <table>
+    <thead><tr><th>Provider</th><th>Endpoint</th></tr></thead>
+    <tbody>
+      <tr><td>AWS S3</td><td>(default — no endpoint needed)</td></tr>
+      <tr><td>MinIO</td><td><code>http://minio:9000</code></td></tr>
+      <tr><td>Cloudflare R2</td><td><code>https://&lt;account&gt;.r2.cloudflarestorage.com</code></td></tr>
+      <tr><td>DigitalOcean Spaces</td><td><code>https://&lt;region&gt;.digitaloceanspaces.com</code></td></tr>
+      <tr><td>Backblaze B2</td><td><code>https://s3.&lt;region&gt;.backblazeb2.com</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Storage cost comparison</h3>
+  <p>With S3-backed storage, you trade some local disk and snapshot costs for object storage, request costs, lifecycle policy, and restore behavior. The table below is illustrative only; benchmark and price your own workload before making migration decisions:</p>
+
+  <table>
+    <thead><tr><th>Scale</th><th>EBS (gp3, 3 replicas)</th><th>S3 Standard</th><th>Savings</th></tr></thead>
+    <tbody>
+      <tr><td>1 TB</td><td>varies by provider</td><td>model from S3 + requests</td><td>workload-dependent</td></tr>
+      <tr><td>10 TB</td><td>depends on RF + snapshots</td><td>depends on lifecycle policy</td><td>benchmark required</td></tr>
+      <tr><td>100 TB</td><td>depends on retention</td><td>depends on cache misses</td><td>benchmark required</td></tr>
+      <tr><td>1 PB</td><td>depends on topology</td><td>depends on restore SLA</td><td>benchmark required</td></tr>
+    </tbody>
+  </table>
+
+  <p>S3 request costs (GET/PUT), restore latency, and cache misses matter for high-throughput workloads. The local NVMe cache is intended to absorb hot reads, and write-behind uploads batch SSTables to amortize PUT costs, but the preview docs should be treated as a model to validate rather than a guaranteed cost outcome.</p>
+
+  <!-- ── Differences ── -->
+  <h2 id="migration--differences">Key Differences from Cassandra</h2>
+
+  <table>
+    <thead><tr><th>Area</th><th>Cassandra</th><th>Ferrosa</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Cluster membership</td>
+        <td>Gossip protocol</td>
+        <td>Raft (openraft) for metadata consensus</td>
+      </tr>
+      <tr>
+        <td>Internode protocol</td>
+        <td>Cassandra messaging</td>
+        <td>Custom binary protocol with 3 priority lanes, PSK auth</td>
+      </tr>
+      <tr>
+        <td>Storage durability</td>
+        <td>Local disk (EBS/SSD)</td>
+        <td>S3 (local NVMe as cache)</td>
+      </tr>
+      <tr>
+        <td>Node recovery</td>
+        <td>Stream from replicas (hours)</td>
+        <td>Read from S3 (seconds)</td>
+      </tr>
+      <tr>
+        <td>GC pauses</td>
+        <td>JVM stop-the-world</td>
+        <td>None (Rust, no GC)</td>
+      </tr>
+      <tr>
+        <td>Observability</td>
+        <td>JMX + nodetool</td>
+        <td>CQL virtual tables + Prometheus + TUI + Web console</td>
+      </tr>
+      <tr>
+        <td>Real-time pub/sub</td>
+        <td>CDC (requires Kafka/Debezium)</td>
+        <td>Experimental SUBSCRIBE syntax with EVERY/DELTA modes</td>
+      </tr>
+      <tr>
+        <td>Graph queries</td>
+        <td>Not supported</td>
+        <td>Cypher via HTTP/JSON on the same tables</td>
+      </tr>
+      <tr>
+        <td>Transactions</td>
+        <td>LWT via Paxos (Accord in 5.x)</td>
+        <td>LWT via Accord (strict serializable, 1-RTT fast path)</td>
+      </tr>
+      <tr>
+        <td>SSTable format</td>
+        <td>Big + BTI</td>
+        <td>Reads BTI, writes BTI (native format planned)</td>
+      </tr>
+      <tr>
+        <td>Commit log</td>
+        <td>Standard</td>
+        <td>CAS-allocated segments, 3 sync modes, built-in CDC</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── LWT Migration ── -->
+  <h2 id="migration--lwt-migration">LWT &amp; Transaction Migration</h2>
+
+  <h3>Lightweight transactions</h3>
+  <p>Ferrosa fully supports Cassandra's lightweight transaction (LWT) syntax. Your existing
+    LWT queries work without modification:</p>
+
+  <ul>
+    <li><code>INSERT ... IF NOT EXISTS</code> — conditional inserts</li>
+    <li><code>UPDATE ... IF condition</code> — compare-and-set updates</li>
+    <li><code>DELETE ... IF EXISTS</code> / <code>DELETE ... IF condition</code> — conditional deletes</li>
+    <li>Batch CAS — <code>BEGIN BATCH</code> with IF conditions across statements</li>
+    <li><code>SERIAL</code> and <code>LOCAL_SERIAL</code> consistency levels</li>
+  </ul>
+
+  <p>Under the hood, Ferrosa uses the Accord consensus protocol instead of Paxos. This is
+    transparent to your application — the CQL syntax and semantics are identical. Accord
+    provides strict serializability with better performance characteristics: 1-RTT fast path
+    via leaseholder, compared to Paxos's minimum 2-RTT.</p>
+
+  <div class="success">
+    <strong>Temporal compatibility:</strong> Ferrosa implements the LWT patterns used by
+    <a href="https://temporal.io">Temporal</a>'s Cassandra persistence path. If you run Temporal
+    on Cassandra with LWT-based persistence, evaluate Ferrosa against the same
+    INSERT IF NOT EXISTS, conditional UPDATE IF, and batch CAS semantics, with expected
+    configuration changes limited to the Cassandra contact points.
+  </div>
+
+  <h3>Beyond LWT: multi-statement transactions</h3>
+  <p>Ferrosa also supports explicit multi-statement transactions for operations that go beyond
+    what LWT can express:</p>
+
+  <pre><span class="cm">-- Atomic multi-partition operation</span>
+<span class="kw">BEGIN TRANSACTION</span>
+  <span class="kw">UPDATE</span> accounts <span class="kw">SET</span> balance = balance - <span class="var">100</span>
+    <span class="kw">WHERE</span> id = <span class="str">'acct-1'</span> <span class="kw">IF</span> balance >= <span class="var">100</span>;
+  <span class="kw">UPDATE</span> accounts <span class="kw">SET</span> balance = balance + <span class="var">100</span>
+    <span class="kw">WHERE</span> id = <span class="str">'acct-2'</span>;
+<span class="kw">COMMIT TRANSACTION</span>;</pre>
+
+  <p>This is a Ferrosa extension — not available in Apache Cassandra. Use it for new
+    functionality after migration, or to replace application-level two-phase patterns.</p>
+
+  <!-- ── Rollback ── -->
+  <h2 id="migration--rollback">Rollback Plan</h2>
+
+  <p>If you need to roll back to Cassandra:</p>
+
+  <ol>
+    <li><strong>Keep Cassandra running</strong> during the migration period — don't decommission until you're confident</li>
+    <li><strong>Your application code is unchanged</strong> — rolling back is just changing the contact point back to Cassandra</li>
+    <li><strong>Export data from Ferrosa</strong> using <code>cqlsh COPY</code> if you need to sync writes that went only to Ferrosa</li>
+    <li><strong>No schema changes needed</strong> — your schema is the same on both systems</li>
+  </ol>
+
+  <div class="success">
+    <strong>Low risk:</strong> Because Ferrosa uses the same CQL protocol and the same drivers,
+    rollback is a configuration change, not a code change. Keep both systems running during
+    validation and cut over only when you're confident.
+  </div>
+  </article>
+
+  <article class="print-chapter" id="releases">
+
+
+  <h1>Releases</h1>
+  <p class="subtitle">Ferrosa Database release history.</p>
+
+  <ul>
+    <li><a href="https://github.com/ferrosadb/ferrosa/releases" target="_blank" rel="noopener noreferrer">All releases on GitHub</a></li>
+    <li><a href="https://github.com/ferrosadb/ferrosa/releases/latest" target="_blank" rel="noopener noreferrer">Latest release</a></li>
+  </ul>
+  </article>
+</div>
+
+<script>
+// The header's print icon links here, and this page opens the print dialog by
+// itself — the same thing the Rust book's print.html does. On 'load' rather
+// than DOMContentLoaded so fonts and layout have settled before the preview is
+// rendered. The page stays readable on screen if the dialog is cancelled.
+window.addEventListener('load', function () { window.print(); });
+</script>
+
+</body>
+</html>

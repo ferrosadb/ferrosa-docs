@@ -148,12 +148,14 @@ body {
   transition: border-color 0.2s, background 0.2s;
 }
 .product-card:hover { border-color: var(--accent); background: var(--bg-card-hover); text-decoration: none; }
-.product-card h2 { margin: 0 0 0.4rem; font-size: 1.0625rem; font-weight: 700; letter-spacing: -0.01em; color: var(--text-primary); text-transform: none; }
+/* flex so the status tag stays on the product name's line rather than dropping
+   to its own row when the name is a little longer */
+.product-card h2 { display: flex; align-items: center; gap: 0.5rem; margin: 0 0 0.4rem; font-size: 1.0625rem; font-weight: 700; letter-spacing: -0.01em; color: var(--text-primary); text-transform: none; white-space: nowrap; }
 .product-card p { margin: 0; font-size: 0.875rem; color: var(--text-muted); }
 .product-card[aria-disabled="true"] { opacity: 0.62; pointer-events: none; }
 .tag {
   display: inline-block;
-  margin-left: 0.5rem;
+  flex-shrink: 0;
   padding: 0.1rem 0.45rem;
   border-radius: 999px;
   border: 1px solid var(--border);
@@ -286,11 +288,10 @@ code { overflow-wrap: anywhere; }
   .docs-crumbs { margin-left: 0; order: 3; width: 100%; }
   .docs-logo img { width: 120px; height: 36px; }
   /* The current-page crumb repeats the <h1> directly below it, and long labels
-     ("PostgreSQL Wire Protocol") do not fit a 320px viewport. Drop it and keep
-     the two crumbs that actually navigate. */
-  .docs-crumbs .here,
-  .docs-crumbs .here + .sep,
-  .docs-crumbs .sep:last-of-type { display: none; }
+     ("PostgreSQL Wire Protocol") do not fit a 320px viewport. Drop it, and drop
+     the separator in front of it so no dangling "/" is left behind. */
+  .docs-crumbs .here { display: none; }
+  .docs-crumbs .sep:has(+ .here) { display: none; }
 }
 
 /* Grid and flex items default to min-width:auto, so they refuse to shrink below

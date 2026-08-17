@@ -199,21 +199,6 @@
     Ferrosa clustering is in active hardening. Data written during cluster formation may have reduced durability until the Raft state machine commits topology and bootstrap streaming completes data redistribution across all replicas. Do not use this configuration for production data until you have run your own durability validation with a representative workload. See <a href="getting-started.html#operational-notes">Operational Notes</a> for general durability considerations.
   </div>
 
-  <div class="toc">
-    <h4>On this page</h4>
-    <ul>
-      <li><a href="#prerequisites">Prerequisites</a></li>
-      <li><a href="#architecture">How 3-node clustering works</a></li>
-      <li><a href="#per-node-config">Per-node configuration</a></li>
-      <li><a href="#formation">Formation procedure</a></li>
-      <li><a href="#verify">Verification</a></li>
-      <li><a href="#cold-start">Expected cold-start behavior</a></li>
-      <li><a href="#readiness-probe">Readiness probe</a></li>
-      <li><a href="#docker-compose">Docker Compose quickstart</a></li>
-      <li><a href="#troubleshooting">Troubleshooting</a></li>
-    </ul>
-  </div>
-
   <!-- ── Prerequisites ── -->
   <h2 id="prerequisites">Prerequisites</h2>
 

@@ -194,18 +194,6 @@
     <strong>Developer preview:</strong> the Postgres front-end is newer than the CQL surface and covers a focused subset of SQL. Validate against your workload before relying on it. Its behavior is continuously cross-checked against a real PostgreSQL 16 (see <a href="#testing">Differential testing</a>).
   </div>
 
-  <div class="toc">
-    <h4>On this page</h4>
-    <ul>
-      <li><a href="#protocol">Protocol &amp; connecting</a></li>
-      <li><a href="#select">Queries (SELECT)</a></li>
-      <li><a href="#dml">Writes (INSERT / UPDATE / DELETE)</a></li>
-      <li><a href="#transactions">Transactions</a></li>
-      <li><a href="#testing">Differential testing</a></li>
-      <li><a href="#not-yet">Not yet supported</a></li>
-    </ul>
-  </div>
-
   <!-- ── Protocol ── -->
   <h2 id="protocol">Protocol &amp; connecting</h2>
   <p>Ferrosa implements the PostgreSQL v3 wire protocol on port <code>5432</code> with SCRAM-SHA-256 authentication. Both the <strong>simple query</strong> protocol and the <strong>extended query</strong> protocol (Parse / Bind / Describe / Execute / Sync) are supported.</p>

@@ -36,20 +36,6 @@
     <strong>Developer Preview:</strong> Ferrosa is in active development. APIs, packaging, and configuration may change between releases. Evaluate with representative workloads before production use.
   </div>
 
-  <div class="toc">
-    <h4>On this page</h4>
-    <ul>
-      <li><a href="#getting-started--install">Install</a></li>
-      <li><a href="#getting-started--run">Run Ferrosa</a></li>
-      <li><a href="#getting-started--connect">Connect a CQL Driver</a></li>
-      <li><a href="#getting-started--config">Configuration Reference</a></li>
-      <li><a href="#getting-started--faq">Cluster FAQ</a></li>
-      <li><a href="#getting-started--cli">CLI Tools</a></li>
-      <li><a href="#getting-started--architecture">Architecture Overview</a></li>
-      <li><a href="#getting-started--next">What's Next</a></li>
-    </ul>
-  </div>
-
   <!-- ── Install ── -->
   <h2 id="getting-started--install">Installation</h2>
 
@@ -616,24 +602,6 @@ session.execute(<span class="str">"""
 
   <div class="note">
     <strong>Beta:</strong> Ferrosa is currently in beta. CQL compatibility is under active development.
-  </div>
-
-  <div class="toc">
-    <h4>On this page</h4>
-    <ul>
-      <li><a href="#cql-compatibility--protocol">Protocol</a></li>
-      <li><a href="#cql-compatibility--types">Data Types</a></li>
-      <li><a href="#cql-compatibility--ddl">DDL Statements</a></li>
-      <li><a href="#cql-compatibility--dml">DML Statements</a></li>
-      <li><a href="#cql-compatibility--auth-roles">Auth &amp; Roles</a></li>
-      <li><a href="#cql-compatibility--system">System Keyspaces</a></li>
-      <li><a href="#cql-compatibility--indexes">Secondary Indexes</a></li>
-      <li><a href="#cql-compatibility--transactions">Transactions (Accord)</a></li>
-      <li><a href="#cql-compatibility--subscribe">SUBSCRIBE Extension</a></li>
-      <li><a href="#cql-compatibility--graph">Graph (Cypher) Extension</a></li>
-      <li><a href="#cql-compatibility--not-yet">Not Yet Supported</a></li>
-      <li><a href="#cql-compatibility--behavioral-differences">Behavioral Differences</a></li>
-    </ul>
   </div>
 
   <!-- ── Protocol ── -->
@@ -1335,18 +1303,6 @@ session.execute(<span class="str">"""
     <strong>Developer preview:</strong> the Postgres front-end is newer than the CQL surface and covers a focused subset of SQL. Validate against your workload before relying on it. Its behavior is continuously cross-checked against a real PostgreSQL 16 (see <a href="#postgres--testing">Differential testing</a>).
   </div>
 
-  <div class="toc">
-    <h4>On this page</h4>
-    <ul>
-      <li><a href="#postgres--protocol">Protocol &amp; connecting</a></li>
-      <li><a href="#postgres--select">Queries (SELECT)</a></li>
-      <li><a href="#postgres--dml">Writes (INSERT / UPDATE / DELETE)</a></li>
-      <li><a href="#postgres--transactions">Transactions</a></li>
-      <li><a href="#postgres--testing">Differential testing</a></li>
-      <li><a href="#postgres--not-yet">Not yet supported</a></li>
-    </ul>
-  </div>
-
   <!-- ── Protocol ── -->
   <h2 id="postgres--protocol">Protocol &amp; connecting</h2>
   <p>Ferrosa implements the PostgreSQL v3 wire protocol on port <code>5432</code> with SCRAM-SHA-256 authentication. Both the <strong>simple query</strong> protocol and the <strong>extended query</strong> protocol (Parse / Bind / Describe / Execute / Sync) are supported.</p>
@@ -1432,26 +1388,6 @@ psql "host=127.0.0.1 port=5432 user=ferrosa_user dbname=ferrosa"
 
   <div class="extension">
     <strong>Ferrosa Extension:</strong> Cypher support is Ferrosa's native graph query layer built on top of your existing CQL data model. Mark any CQL table as a vertex or edge type, and query it with Cypher via a standard HTTP/JSON API on port 7474.
-  </div>
-
-  <div class="toc">
-    <h4>On this page</h4>
-    <ul>
-      <li><a href="#cypher--overview">Overview</a></li>
-      <li><a href="#cypher--http-api">HTTP API</a></li>
-      <li><a href="#cypher--schema-setup">Schema Setup</a></li>
-      <li><a href="#cypher--match">MATCH</a></li>
-      <li><a href="#cypher--node-patterns">Node Patterns</a></li>
-      <li><a href="#cypher--relationship-patterns">Relationship Patterns</a></li>
-      <li><a href="#cypher--where">WHERE Clause</a></li>
-      <li><a href="#cypher--return">RETURN Clause</a></li>
-      <li><a href="#cypher--create-set-delete">CREATE, SET, DELETE</a></li>
-      <li><a href="#cypher--subscribe">SUBSCRIBE</a></li>
-      <li><a href="#cypher--resource-limits">Resource Limits</a></li>
-      <li><a href="#cypher--adjacency-index">Adjacency Index</a></li>
-      <li><a href="#cypher--drivers">Drivers &amp; Integration</a></li>
-      <li><a href="#cypher--not-yet">Not Yet Supported</a></li>
-    </ul>
   </div>
 
   <!-- ── Overview ── -->
@@ -2036,17 +1972,6 @@ data = r.json()
     <strong>Beta:</strong> Vector indexing is under active development. HVQ (hybrid vector quantization) is a developer-preview path; the numbers below are reproducible from the in-tree evaluation harness.
   </div>
 
-  <div class="toc">
-    <h4>On this page</h4>
-    <ul>
-      <li><a href="#vector-indexes--strategies">Index strategies</a></li>
-      <li><a href="#vector-indexes--quantization">Quantization &amp; staged rerank</a></li>
-      <li><a href="#vector-indexes--cql">CQL reference</a></li>
-      <li><a href="#vector-indexes--evaluation">Evaluation: HNSW vs HVQ</a></li>
-      <li><a href="#vector-indexes--example">Runnable example</a></li>
-    </ul>
-  </div>
-
   <!-- ── Strategies ── -->
   <h2 id="vector-indexes--strategies">Index strategies</h2>
 
@@ -2146,21 +2071,6 @@ data = r.json()
   <div class="warning">
     <strong>Developer Preview &mdash; Clustering durability caveat:</strong>
     Ferrosa clustering is in active hardening. Data written during cluster formation may have reduced durability until the Raft state machine commits topology and bootstrap streaming completes data redistribution across all replicas. Do not use this configuration for production data until you have run your own durability validation with a representative workload. See <a href="getting-started.html#operational-notes">Operational Notes</a> for general durability considerations.
-  </div>
-
-  <div class="toc">
-    <h4>On this page</h4>
-    <ul>
-      <li><a href="#clustering--prerequisites">Prerequisites</a></li>
-      <li><a href="#clustering--architecture">How 3-node clustering works</a></li>
-      <li><a href="#clustering--per-node-config">Per-node configuration</a></li>
-      <li><a href="#clustering--formation">Formation procedure</a></li>
-      <li><a href="#clustering--verify">Verification</a></li>
-      <li><a href="#clustering--cold-start">Expected cold-start behavior</a></li>
-      <li><a href="#clustering--readiness-probe">Readiness probe</a></li>
-      <li><a href="#clustering--docker-compose">Docker Compose quickstart</a></li>
-      <li><a href="#clustering--troubleshooting">Troubleshooting</a></li>
-    </ul>
   </div>
 
   <!-- ── Prerequisites ── -->
@@ -2454,21 +2364,6 @@ cqlsh&gt; ALTER ROLE ferrosa_admin WITH PASSWORD='<span class="var">your-strong-
 
   <div class="note">
     <strong>Developer Preview:</strong> Ferrosa is in active development. Run representative dual-read and failure-recovery tests before migrating production traffic.
-  </div>
-
-  <div class="toc">
-    <h4>On this page</h4>
-    <ul>
-      <li><a href="#migration--overview">Migration Overview</a></li>
-      <li><a href="#migration--compatibility">What's Compatible</a></li>
-      <li><a href="#migration--steps">Step-by-Step Migration</a></li>
-      <li><a href="#migration--sstable">SSTable Import</a></li>
-      <li><a href="#migration--dual-read">Dual-Read Verification</a></li>
-      <li><a href="#migration--s3">S3 Storage Setup</a></li>
-      <li><a href="#migration--differences">Key Differences</a></li>
-      <li><a href="#migration--lwt-migration">LWT &amp; Transaction Migration</a></li>
-      <li><a href="#migration--rollback">Rollback Plan</a></li>
-    </ul>
   </div>
 
   <!-- ── Overview ── -->

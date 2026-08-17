@@ -1,0 +1,39 @@
+{
+  "_comment": "Source of truth for the documentation sidebar, prev/next links and print page. Edit this, then run scripts/build-docs-nav.py. CI fails if the generated HTML drifts from this file. Labels are each page's own <h1>.",
+  "products": [
+    {
+      "slug": "memory",
+      "label": "Ferrosa Memory",
+      "href": "memory/",
+      "status": "coming-soon",
+      "pages": []
+    },
+    {
+      "slug": "database",
+      "label": "Ferrosa Database",
+      "href": "database/",
+      "status": "live",
+      "repo": "ferrosadb/ferrosa",
+      "print": true,
+      "pages": [
+        { "file": "getting-started.html",   "label": "Getting Started" },
+        { "file": "cql-compatibility.html", "label": "CQL Reference" },
+        { "file": "postgres.html",          "label": "PostgreSQL Wire Protocol" },
+        { "file": "cypher.html",            "label": "Cypher Reference" },
+        { "file": "sparql.html",            "label": "SPARQL 1.1 Reference" },
+        { "file": "vector-indexes.html",    "label": "Vector Indexes" },
+        { "file": "../../database/examples/", "label": "Tutorials &amp; Examples", "external": true },
+        { "file": "clustering.html",        "label": "3-Node Cluster Setup" },
+        { "file": "migration.html",         "label": "Migration Guide" },
+        { "file": "releases.html",          "label": "Releases" }
+      ]
+    },
+    {
+      "slug": "forge",
+      "label": "Ferrosa Forge",
+      "href": "forge/",
+      "status": "coming-soon",
+      "pages": []
+    }
+  ]
+}

@@ -1298,3 +1298,78 @@ a.btn.btn-secondary, a.button.button-secondary {
   width: auto;
   z-index: 40;
 }
+
+/* ── Hero vs the ported section padding ─────────────────────────────────────
+   The ported layer carries `section { padding: 6rem 2rem }`, scoped to
+   `.product-page section` (0,1,1). That out-specifies `.hero` (0,1,0), so every
+   product-page hero was getting 96px of padding top AND bottom inside a box
+   that already sets its own rhythm — 192px of dead space the copy did not ask
+   for. The hero owns its own padding via .hero-body.
+
+   The min-height goes too. It was calc(100vh - --nav-h), which assumed the nav
+   was the only chrome; these pages also carry a ribbon and a subnav (148px in
+   total), so the hero ran past the fold and padded the difference with nothing.
+   Sized to content, the rhythm comes from .hero-body alone.
+   ───────────────────────────────────────────────────────────────────────── */
+.product-page section.hero,
+.legacy-doc section.hero {
+  padding: 0;
+  min-height: 0;
+}
+
+/* ── Vertical rhythm and card fill ──────────────────────────────────────────
+   Two sources of dead space found by measuring rendered pixels, not the DOM.
+
+   1. Stacked section padding. `.section` was 5rem top / 6rem bottom, so two
+      consecutive sections put 176px of nothing between their content. Now
+      1.5 modules each side, which keeps the sections distinct without the gap
+      reading as a missing element.
+
+   2. Cards in a grid stretch to the tallest sibling. Where the content is an
+      image, a shorter image left the card padded out with empty surface — 142px
+      on the homepage's two screenshots. Normalising the aspect ratio makes the
+      cards the same height for the right reason.
+   ───────────────────────────────────────────────────────────────────────── */
+.section { padding: calc(var(--module) * 1.5) var(--gutter); }
+.prose-note { margin-top: calc(var(--module) * 1.2); padding-top: calc(var(--module) * 0.8); }
+
+.card > img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: top center;
+}
+
+/* Same rhythm for the ported product-page sections. They shipped at 6rem top
+   AND bottom, so two consecutive sections put 192px of nothing between their
+   content — measured at 194px, 203px, 209px and 260px across the Database,
+   Memory, Compare and Forge pages. Vertical only: the horizontal padding is
+   left alone because those sections centre their own max-width container. */
+.product-page section,
+.legacy-doc section {
+  padding-top: calc(var(--module) * 1.5);
+  padding-bottom: calc(var(--module) * 1.5);
+}
+.product-page section.hero,
+.legacy-doc section.hero { padding: 0; min-height: 0; }
+
+/* The last two sources of dead space, same 6rem-stacking cause as the sections:
+   the closing CTA band on the Memory pages, and the Forge page's main, whose
+   5rem bottom padding sat on top of the footer's own 2.5rem. */
+.cta-section {
+  padding-top: calc(var(--module) * 1.5);
+  padding-bottom: calc(var(--module) * 1.5);
+}
+.legacy-doc main { padding-bottom: calc(var(--module) * 1.2); }
+
+/* A section's first child does not need its own top margin — the section's
+   padding already provides the separation, and stacking the two put ~40px of
+   extra dead space above every closing CTA heading. Same for the last child. */
+.section > :first-child,
+.cta-section > :first-child,
+.product-page section > :first-child,
+.legacy-doc section > :first-child { margin-top: 0; }
+.section > :last-child,
+.cta-section > :last-child,
+.product-page section > :last-child,
+.legacy-doc section > :last-child { margin-bottom: 0; }

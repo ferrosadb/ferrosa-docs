@@ -1510,6 +1510,30 @@ a.btn.btn-secondary, a.button.button-secondary {
 }
 .legacy-doc main { padding-bottom: calc(var(--module) * 1.2); }
 
+/* Forge keeps its legacy content primitives, but its outer rail follows the
+   same product-page geometry as Database and Memory. The old 980px `main`
+   width also constrained the shared hero, making Forge's opening composition
+   visibly narrower than the other product pages. */
+.product-page.legacy-doc main {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+.product-page.legacy-doc .forge-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: calc(var(--module) * 1.5) var(--gutter) calc(var(--module) * 1.5);
+}
+.product-page.legacy-doc .forge-content > :first-child {
+  margin-top: 0;
+}
+@media (max-width: 720px) {
+  .product-page.legacy-doc .forge-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
 /* A section's first child does not need its own top margin — the section's
    padding already provides the separation, and stacking the two put ~40px of
    extra dead space above every closing CTA heading. Same for the last child. */

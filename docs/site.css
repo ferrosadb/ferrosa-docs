@@ -61,10 +61,11 @@
 
   /* The drafting grid is 40px. Foreground spacing is a multiple of it, so the
      content aligns to a grid the visitor can actually see. */
+  --nav-h: 64px;
   --module: 40px;
   --gutter: 80px;
 
-  --radius-sm: 6px;
+  --radius-sm: 8px;   /* --ferrosa-radius-sm */
   --radius-md: 12px;
   --radius-pill: 999px;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
@@ -101,8 +102,8 @@ img { max-width: 100%; }
   display: flex;
   align-items: center;
   gap: 2rem;
-  min-height: 64px;
-  padding: 0.9rem var(--gutter);
+  height: var(--nav-h);
+  padding: 0 var(--gutter);
   max-width: 1560px;
   margin: 0 auto;
 }
@@ -113,7 +114,7 @@ img { max-width: 100%; }
 .nav-actions { display: inline-flex; align-items: center; gap: 0.6rem; margin-left: auto; }
 .nav-icon {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 38px; height: 38px; flex-shrink: 0;
+  width: 34px; height: 34px; flex-shrink: 0;
   border: 1px solid var(--divider); border-radius: var(--radius-pill);
   background: var(--surface); color: var(--text); text-decoration: none;
   transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
@@ -123,7 +124,7 @@ img { max-width: 100%; }
 
 .nav-toggle {
   display: none; align-items: center; justify-content: center;
-  width: 38px; height: 38px; padding: 0;
+  width: 34px; height: 34px; padding: 0;
   border: 1px solid var(--divider); border-radius: var(--radius-pill);
   background: var(--surface); color: var(--text); cursor: pointer;
 }
@@ -134,24 +135,118 @@ img { max-width: 100%; }
 .nav-toggle span::before { content: ''; position: absolute; top: -5px; }
 .nav-toggle span::after { content: ''; position: absolute; top: 5px; }
 
-/* ── Buttons ────────────────────────────────────────────────────────────── */
-.btn {
-  display: inline-block;
-  border-radius: var(--radius-pill);
-  padding: 0.6rem 1.2rem;
-  font-size: 0.86rem;
-  font-weight: 600;
-  text-decoration: none;
+/* ── Buttons ────────────────────────────────────────────────────────────────
+   The canonical component from docs/design-system.html, implemented once here
+   so the site uses the documented control rather than a look-alike. The site
+   default is the SMALL size — the previous pill was larger, rounder, and used
+   the cyan accent as a fill, which spent the rationed accent on every button.
+   Primary is --primary (blue); cyan now marks only the headline claim.
+
+   The legacy class names are aliases onto the same rules, so existing markup
+   inherits the canonical control without a site-wide markup rewrite.
+
+   Written with the `a.` prefix as well, because the ported `.legacy-doc a`
+   rule (0,2,0) would otherwise out-specify the label colour.
+   ───────────────────────────────────────────────────────────────────────── */
+.ferrosa-btn, .btn, .button, .nav-cta,
+a.ferrosa-btn, a.btn, a.button, a.nav-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font: 600 0.8125rem/1 var(--sans);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
-  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background var(--dur) var(--ease),
+              border-color var(--dur) var(--ease),
+              color var(--dur) var(--ease);
 }
-/* Written as a.btn-* so the ported `.legacy-doc a { color: … }` rule (0,2,0)
-   cannot out-specify the button's own label colour and paint it invisible on
-   its own fill — which is exactly what happened to Forge's Install button. */
-a.btn-primary, .btn-primary { background: var(--accent); color: var(--on-primary); }
-a.btn-primary:hover, .btn-primary:hover { background: #a8efff; color: var(--on-primary); }
-a.btn-secondary, .btn-secondary { border-color: var(--border); color: var(--text); }
-a.btn-secondary:hover, .btn-secondary:hover { background: var(--surface); color: var(--text); }
+.ferrosa-btn:disabled, .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.ferrosa-btn--primary, .btn-primary, .button-primary, .nav-cta,
+a.ferrosa-btn--primary, a.btn-primary, a.button-primary, a.nav-cta {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.ferrosa-btn--primary:hover, .btn-primary:hover, .button-primary:hover, .nav-cta:hover,
+a.ferrosa-btn--primary:hover, a.btn-primary:hover, a.button-primary:hover, a.nav-cta:hover {
+  background: #4f9dff;
+  color: var(--on-primary);
+}
+
+.ferrosa-btn--secondary, .btn-secondary, .button-secondary,
+a.ferrosa-btn--secondary, a.btn-secondary, a.button-secondary {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border);
+}
+.ferrosa-btn--secondary:hover, .btn-secondary:hover, .button-secondary:hover,
+a.ferrosa-btn--secondary:hover, a.btn-secondary:hover, a.button-secondary:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.ferrosa-btn--ghost, a.ferrosa-btn--ghost { background: transparent; color: var(--primary); }
+.ferrosa-btn--ghost:hover, a.ferrosa-btn--ghost:hover { background: rgba(52, 140, 255, 0.16); }
+.ferrosa-btn--danger, a.ferrosa-btn--danger { background: var(--danger); color: #fff; }
+.ferrosa-btn--danger:hover, a.ferrosa-btn--danger:hover { filter: brightness(1.1); }
+
+/* Sizes. --sm is the site default above, so the modifier is a no-op kept for
+   parity with the design system; --lg is the deliberate step up. */
+.ferrosa-btn--sm { padding: 6px 12px; font-size: 0.8125rem; }
+.ferrosa-btn--lg { padding: 13px 22px; font-size: 0.9375rem; }
+
+.ferrosa-icon-btn, .icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; padding: 0;
+  background: transparent; color: var(--muted);
+  border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer;
+}
+.ferrosa-icon-btn:hover, .icon-btn:hover { background: var(--surface-2); color: var(--text); }
+
+
+/* ── Section subnav ─────────────────────────────────────────────────────────
+   The top nav is now identical on every page. Section-level links (the Memory
+   pages' Overview / How it works / Tools / …) live here instead, so navigating
+   into a product never rewrites the primary nav under the visitor.
+   ───────────────────────────────────────────────────────────────────────── */
+.subnav {
+  position: sticky;
+  top: var(--nav-h);
+  z-index: 30;
+  background: rgba(5, 7, 12, 0.92);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--divider);
+}
+.subnav-inner {
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.subnav-inner::-webkit-scrollbar { display: none; }
+.subnav-inner a {
+  padding: 0.7rem 0;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--subtle);
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+}
+.subnav-inner a:hover { color: var(--text); }
+.subnav-inner a[aria-current="page"] { color: var(--text); border-bottom-color: var(--accent); }
+.nav-links a[aria-current="page"] { color: var(--text); }
+@media (max-width: 720px) { .subnav { top: 0; position: static; } }
 
 /* ── Hero + drafting ground ─────────────────────────────────────────────────
    The hero owns its own height and clips its own background. The ground must
@@ -161,7 +256,7 @@ a.btn-secondary:hover, .btn-secondary:hover { background: var(--surface); color:
    ───────────────────────────────────────────────────────────────────────── */
 .hero {
   position: relative;
-  min-height: min(calc(100vh - 64px), 860px);
+  min-height: min(calc(100vh - var(--nav-h)), 860px);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -249,6 +344,13 @@ a.btn-secondary:hover, .btn-secondary:hover { background: var(--surface); color:
 }
 .lede:last-of-type { margin-bottom: 1.5rem; }
 .hero-actions { display: flex; gap: 0.9rem; align-items: center; flex-wrap: wrap; }
+
+
+/* Sub-pages carry the same drafting ground and hero anatomy as the landings,
+   at a shorter height — they are a section entrance, not a front door. */
+.hero-compact { min-height: 0; }
+.hero-compact .hero-body { padding-top: calc(var(--module) * 1.5); padding-bottom: calc(var(--module) * 1.5); }
+.hero-compact .hero-copy h1 { font-size: clamp(1.9rem, 2.8vw, 2.5rem); }
 
 /* ── Specimen ───────────────────────────────────────────────────────────────
    A specimen shows a real row from the shipped schema. It is the house device
@@ -1144,3 +1246,55 @@ html{ scroll-behavior: smooth; }body.product-page{
 
 @media (max-width: 768px) {.legacy-doc body{ overflow-x:hidden; }.legacy-doc nav .inner{ min-height:64px; padding:0 .5rem; gap:.5rem; position:relative; }.legacy-doc nav .nav-actions{ gap:.375rem; }.legacy-doc nav .inner > a:first-child{ margin-right:auto; }.legacy-doc nav .nav-cta{ flex-shrink:0; padding:.5rem .75rem; }.legacy-doc nav .nav-toggle{ display:inline-flex; }.legacy-doc nav .links{ position:fixed; top:64px; left:0; right:0; display:none; flex-direction:column; gap:0; padding:.5rem 1rem 1rem; background:rgba(5,7,12,.98); border-bottom:1px solid var(--divider); box-shadow:0 18px 40px rgba(0,0,0,.35); }.legacy-doc nav.open .links{ display:flex; }.legacy-doc nav .links a{ display:block; padding:.75rem 0; white-space:nowrap; }.legacy-doc main{ width:100%; min-width:0; padding-left:1rem; padding-right:1rem; overflow-wrap:anywhere; }.hero-centered{ width:100%; min-width:0; padding:1.5rem; overflow-wrap:anywhere; }.legacy-doc h1{ font-size:clamp(2rem, 11vw, 3rem); }.footer-inner{ grid-template-columns:1fr; justify-items:center; text-align:center; gap:1.25rem; }.footer-community, .footer-links{ justify-content:center; }
     }.grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1rem; margin:1rem 0; }.card h3{ margin-top:0; }
+
+
+/* ── Legacy developer-preview ribbon ────────────────────────────────────────
+   Shipped as position:fixed;top:64px, which collided with the section subnav
+   (both claimed the same 64px band) and hid it entirely. In flow it stacks
+   correctly after the nav and the subnav, and no longer needs the body padding
+   the fixed version implied.
+   ───────────────────────────────────────────────────────────────────────── */
+.product-page .beta-banner {
+  position: static;
+  top: auto;
+  width: auto;
+  z-index: auto;
+  border-bottom: 1px solid var(--divider);
+}
+/* The ribbon sits between the nav and the subnav, so the subnav can no longer
+   stick at the nav height alone — it would slide under the ribbon on scroll.
+   Sticking it at 0 under a sticky nav is wrong too; simplest correct answer is
+   that only the nav is sticky and the subnav scrolls with the page. */
+.product-page .subnav { position: static; }
+
+/* ── Button colour, last word ───────────────────────────────────────────────
+   `.legacy-doc a { color }` and `a.btn-primary { color }` are both (0,1,1), so
+   source order decided it and the ported layer came later — Forge's Install
+   button rendered its label in link blue on a blue fill. Settled here, after
+   every ported rule. */
+a.btn.btn-primary, a.button.button-primary, a.ferrosa-btn.ferrosa-btn--primary,
+.legacy-doc a.btn-primary, .legacy-doc a.button-primary {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.legacy-doc a.btn-secondary, .legacy-doc a.button-secondary,
+a.btn.btn-secondary, a.button.button-secondary {
+  color: var(--text);
+  border-color: var(--border);
+}
+
+/* ── Nav stacking, last word ────────────────────────────────────────────────
+   The ported layer carries `.product-page nav { position: fixed }` (0,1,1),
+   which out-specified `.site-nav { position: sticky }` (0,1,0). A fixed nav
+   occupies no flow space, so the ribbon and subnav slid underneath it and the
+   old layout compensated with an 11rem hero padding. Sticky keeps the same
+   pinned behaviour while still taking its own space, so the ribbon and subnav
+   stack correctly and the hero needs no magic padding.
+   ───────────────────────────────────────────────────────────────────────── */
+.product-page nav.site-nav,
+.legacy-doc nav.site-nav {
+  position: sticky;
+  top: 0;
+  width: auto;
+  z-index: 40;
+}

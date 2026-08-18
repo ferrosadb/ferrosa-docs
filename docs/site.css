@@ -1,0 +1,1568 @@
+/* ============================================================================
+   Ferrosa AI — site stylesheet
+   Shared by every marketing and product page under docs/.
+
+   Replaces the ~5,500 lines of near-identical inline <style> that each page
+   carried (the five Ferrosa Memory pages were 93–98% the same as each other).
+   Pages link this file and carry no <style> block of their own unless they
+   genuinely need a rule this file does not provide.
+
+   ── The design language ───────────────────────────────────────────────────
+   "Blue steel blueprint": the Ferrosa AI design system rendered in the drafting
+   language of an architectural plan — thin line work, MONO_UPPERCASE labels,
+   dimension rules, a full-bleed drafting ground behind the copy, and specimens
+   that show a real row rather than asserting a claim.
+
+   Three rules hold it together:
+
+   1. VALUE BEFORE HUE. Hierarchy is carried by lightness. Every text ramp
+      reads correctly in greyscale before colour is applied. This is why an
+      emphasised headline dims its lead-in rather than only recolouring the
+      emphasis — accent cyan (#7ee7ff, luminance .688) is DARKER than --text
+      (#e8f4ff, .891), so recolouring alone inverts the hierarchy.
+   2. ACCENT IS RATIONED. Cyan marks the primary read only: the claim and the
+      one action. The moment a second thing is cyan, nothing is.
+   3. HAIRLINES ARE NEVER LOAD-BEARING. --hairline sits at 1.43:1 and carries
+      no meaning — grid and texture only. Anything a reader must perceive uses
+      --border or lighter, which clears 3:1 for non-text.
+
+   Palette and type are docs/design-system.html. Do not add colour literals
+   outside the token block. Blued Steel (--steel) is a LINE colour, never a
+   text colour: it is 3.79:1 on --bg and fails 4.5:1.
+   ========================================================================= */
+
+/* ── Tokens ─────────────────────────────────────────────────────────────── */
+/* ── Tokens ─────────────────────────────────────────────────────────────────
+   Three states, per the design system:
+     :root                                  dark (the default)
+     :root[data-theme="light"]              an explicit choice
+     @media (prefers-color-scheme: light)   the host computer's setting
+
+   Every colour the site paints is a token. Composite values (scrims, tints,
+   shadows, the hero mask) are tokens too, because their ALPHA is over a
+   different ground in each theme — an rgba() literal cannot flip.
+   ───────────────────────────────────────────────────────────────────────── */
+:root {
+  --bg: #05070c;
+  --surface: #0e1726;
+  --surface-2: #16243a;
+  --surface-inset: #09111f;
+
+  --text: #e8f4ff;
+  --muted: #9bb3cf;
+  --subtle: #6d829a;
+
+  --primary: #348cff;
+  --accent: #7ee7ff;
+  --steel: #516d92;
+  --border: #3d659c;
+  --divider: #17273d;
+  --hairline: #1c3454;
+
+  --success: #6bc9a0;
+  --warning: #f4a261;
+  --danger: #e25b5b;
+  --on-primary: #04101f;
+  --on-danger: #ffffff;
+
+  --code-bg: #060b14;
+  --code-text: #dcdcf0;
+
+  /* Composites */
+  --scrim: rgba(5, 7, 12, 0.92);
+  --scrim-solid: rgba(5, 7, 12, 0.98);
+  --primary-soft: rgba(52, 140, 255, 0.16);
+  --primary-line: rgba(52, 140, 255, 0.35);
+  --accent-soft: rgba(126, 231, 255, 0.08);
+  --film: rgba(255, 255, 255, 0.02);
+  --film-2: rgba(255, 255, 255, 0.025);
+  --shadow: rgba(0, 0, 0, 0.35);
+  --glow: rgba(52, 140, 255, 0.18);
+  --hero-mask: linear-gradient(100deg,
+    rgba(5, 7, 12, 0.90) 0%, rgba(5, 7, 12, 0.86) 34%, rgba(5, 7, 12, 0.62) 52%,
+    rgba(5, 7, 12, 0.28) 74%, rgba(5, 7, 12, 0.10) 100%);
+  --hero-mask-stacked: linear-gradient(180deg,
+    rgba(5, 7, 12, 0.88) 0%, rgba(5, 7, 12, 0.80) 55%, rgba(5, 7, 12, 0.35) 100%);
+  --ground-image: url("assets/diagrams/drafting-ground.svg");
+
+  --surface-a: rgba(14, 23, 38, 0.72);
+  --surface-a2: rgba(14, 23, 38, 0.66);
+  --film-3: rgba(255, 255, 255, 0.05);
+  --syn-kw: #c792ea;
+  --syn-fn: #82aaff;
+  --syn-str: #c3e88d;
+  --syn-num: #f78c6c;
+  --syn-attr: #ffcb6b;
+  --syn-op: #89ddff;
+  --syn-com: #6b8196;   /* was #546e7a — 3.65:1 on --code-bg, below AA */
+
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+  --nav-h: 64px;
+  --module: 40px;
+  --gutter: 80px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-pill: 999px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur: 160ms;
+}
+
+/* Light, chosen explicitly. Values are the design system's light palette. */
+:root[data-theme="light"] {
+  --bg: #f4f8fd;
+  --surface: #ffffff;
+  --surface-2: #e7eef7;
+  --surface-inset: #eef4fb;
+
+  --text: #0c1a2b;
+  --muted: #44586f;
+  --subtle: #61738a;
+
+  --primary: #2270d8;
+  --accent: #0e7ea3;
+  --steel: #55708f;
+  --border: #6a93bf;
+  --divider: #d7e2ee;
+  --hairline: #e2eaf4;
+
+  --success: #1d805c;
+  --warning: #a15c14;
+  --danger: #c23b3b;
+  --on-primary: #ffffff;
+  --on-danger: #ffffff;
+
+  --code-bg: #ffffff;
+  --code-text: #24344a;
+
+  --scrim: rgba(244, 248, 253, 0.92);
+  --scrim-solid: rgba(244, 248, 253, 0.98);
+  --primary-soft: rgba(34, 112, 216, 0.10);
+  --primary-line: rgba(34, 112, 216, 0.32);
+  --accent-soft: rgba(14, 126, 163, 0.10);
+  --film: rgba(12, 26, 43, 0.03);
+  --film-2: rgba(12, 26, 43, 0.04);
+  --shadow: rgba(12, 26, 43, 0.14);
+  --glow: rgba(34, 112, 216, 0.10);
+  --hero-mask: linear-gradient(100deg,
+    rgba(244, 248, 253, 0.92) 0%, rgba(244, 248, 253, 0.88) 34%, rgba(244, 248, 253, 0.66) 52%,
+    rgba(244, 248, 253, 0.32) 74%, rgba(244, 248, 253, 0.12) 100%);
+  --hero-mask-stacked: linear-gradient(180deg,
+    rgba(244, 248, 253, 0.90) 0%, rgba(244, 248, 253, 0.82) 55%, rgba(244, 248, 253, 0.38) 100%);
+  --ground-image: url("assets/diagrams/drafting-ground-light.svg");
+  --surface-a: rgba(255, 255, 255, 0.86);
+  --surface-a2: rgba(255, 255, 255, 0.78);
+  --film-3: rgba(12, 26, 43, 0.05);
+  --syn-kw: #7326a8;
+  --syn-fn: #1b5bb8;
+  --syn-str: #2a6a1c;
+  --syn-num: #9d4a15;
+  --syn-attr: #7a5600;
+  --syn-op: #0c6a86;
+  --syn-com: #5b6f80;
+}
+
+/* Light, following the host computer. Same values as the explicit choice —
+   a visitor who never touches the toggle must get the identical palette.
+   Guarded with :not([data-theme="dark"]) so an explicit dark choice wins. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f4f8fd;
+    --surface: #ffffff;
+    --surface-2: #e7eef7;
+    --surface-inset: #eef4fb;
+
+    --text: #0c1a2b;
+    --muted: #44586f;
+    --subtle: #61738a;
+
+    --primary: #2270d8;
+    --accent: #0e7ea3;
+    --steel: #55708f;
+    --border: #6a93bf;
+    --divider: #d7e2ee;
+    --hairline: #e2eaf4;
+
+    --success: #1d805c;
+    --warning: #a15c14;
+    --danger: #c23b3b;
+    --on-primary: #ffffff;
+    --on-danger: #ffffff;
+
+    --code-bg: #ffffff;
+    --code-text: #24344a;
+
+    --scrim: rgba(244, 248, 253, 0.92);
+    --scrim-solid: rgba(244, 248, 253, 0.98);
+    --primary-soft: rgba(34, 112, 216, 0.10);
+    --primary-line: rgba(34, 112, 216, 0.32);
+    --accent-soft: rgba(14, 126, 163, 0.10);
+    --film: rgba(12, 26, 43, 0.03);
+    --film-2: rgba(12, 26, 43, 0.04);
+    --shadow: rgba(12, 26, 43, 0.14);
+    --glow: rgba(34, 112, 216, 0.10);
+    --hero-mask: linear-gradient(100deg,
+      rgba(244, 248, 253, 0.92) 0%, rgba(244, 248, 253, 0.88) 34%, rgba(244, 248, 253, 0.66) 52%,
+      rgba(244, 248, 253, 0.32) 74%, rgba(244, 248, 253, 0.12) 100%);
+    --hero-mask-stacked: linear-gradient(180deg,
+      rgba(244, 248, 253, 0.90) 0%, rgba(244, 248, 253, 0.82) 55%, rgba(244, 248, 253, 0.38) 100%);
+    --ground-image: url("assets/diagrams/drafting-ground-light.svg");
+  --surface-a: rgba(255, 255, 255, 0.86);
+    --surface-a2: rgba(255, 255, 255, 0.78);
+    --film-3: rgba(12, 26, 43, 0.05);
+    --syn-kw: #7326a8;
+    --syn-fn: #1b5bb8;
+    --syn-str: #2a6a1c;
+    --syn-num: #9d4a15;
+    --syn-attr: #7a5600;
+    --syn-op: #0c6a86;
+    --syn-com: #5b6f80;
+  }
+}
+
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+:target, h1[id], h2[id], h3[id] { scroll-margin-top: 96px; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a { color: var(--accent); }
+img { max-width: 100%; }
+
+/* ── Nav ────────────────────────────────────────────────────────────────── */
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--scrim);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--divider);
+}
+.site-nav-inner {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  height: var(--nav-h);
+  padding: 0 var(--gutter);
+  max-width: 1560px;
+  margin: 0 auto;
+}
+.site-nav img { height: 30px; width: auto; display: block; }
+.nav-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.nav-links a { color: var(--muted); text-decoration: none; font-size: 0.86rem; }
+.nav-links a:hover { color: var(--text); }
+.nav-actions { display: inline-flex; align-items: center; gap: 0.6rem; margin-left: auto; }
+.nav-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; flex-shrink: 0;
+  border: 1px solid var(--divider); border-radius: var(--radius-pill);
+  background: var(--surface); color: var(--text); text-decoration: none;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.nav-icon:hover { background: var(--surface-2); border-color: var(--steel); }
+.nav-icon svg { width: 17px; height: 17px; }
+
+.nav-toggle {
+  display: none; align-items: center; justify-content: center;
+  width: 34px; height: 34px; padding: 0;
+  border: 1px solid var(--divider); border-radius: var(--radius-pill);
+  background: var(--surface); color: var(--text); cursor: pointer;
+}
+.nav-toggle span, .nav-toggle span::before, .nav-toggle span::after {
+  display: block; width: 15px; height: 2px; border-radius: 2px; background: currentColor;
+}
+.nav-toggle span { position: relative; }
+.nav-toggle span::before { content: ''; position: absolute; top: -5px; }
+.nav-toggle span::after { content: ''; position: absolute; top: 5px; }
+
+/* ── Buttons ────────────────────────────────────────────────────────────────
+   The canonical component from docs/design-system.html, implemented once here
+   so the site uses the documented control rather than a look-alike. The site
+   default is the SMALL size — the previous pill was larger, rounder, and used
+   the cyan accent as a fill, which spent the rationed accent on every button.
+   Primary is --primary (blue); cyan now marks only the headline claim.
+
+   The legacy class names are aliases onto the same rules, so existing markup
+   inherits the canonical control without a site-wide markup rewrite.
+
+   Written with the `a.` prefix as well, because the ported `.legacy-doc a`
+   rule (0,2,0) would otherwise out-specify the label colour.
+   ───────────────────────────────────────────────────────────────────────── */
+.ferrosa-btn, .btn, .button, .nav-cta,
+a.ferrosa-btn, a.btn, a.button, a.nav-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font: 600 0.8125rem/1 var(--sans);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background var(--dur) var(--ease),
+              border-color var(--dur) var(--ease),
+              color var(--dur) var(--ease);
+}
+.ferrosa-btn:disabled, .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.ferrosa-btn--primary, .btn-primary, .button-primary, .nav-cta,
+a.ferrosa-btn--primary, a.btn-primary, a.button-primary, a.nav-cta {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.ferrosa-btn--primary:hover, .btn-primary:hover, .button-primary:hover, .nav-cta:hover,
+a.ferrosa-btn--primary:hover, a.btn-primary:hover, a.button-primary:hover, a.nav-cta:hover {
+  background: var(--primary-hover, var(--primary));
+  color: var(--on-primary);
+}
+
+.ferrosa-btn--secondary, .btn-secondary, .button-secondary,
+a.ferrosa-btn--secondary, a.btn-secondary, a.button-secondary {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border);
+}
+.ferrosa-btn--secondary:hover, .btn-secondary:hover, .button-secondary:hover,
+a.ferrosa-btn--secondary:hover, a.btn-secondary:hover, a.button-secondary:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.ferrosa-btn--ghost, a.ferrosa-btn--ghost { background: transparent; color: var(--primary); }
+.ferrosa-btn--ghost:hover, a.ferrosa-btn--ghost:hover { background: var(--primary-soft); }
+.ferrosa-btn--danger, a.ferrosa-btn--danger { background: var(--danger); color: #fff; }
+.ferrosa-btn--danger:hover, a.ferrosa-btn--danger:hover { filter: brightness(1.1); }
+
+/* Sizes. --sm is the site default above, so the modifier is a no-op kept for
+   parity with the design system; --lg is the deliberate step up. */
+.ferrosa-btn--sm { padding: 6px 12px; font-size: 0.8125rem; }
+.ferrosa-btn--lg { padding: 13px 22px; font-size: 0.9375rem; }
+
+.ferrosa-icon-btn, .icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; padding: 0;
+  background: transparent; color: var(--muted);
+  border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer;
+}
+.ferrosa-icon-btn:hover, .icon-btn:hover { background: var(--surface-2); color: var(--text); }
+
+
+/* ── Section subnav ─────────────────────────────────────────────────────────
+   The top nav is now identical on every page. Section-level links (the Memory
+   pages' Overview / How it works / Tools / …) live here instead, so navigating
+   into a product never rewrites the primary nav under the visitor.
+   ───────────────────────────────────────────────────────────────────────── */
+.subnav {
+  position: sticky;
+  top: var(--nav-h);
+  z-index: 30;
+  background: var(--scrim);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--divider);
+}
+.subnav-inner {
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.subnav-inner::-webkit-scrollbar { display: none; }
+.subnav-inner a {
+  padding: 0.7rem 0;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--subtle);
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+}
+.subnav-inner a:hover { color: var(--text); }
+.subnav-inner a[aria-current="page"] { color: var(--text); border-bottom-color: var(--accent); }
+.nav-links a[aria-current="page"] { color: var(--text); }
+@media (max-width: 720px) { .subnav { top: 0; position: static; } }
+
+/* ── Hero + drafting ground ─────────────────────────────────────────────────
+   The hero owns its own height and clips its own background. The ground must
+   NOT be attached to a wrapper that also contains later sections: `main`
+   absorbs leftover flex height and 100vh resolves against the viewport, so a
+   ground scoped to the whole page stretches and rescales the drawing.
+   ───────────────────────────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  min-height: min(calc(100vh - var(--nav-h)), 860px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+/* The ground is drawn at a FIXED size, never scaled to the viewport.
+   object-fit:cover scaled it by max(vw/1440, vh/820) — 1.39x at 1920x1200 and
+   1.78x at 2560 — so the drawing ballooned on any large display and the hero
+   grew with it. Pinned top-right at its designed size it keeps one scale
+   everywhere and simply crops from the left, which is what the SVG's own
+   xMaxYMid slice already intended. */
+.hero-ground {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--ground-image);
+  background-repeat: no-repeat;
+  background-position: top right;
+  background-size: 1440px 820px;
+}
+/* Legibility: the sheet runs UNDER the copy rather than stopping at it — a hard
+   mask leaves a flat void that reads as missing content. */
+.hero-ground::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--hero-mask);
+}
+
+.hero-body {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.86fr);
+  gap: var(--gutter);
+  /* Top-aligned, not centred. Centring in a full-height hero opened 206px of
+     nothing above the eyebrow on a 1200px-tall display — the taller the screen,
+     the worse it got. Two modules of deliberate space instead. */
+  align-items: start;
+  padding: calc(var(--module) * 2) var(--gutter) var(--module);
+  max-width: 1560px;
+  margin: 0 auto;
+  width: 100%;
+}
+.hero-copy { max-width: 56ch; }
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0 0 1.1rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--subtle);
+}
+.eyebrow::after {
+  content: "";
+  height: 1px;
+  width: 80px;
+  background: linear-gradient(90deg, var(--steel), transparent);
+}
+
+/* Rule 1 in practice: the lead-in is the dimmer half so the emphasis survives
+   greyscale. Do not set .hero-copy h1 to --text. */
+.hero-copy h1 {
+  margin: 0 0 1.1rem;
+  font-size: clamp(2.1rem, 3.4vw, 3rem);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  font-weight: 700;
+  color: var(--muted);
+}
+.hero-copy h1 em { font-style: normal; color: var(--accent); }
+
+.lede {
+  margin: 0 0 1.1rem;
+  font-size: 0.96rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.lede:last-of-type { margin-bottom: 1.5rem; }
+.hero-actions { display: flex; gap: 0.9rem; align-items: center; flex-wrap: wrap; }
+
+
+/* Sub-pages carry the same drafting ground and hero anatomy as the landings,
+   at a shorter height — they are a section entrance, not a front door. */
+.hero-compact { min-height: 0; }
+.hero-compact .hero-body { padding-top: calc(var(--module) * 1.5); padding-bottom: calc(var(--module) * 1.5); }
+.hero-compact .hero-copy h1 { font-size: clamp(1.9rem, 2.8vw, 2.5rem); }
+
+/* ── Specimen ───────────────────────────────────────────────────────────────
+   A specimen shows a real row from the shipped schema. It is the house device
+   for "everything on this site has a point": if a claim cannot be shown as
+   data, it probably should not be made.
+   ───────────────────────────────────────────────────────────────────────── */
+.specimen {
+  margin-top: 2.5rem;
+  border: 1px solid var(--hairline);
+  background: var(--surface-a);
+  backdrop-filter: blur(2px);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.specimen-hd {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.85rem;
+  border-bottom: 1px solid var(--hairline);
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  color: var(--subtle);
+}
+.specimen-hd b { color: var(--muted); font-weight: 700; }
+.specimen-hd .rt { margin-left: auto; }
+.specimen-rec {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.1rem 0.9rem;
+  margin: 0;
+  padding: 0.55rem 0.85rem;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  line-height: 1.45;
+}
+.specimen-rec + .specimen-rec { border-top: 1px dashed var(--hairline); }
+.specimen-rec dt { color: var(--subtle); letter-spacing: 0.06em; }
+.specimen-rec dd { margin: 0; color: var(--muted); overflow-wrap: anywhere; }
+.specimen-rec dd.val { color: var(--text); }
+.specimen-ft {
+  padding: 0.5rem 0.85rem;
+  border-top: 1px solid var(--hairline);
+  font-size: 0.7rem;
+  line-height: 1.5;
+  color: var(--subtle);
+}
+.specimen-ft b { color: var(--muted); font-weight: 500; }
+
+.state {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  padding: 0.1rem 0.4rem;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+.state-current { color: var(--on-primary); background: var(--text); font-weight: 700; }
+.state-past { color: var(--subtle); border: 1px solid var(--hairline); }
+
+/* ── Fact strip ─────────────────────────────────────────────────────────── */
+.fact-strip {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid var(--divider);
+  background: var(--scrim);
+  backdrop-filter: blur(3px);
+}
+.fact-strip > div { padding: 1.25rem 2.5rem; border-right: 1px solid var(--hairline); }
+.fact-strip > div:last-child { border-right: 0; }
+.fact-strip b {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  color: var(--text);
+}
+.fact-strip span { display: block; font-size: 0.76rem; line-height: 1.45; color: var(--subtle); }
+
+/* ── Sections and cards ─────────────────────────────────────────────────── */
+.section {
+  position: relative;
+  z-index: 2;
+  padding: 5rem var(--gutter) 6rem;
+  border-top: 1px solid var(--divider);
+  background: var(--bg);
+  max-width: 1560px;
+  margin: 0 auto;
+}
+.section-hd { max-width: 66ch; margin: 0 0 3rem; }
+.section-hd h2 {
+  margin: 0 0 0.7rem;
+  font-size: 1.75rem;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  color: var(--muted);
+}
+.section-hd h2 em { font-style: normal; color: var(--text); }
+.section-hd p { margin: 0; font-size: 0.95rem; line-height: 1.5; color: var(--subtle); }
+
+.card-grid { display: grid; gap: 2.5rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.card-grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--hairline);
+  background: var(--surface-a2);
+  border-radius: var(--radius-sm);
+}
+.card-hd { padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--hairline); }
+.card-hd b {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  color: var(--text);
+}
+.card-hd span { font-size: 0.86rem; line-height: 1.5; color: var(--muted); }
+.card-body {
+  flex: 1;
+  padding: 0.9rem 1.25rem;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.card-body pre { margin: 0; font: inherit; color: inherit; white-space: pre-wrap; overflow-wrap: anywhere; }
+.card-body .k { color: var(--subtle); }
+.card-body .v { color: var(--text); }
+.card-body .c { color: var(--steel); }
+
+/* The limit is part of the claim, not a disclaimer bolted on. */
+.card-limit {
+  padding: 0.75rem 1.25rem;
+  border-top: 1px dashed var(--hairline);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--subtle);
+}
+.card-limit b { color: var(--muted); font-weight: 500; }
+.card-limit code { font-family: var(--mono); font-size: 0.94em; }
+
+.prose-note { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--hairline); max-width: 78ch; }
+.prose-note p { margin: 0; font-size: 1rem; line-height: 1.6; color: var(--muted); }
+.prose-note b { color: var(--text); font-weight: 600; }
+
+/* ── Footer ─────────────────────────────────────────────────────────────── */
+.site-footer { border-top: 1px solid var(--divider); background: var(--bg); position: relative; z-index: 2; }
+.site-footer-inner {
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 2.5rem var(--gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: var(--subtle);
+}
+.site-footer-links { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+.site-footer-links a { color: var(--muted); text-decoration: none; }
+.site-footer-links a:hover { color: var(--text); text-decoration: underline; }
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  .card-grid.cols-3 { grid-template-columns: 1fr; }
+}
+@media (max-width: 1024px) {
+  :root { --gutter: 40px; }
+  .hero-body { grid-template-columns: 1fr; gap: 2rem; }
+  .hero-copy { max-width: 62ch; }
+  /* With one column the drawing would sit behind the whole copy block. */
+  .hero-ground::after {
+    background: var(--hero-mask-stacked);
+  }
+  .card-grid { grid-template-columns: 1fr; }
+  .fact-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fact-strip > div:nth-child(2) { border-right: 0; }
+}
+@media (max-width: 720px) {
+  :root { --gutter: 20px; }
+  html, body { max-width: 100%; overflow-x: hidden; }
+  .nav-toggle { display: inline-flex; }
+  .nav-links {
+    position: fixed; top: 64px; left: 0; right: 0;
+    display: none; flex-direction: column; gap: 0;
+    padding: 0.5rem 1.25rem 1.25rem;
+    background: var(--scrim-solid);
+    border-bottom: 1px solid var(--divider);
+  }
+  .site-nav.open .nav-links { display: flex; }
+  .nav-links a { display: block; padding: 0.75rem 0; }
+  .hero { min-height: 0; }
+  .hero-body { padding: 2.5rem var(--gutter) 3rem; }
+  .section { padding: 3rem var(--gutter) 4rem; }
+  .fact-strip { grid-template-columns: 1fr; }
+  .fact-strip > div { border-right: 0; border-bottom: 1px solid var(--hairline); }
+  .fact-strip > div:last-child { border-bottom: 0; }
+  .site-footer-inner { flex-direction: column; align-items: flex-start; }
+}
+
+
+/* ============================================================================
+   PRODUCT PAGE COMPONENTS
+
+   The union of what the five Ferrosa Memory pages and the Database landing page
+   each carried inline — 597 rules across six pages, deduped to 153. Ported onto
+   the tokens above rather than re-authored, so no page's content changes shape.
+
+   Token remap applied during the port (the two systems disagreed on --accent, which is why this is not a find-and-replace):
+       --accent      var(--primary)  ->  --primary
+       --accent-cool var(--accent)  ->  --accent      (the rationed one)
+       --bg-primary           ->  --bg
+       --bg-card              ->  --surface
+       --text-secondary       ->  --muted
+       --text-muted           ->  --subtle
+       --border      var(--divider)  ->  --divider
+   ========================================================================= */
+html{ scroll-behavior: smooth; }body.product-page{
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }/* ── Navigation ── */
+    .product-page nav{
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 100;
+      background: var(--scrim);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--divider);
+      padding: 0 2rem;
+    }.product-page nav .nav-inner{
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }.product-page nav .logo{
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      text-decoration: none;
+    }.product-page nav .logo span{ color: var(--primary); }.product-page nav .nav-links{
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }.product-page nav .nav-links a{
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }.product-page nav .nav-links a:hover{ color: var(--text); }.product-page nav .nav-cta{
+      background: var(--primary);
+      color: #fff;
+      padding: 0.5rem 1.25rem;
+      border-radius: 999px;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: opacity 0.2s;
+    }.product-page nav .nav-cta:hover{ opacity: 0.9; }.product-page nav .nav-actions{ display: inline-flex; align-items: center; gap: 0.6rem; }.product-page nav .nav-star, .product-page nav .nav-discord{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--divider);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--text);
+      text-decoration: none;
+      transition: background 0.2s, border-color 0.2s;
+    }.product-page nav .nav-star:hover, .product-page nav .nav-discord:hover{ background: var(--surface-2); border-color: var(--steel); }.product-page nav .nav-star svg, .product-page nav .nav-discord svg{ width: 17px; height: 17px; flex-shrink: 0; }.product-page nav .nav-toggle{
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      border: 1px solid var(--divider);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+    }.product-page nav .nav-toggle span, .product-page nav .nav-toggle span::before, .product-page nav .nav-toggle span::after{
+      display: block;
+      width: 1.1rem;
+      height: 2px;
+      border-radius: 2px;
+      background: currentColor;
+      content: '';
+      transition: transform 0.2s, opacity 0.2s;
+    }.product-page nav .nav-toggle span{ position: relative; }.product-page nav .nav-toggle span::before{ position: absolute; transform: translateY(-6px); }.product-page nav .nav-toggle span::after{ position: absolute; transform: translateY(6px); }.product-page nav.nav-open .nav-toggle span{ background: transparent; }.product-page nav.nav-open .nav-toggle span::before{ background: var(--text); transform: rotate(45deg); }.product-page nav.nav-open .nav-toggle span::after{ background: var(--text); transform: rotate(-45deg); }/* ── Sections ── */
+    .product-page section{
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 6rem 2rem;
+    }/* ── Hero ── */
+    .hero-centered{
+      padding-top: 11rem;
+      padding-bottom: 6rem;
+      text-align: center;
+      position: relative;
+    }.hero-centered::before{
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -60%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--primary-soft) 0%, transparent 70%);
+      pointer-events: none;
+    }/* Product wordmark — the brand rule: "Ferrosa" SemiBold at full text
+       colour, the product word Regular at the muted colour. Size is the design
+       system's display step, not a one-off.
+       Kept on its own source line, and never merged onto the .hero-badge line:
+       scripts/update-site-versions.sh rewrites that line with a line-based
+       regex, and anything sharing it is in the blast radius. */
+    .product-wordmark{
+      font-size: clamp(2rem, 4vw, 2.75rem);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin: 0 auto 1.25rem;
+    }.product-wordmark .co{ font-weight: 600; }.product-wordmark .pr{ font-weight: 400; color: var(--muted); }.hero-badge{
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--surface);
+      border: 1px solid var(--divider);
+      border-radius: 100px;
+      padding: 0.375rem 1rem;
+      font-size: 0.8125rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+    }.hero-badge .dot{
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse 2s infinite;
+    }
+
+@keyframes pulse {0%, 100%{ opacity: 1; }50%{ opacity: 0.4; }
+    }.hero-centered h1{
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }.hero-centered h1 .gradient{
+  /* see rule 1: the lead-in dims, the emphasis brightens */
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }.hero-centered p{
+      font-size: 1.25rem;
+      color: var(--muted);
+      max-width: 680px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.7;
+    }.hero-actions{
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }.btn-primary{
+      background: var(--primary);
+      color: #fff;
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }.btn-primary:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 8px 30px var(--primary-soft);
+    }.btn-secondary{
+      background: var(--surface);
+      color: var(--text);
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+      border: 1px solid var(--divider);
+      transition: border-color 0.2s, background 0.2s;
+    }.btn-secondary:hover{
+      border-color: var(--steel);
+      background: var(--surface-2);
+    }/* ── Section headers ── */
+    .section-label{
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }.section-title{
+      font-size: clamp(1.75rem, 4vw, 2.75rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+      line-height: 1.15;
+    }.section-subtitle{
+      font-size: 1.125rem;
+      color: var(--muted);
+      max-width: 680px;
+      line-height: 1.7;
+    }.section-subtitle.centered{
+      margin: 0 auto;
+      text-align: center;
+    }.section-title.centered{ text-align: center; }.section-label.centered{ text-align: center; }/* ── Problem section ── */
+    .problem{
+      background: var(--surface-inset);
+      border-top: 1px solid var(--divider);
+      border-bottom: 1px solid var(--divider);
+    }.problem section{ padding: 5rem 2rem; }/* ── Feature grid ── */
+    .features-grid{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }.feature-card{
+      background: var(--surface);
+      border: 1px solid var(--divider);
+      border-radius: 16px;
+      padding: 2.25rem;
+      transition: border-color 0.2s, transform 0.15s;
+    }.feature-card:hover{
+      border-color: var(--steel);
+      transform: translateY(-2px);
+    }.feature-icon{
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      margin-bottom: 1.25rem;
+    }.feature-icon.steel{ background: var(--primary-soft); }.feature-icon.cyan{ background: var(--accent-soft); }.feature-icon.cql{ background: rgba(124, 156, 245, 0.12); }.feature-icon.graph{ background: rgba(107, 201, 160, 0.12); }.feature-icon.lock{ background: rgba(200, 130, 240, 0.12); }.feature-icon.index{ background: rgba(100, 200, 220, 0.12); }.feature-icon.observe{ background: rgba(240, 200, 100, 0.12); }.feature-card h3{
+      font-size: 1.1875rem;
+      font-weight: 700;
+      margin-bottom: 0.625rem;
+    }.feature-card p{
+      font-size: 0.9375rem;
+      color: var(--muted);
+      line-height: 1.65;
+    }/* ── Comparison table ── */
+    .comparison{
+      background: var(--surface-inset);
+      border-top: 1px solid var(--divider);
+      border-bottom: 1px solid var(--divider);
+    }.comparison-table{
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 3rem;
+      font-size: 0.9375rem;
+    }.comparison-table th, .comparison-table td{
+      text-align: left;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--divider);
+    }.comparison-table thead th{
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--subtle);
+      font-weight: 600;
+    }.comparison-table thead th:first-child{ color: var(--muted); }.comparison-table thead th.ferrosa-col{
+      color: var(--primary);
+    }.comparison-table tbody td:first-child{
+      font-weight: 600;
+      color: var(--text);
+    }.comparison-table tbody td{
+      color: var(--muted);
+    }.comparison-table tbody td.ferrosa-col{
+      color: var(--success);
+      font-weight: 600;
+    }.comparison-table tbody tr:hover{
+      background: var(--film);
+    }.check{ color: var(--success); }.cross{ color: var(--subtle); }/* ── CTA section ── */
+    .cta-section{
+      text-align: center;
+      padding: 6rem 2rem;
+    }.cta-section h2{
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }.cta-section p{
+      font-size: 1.125rem;
+      color: var(--muted);
+      margin-bottom: 2.5rem;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+    }/* ── Beta Banner ── */
+    .beta-banner{
+      background: var(--surface-inset);
+      border-bottom: 1px solid var(--divider);
+      text-align: center;
+      padding: 0.5rem 1rem;
+      font-size: 0.8125rem;
+      color: var(--muted);
+      position: fixed;
+      top: 64px;
+      width: 100%;
+      z-index: 99;
+    }.beta-tag{
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 0.125rem 0.5rem;
+      border-radius: 4px;
+      margin-right: 0.375rem;
+      vertical-align: middle;
+    }/* ── Responsive ── */
+    @media (max-width: 768px){.features-grid{ grid-template-columns: 1fr; }.product-page nav{ padding: 0 1rem; }.product-page nav .nav-inner{
+        height: 64px;
+        min-height: 64px;
+        gap: 0.75rem;
+        padding: 0;
+        position: relative;
+      }body.product-page{ overflow-x: hidden; }.product-page nav .logo{ margin-right: auto; }.product-page nav .nav-cta{
+        display: inline-flex;
+        flex-shrink: 0;
+        padding: 0.5rem 0.75rem;
+      }.product-page nav .nav-toggle{ display: inline-flex; }.product-page nav .nav-links{
+        position: fixed;
+        top: 64px;
+        left: 0;
+        right: 0;
+        display: none;
+        flex-direction: column;
+        gap: 0;
+        padding: 0.5rem 1rem 1rem;
+        background: var(--scrim-solid);
+        border-bottom: 1px solid var(--divider);
+        box-shadow: 0 18px 40px var(--shadow);
+      }.product-page nav.nav-open .nav-links{ display: flex; }.product-page nav .nav-links li{ list-style: none; }.product-page nav .nav-links a{
+        display: block;
+        padding: 0.75rem 0;
+        white-space: nowrap;
+      }.product-page section{
+        width: 100%;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        overflow-wrap: anywhere;
+      }.hero-centered{ padding-top: 11rem; }.hero-centered h1{ font-size: clamp(2rem, 11vw, 3rem); }.hero-centered p{ font-size: 1rem; }.hero-actions{ flex-direction: column; align-items: stretch; }.btn-primary, .btn-secondary{ width: 100%; text-align: center; }.beta-banner{ top: 148px; font-size: 0.75rem; }.comparison-table{ font-size: 0.8125rem; }.comparison-table th, .comparison-table td{ padding: 0.75rem 0.75rem; }
+    }.product-page footer{ border-top: 1px solid var(--divider); }.footer-inner{
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 1.5rem;
+    }.footer-community{ display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }/* border/padding reset: these pages style bare h2 with a rule + top padding */
+    .community-title{ margin: 0; border: 0; padding: 0; font-size: 0.95rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }.social-links{ display: flex; gap: 0.6rem; }.social-link{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--divider);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--muted);
+      transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+    }.social-link:hover{ color: var(--text); border-color: var(--steel); background: var(--surface-2); }.social-link svg{ width: 18px; height: 18px; }.footer-legal{ font-size: 0.85rem; color: var(--subtle); text-align: center; }.footer-links{ display: flex; gap: 1rem; flex-wrap: wrap; justify-content: flex-end; }.footer-links a{ color: var(--muted); text-decoration: none; }.footer-links a:hover{ color: var(--text); }
+
+@media (max-width: 768px) {.footer-inner{ grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 1.25rem; }.footer-community, .footer-links{ justify-content: center; }
+    }.product-page nav .nav-cta{
+      background: var(--primary);
+      color: #fff;
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: opacity 0.2s;
+    }/* ── Comparison-style alt section ── */
+    .comparison{
+      background: var(--surface-inset);
+      border-top: 1px solid var(--divider);
+      border-bottom: 1px solid var(--divider);
+    }/* ── Responsive ── */
+    @media (max-width: 768px){.features-grid{ grid-template-columns: 1fr; }.product-page nav{ padding: 0 1rem; }.product-page nav .nav-inner{
+        height: 64px;
+        min-height: 64px;
+        gap: 0.75rem;
+        padding: 0;
+        position: relative;
+      }body.product-page{ overflow-x: hidden; }.product-page nav .logo{ margin-right: auto; }.product-page nav .nav-cta{
+        display: inline-flex;
+        flex-shrink: 0;
+        padding: 0.5rem 0.75rem;
+      }.product-page nav .nav-toggle{ display: inline-flex; }.product-page nav .nav-links{
+        position: fixed;
+        top: 64px;
+        left: 0;
+        right: 0;
+        display: none;
+        flex-direction: column;
+        gap: 0;
+        padding: 0.5rem 1rem 1rem;
+        background: var(--scrim-solid);
+        border-bottom: 1px solid var(--divider);
+        box-shadow: 0 18px 40px var(--shadow);
+      }.product-page nav.nav-open .nav-links{ display: flex; }.product-page nav .nav-links li{ list-style: none; }.product-page nav .nav-links a{
+        display: block;
+        padding: 0.75rem 0;
+        white-space: nowrap;
+      }.product-page section{
+        width: 100%;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        overflow-wrap: anywhere;
+      }.hero-centered{ padding-top: 11rem; }.hero-centered h1{ font-size: clamp(2rem, 11vw, 3rem); }.hero-centered p{ font-size: 1rem; }.hero-actions{ flex-direction: column; align-items: stretch; }.btn-primary, .btn-secondary{ width: 100%; text-align: center; }.beta-banner{ top: 148px; font-size: 0.75rem; }
+    }.hero-centered p{
+      font-size: 1.25rem;
+      color: var(--muted);
+      max-width: 640px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.7;
+    }/* ── Stats bar ── */
+    .stats-bar{
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--divider);
+      border: 1px solid var(--divider);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 4rem;
+    }.stat{
+      background: var(--surface-inset);
+      padding: 1.75rem 1.5rem;
+      text-align: center;
+    }.stat-value{
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }.stat-value .unit{ color: var(--primary); }.stat-label{
+      font-size: 0.8125rem;
+      color: var(--subtle);
+      margin-top: 0.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }.section-subtitle{
+      font-size: 1.125rem;
+      color: var(--muted);
+      max-width: 640px;
+      line-height: 1.7;
+    }.pain-points{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }.pain-card{
+      background: var(--bg);
+      border: 1px solid var(--divider);
+      border-radius: 12px;
+      padding: 1.75rem;
+      transition: border-color 0.2s;
+    }.pain-card:hover{ border-color: var(--steel); }.pain-icon{
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }.pain-card h3{
+      font-size: 1.0625rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }.pain-card p{
+      font-size: 0.9375rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }.feature-card.highlight{
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }.feature-icon.rust{ background: rgba(226, 114, 91, 0.12); }.feature-icon.s3{ background: rgba(244, 162, 97, 0.12); }.feature-card .metric{
+      display: inline-block;
+      background: var(--bg);
+      border: 1px solid var(--divider);
+      border-radius: 6px;
+      padding: 0.25rem 0.625rem;
+      font-size: 0.8125rem;
+      font-family: var(--mono);
+      color: var(--primary);
+      margin-top: 0.75rem;
+    }/* ── Code demo ── */
+    .code-demo{
+      background: var(--code-bg);
+      border: 1px solid var(--divider);
+      border-radius: 12px;
+      overflow: hidden;
+    }.code-tabs{
+      display: flex;
+      border-bottom: 1px solid var(--divider);
+    }.code-tab{
+      padding: 0.75rem 1.25rem;
+      font-size: 0.8125rem;
+      font-family: var(--mono);
+      color: var(--subtle);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+    }.code-tab.active{
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }.code-tab:hover{ color: var(--muted); }.code-block{
+      padding: 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.875rem;
+      line-height: 1.8;
+      overflow-x: auto;
+      display: none;
+    }.code-block.active{ display: block; }.code-block .kw{ color: var(--syn-kw); }.code-block .fn{ color: var(--syn-fn); }.code-block .str{ color: var(--syn-str); }.code-block .cm{ color: var(--syn-com); }.code-block .num{ color: var(--syn-num); }.code-block .type{ color: var(--syn-attr); }.code-block .op{ color: var(--syn-op); }/* ── Architecture ── */
+    .arch-diagram{
+      background: var(--surface);
+      border: 1px solid var(--divider);
+      border-radius: 16px;
+      padding: 3rem;
+      margin-top: 3rem;
+      text-align: center;
+    }.arch-layers{
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }.arch-layer{
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--bg);
+      border: 1px solid var(--divider);
+      border-radius: 10px;
+      padding: 1rem 1.5rem;
+      transition: border-color 0.2s;
+    }.arch-layer:hover{ border-color: var(--primary); }.arch-layer-label{
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--subtle);
+      min-width: 100px;
+    }.arch-layer-items{
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }.arch-item{
+      background: var(--surface);
+      border: 1px solid var(--divider);
+      border-radius: 6px;
+      padding: 0.375rem 0.75rem;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }.arch-arrow{
+      color: var(--subtle);
+      font-size: 1.25rem;
+      text-align: center;
+    }/* ── Use cases ── */
+    .use-cases{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }.use-case{
+      background: var(--surface);
+      border: 1px solid var(--divider);
+      border-radius: 16px;
+      padding: 2rem;
+      transition: border-color 0.2s;
+    }.use-case:hover{ border-color: var(--steel); }.use-case-label{
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.75rem;
+    }.use-case-label.migrate{ color: var(--primary); }.use-case-label.cloud{ color: var(--accent); }.use-case-label.graph-uc{ color: var(--success); }.use-case h3{
+      font-size: 1.125rem;
+      font-weight: 700;
+      margin-bottom: 0.625rem;
+    }.use-case p{
+      font-size: 0.9375rem;
+      color: var(--muted);
+      line-height: 1.65;
+    }.cta-section p{
+      font-size: 1.125rem;
+      color: var(--muted);
+      margin-bottom: 2.5rem;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }.cta-actions{
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }/* ── Footer ── */
+    .product-page footer{ border-top: 1px solid var(--divider); }.community-title{ margin: 0; border: 0; padding: 0; font-size: 0.95rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text); text-transform: none; }.social-link:hover{ color: var(--text); border-color: var(--primary); background: var(--surface-2); }.footer-links a{ color: var(--muted); text-decoration: none; font-size: 0.875rem; }/* ── Responsive ── */
+    @media (max-width: 768px){.stats-bar{ grid-template-columns: repeat(2, 1fr); }.feature-card.highlight{
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }.features-grid{ grid-template-columns: 1fr; }.product-page nav{ padding: 0 1rem; }.product-page nav .nav-inner{
+        height: 64px;
+        min-height: 64px;
+        gap: 0.75rem;
+        padding: 0;
+        position: relative;
+      }body.product-page{ overflow-x: hidden; }.product-page nav .logo{ margin-right: auto; }.product-page nav .nav-cta{
+        display: inline-flex;
+        flex-shrink: 0;
+        padding: 0.5rem 0.75rem;
+      }.product-page nav .nav-toggle{ display: inline-flex; }.product-page nav .nav-links{
+        position: fixed;
+        top: 64px;
+        left: 0;
+        right: 0;
+        display: none;
+        flex-direction: column;
+        gap: 0;
+        padding: 0.5rem 1rem 1rem;
+        background: var(--scrim-solid);
+        border-bottom: 1px solid var(--divider);
+        box-shadow: 0 18px 40px var(--shadow);
+      }.product-page nav.nav-open .nav-links{ display: flex; }.product-page nav .nav-links li{ list-style: none; }.product-page nav .nav-links a{
+        display: block;
+        padding: 0.75rem 0;
+        white-space: nowrap;
+      }.product-page section{
+        width: 100%;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        overflow-wrap: anywhere;
+      }.hero-centered{ padding-top: 11rem; }.hero-centered h1{ font-size: clamp(2rem, 11vw, 3rem); }.hero-centered p{ font-size: 1rem; }.hero-actions{ flex-direction: column; align-items: stretch; }.btn-primary, .btn-secondary{ width: 100%; text-align: center; }.beta-banner{ top: 148px; font-size: 0.75rem; }.comparison-table{ font-size: 0.8125rem; }.comparison-table th, .comparison-table td{ padding: 0.75rem 0.75rem; }.footer-inner{ grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 1.25rem; padding: 2rem 1rem; }.footer-community, .footer-links{ justify-content: center; }
+    }
+
+
+/* ── Page-specific components, ported from the last inline blocks ──── */
+/* Scoped to .legacy-doc: these came from page-level sheets that used bare
+   element selectors (main, h1, h2, nav, table). Unscoped they restyled every
+   page — `main{max-width:980px;padding:3rem}` alone put a 48px gap under the
+   nav sitewide and squeezed the hero. */
+.suite-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:1.5rem; margin-top:2.5rem; }.suite-card{ background: var(--surface); border:1px solid var(--divider); border-radius:18px; padding:2rem; text-decoration:none; transition:border-color .2s, transform .2s, background .2s; }.suite-card:hover{ border-color:var(--primary); transform:translateY(-2px); background:var(--surface-2); }.kicker{ color:var(--primary); font-size:.75rem; letter-spacing:.12em; font-weight:800; text-transform:uppercase; margin-bottom:.75rem; }.cool{ color:var(--accent); }.pill-row{ display:flex; flex-wrap:wrap; gap:.5rem; margin:1.25rem 0; }.pill{ border:1px solid var(--divider); background:var(--surface-inset); color:var(--muted); border-radius:999px; padding:.35rem .75rem; font-size:.8125rem; }.doc-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:1rem; margin-top:1.5rem; }.doc-card{ background:var(--surface); border:1px solid var(--divider); border-radius:14px; padding:1.4rem; transition:border-color .2s; }.doc-card:hover{ border-color:var(--steel); }.doc-card h3{ margin-bottom:.5rem; }.doc-card p, .suite-card p{ color:var(--muted); }.doc-card .tag{ display:inline-block; font-family:var(--mono); font-size:.72rem; color:var(--accent); margin-bottom:.5rem; letter-spacing:.04em; }.code-block{ background:var(--code-bg); border:1px solid var(--divider); border-radius:14px; padding:1.25rem; overflow:auto; margin:1rem 0; }.code-block code, .legacy-doc pre{ font-family:var(--mono); font-size:.875rem; color:var(--code-text); }.note{ border-left:3px solid var(--accent); background:var(--accent-soft); padding:1rem 1.25rem; border-radius:0 12px 12px 0; color:var(--muted); margin:1.5rem 0; }.two-col{ display:grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap:2rem; align-items:stretch; }.two-col .feature-card{ display:flex; flex-direction:column; height:100%; }.two-col .feature-card p:last-child{ flex:1; }.reference-table-wrap{ margin-top:1.5rem; border:1px solid var(--divider); border-radius:16px; overflow:hidden; background:var(--film); }.reference-table{ width:100%; border-collapse:collapse; font-size:.875rem; }.reference-table caption{ text-align:left; padding:1rem 1.1rem; color:var(--muted); border-bottom:1px solid var(--divider); }.reference-table th{ text-align:left; padding:.75rem 1rem; color:var(--subtle); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; background:var(--film-2); border-bottom:1px solid var(--divider); }.reference-table td{ padding:.8rem 1rem; color:var(--muted); border-bottom:1px solid var(--film-3); vertical-align:top; }.reference-table tr:last-child td{ border-bottom:0; }.reference-table a{ color:var(--text); text-decoration:none; border-bottom:1px solid var(--accent-soft); }.reference-table a:hover{ color:var(--accent); border-bottom-color:var(--accent); }.reference-table .ref-id{ color:var(--accent); font-family:var(--mono); white-space:nowrap; }.reference-table .ref-theme{ color:var(--subtle); white-space:nowrap; }
+
+@media (max-width: 760px) {.reference-table th:nth-child(3), .reference-table td:nth-child(3){ display:none; } }
+
+@media (max-width: 800px) {.two-col{ grid-template-columns:1fr; } }.arch-diagram{ display:flex; flex-direction:column; gap:.75rem; margin:1rem 0; }.arch-layer{ border:1px solid var(--divider); border-radius:14px; padding:1.1rem 1.25rem; background:var(--surface); }.arch-layer .arch-role{ font-family:var(--mono); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--subtle); margin-bottom:.4rem; }.arch-layer .arch-name{ font-weight:700; color:var(--text); }.arch-layer .arch-detail{ color:var(--muted); font-size:.9rem; margin-top:.35rem; }.arch-layer.agent{ border-color:var(--accent-steel); }.arch-layer.mcp{ border-color:var(--primary); }.arch-layer.semantics{ border-color:var(--accent); }.arch-layer.db{ border-color:var(--success); }.arch-arrow{ text-align:center; color:var(--accent); font-family:var(--mono); font-size:1rem; line-height:1; }.arch-chips{ display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.55rem; }.arch-chip{ border:1px solid var(--divider); background:var(--surface-inset); color:var(--muted); border-radius:999px; padding:.25rem .6rem; font-size:.74rem; font-family:var(--mono); }/* Layered architecture diagram — built only from existing palette tokens. */
+  .arch-diagram{ display:flex; flex-direction:column; gap:.75rem; margin:1rem 0; }.signal-list{ list-style:none; margin-top:1.25rem; display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:.6rem; }.signal-list li{ border:1px solid var(--divider); border-radius:10px; padding:.7rem .9rem; background:var(--surface); color:var(--muted); font-size:.9rem; }.signal-list li b{ color:var(--text); font-weight:650; }.step-row{ display:grid; grid-template-columns: auto 1fr; gap:1rem; align-items:start; margin-top:1.1rem; }.step-num{ width:2rem; height:2rem; flex:none; border-radius:8px; background:var(--primary-soft); color:var(--primary); font-weight:800; font-family:var(--mono); display:flex; align-items:center; justify-content:center; }.step-row p{ color:var(--muted); }.step-row h4{ font-size:1.0625rem; font-weight:700; margin-bottom:.25rem; }.two-col .feature-card p{ flex:1; }.two-col > div:not(.feature-card):not(.arch-diagram){ display:flex; flex-direction:column; height:100%; }.two-col > div:not(.feature-card):not(.arch-diagram) > *:last-child{ flex:1; }/* Loop diagram — built from existing palette tokens. */
+  .loop-row{ display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:.75rem; margin:1.75rem 0 1rem; }.loop-step{ border:1px solid var(--divider); border-radius:14px; padding:1rem 1.1rem; background:var(--surface); }.loop-step .loop-verb{ font-weight:800; color:var(--text); letter-spacing:-.01em; }.loop-step .loop-tool{ font-family:var(--mono); font-size:.74rem; color:var(--accent); display:block; margin-top:.35rem; }.loop-step .loop-why{ color:var(--muted); font-size:.86rem; margin-top:.5rem; }.loop-step.ingest{ border-color:var(--primary); }.loop-step.retrieve{ border-color:var(--accent); }.loop-step.link{ border-color:var(--accent-steel); }.loop-step.record{ border-color:var(--success); }.loop-step.forget{ border-color:var(--syn-kw); }.before-after{ display:grid; grid-template-columns: 1fr 1fr; gap:1.25rem; margin-top:1.75rem; }
+
+@media (max-width: 700px) {.before-after{ grid-template-columns:1fr; } }.ba-card{ border:1px solid var(--divider); border-radius:14px; padding:1.4rem; background:var(--surface); }.ba-card.before{ border-color:var(--steel); }.ba-card.after{ border-color:var(--success); }.ba-card h4{ font-size:1rem; font-weight:700; margin-bottom:.6rem; }.ba-card.before h4{ color:var(--muted); }.ba-card.after h4{ color:var(--success); }.ba-card ul{ margin:0; padding-left:1.1rem; }.ba-card li{ color:var(--muted); font-size:.9rem; margin-bottom:.4rem; }.tier-strip{ display:grid; grid-template-columns: 1fr 1fr; gap:1.25rem; margin-top:2rem; }
+
+@media (max-width: 700px) {.tier-strip{ grid-template-columns:1fr; } }.tier-box{ border:1px solid var(--divider); border-radius:16px; padding:1.6rem; background:var(--surface); }.tier-box .tier-count{ font-family:var(--mono); font-weight:800; color:var(--accent); font-size:1.6rem; }.tier-box h3{ margin:.4rem 0 .5rem; }.tier-box p{ color:var(--muted); font-size:.92rem; }.habit-list{ list-style:none; margin-top:1.5rem; display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:.75rem; }.habit-list li{ border:1px solid var(--divider); border-radius:12px; padding:1rem 1.1rem; background:var(--surface); color:var(--muted); font-size:.92rem; }.habit-list li b{ color:var(--text); font-weight:700; display:block; margin-bottom:.25rem; }/* ── Tool catalog tables (uses existing tokens only) ── */
+  .tier-head{ display:flex; flex-wrap:wrap; align-items:center; gap:.75rem; margin-bottom:.5rem; }.tier-head .pill{ font-family:var(--mono); }.tier-count{ color:var(--accent); font-weight:700; }.tool-group{ margin-top:2rem; }.group-heading{ display:flex; align-items:baseline; gap:.6rem; margin-bottom:.6rem; padding-bottom:.5rem; border-bottom:1px solid var(--divider); }.group-heading h3{ font-size:1.0625rem; font-weight:700; letter-spacing:-0.01em; color:var(--text); }.group-heading .group-count{ font-family:var(--mono); font-size:.78rem; color:var(--subtle); }.tool-table-wrap{ border:1px solid var(--divider); border-radius:14px; overflow:hidden; background:var(--film); }.tool-table{ width:100%; border-collapse:collapse; font-size:.9rem; }.tool-table th{ text-align:left; padding:.6rem 1rem; color:var(--subtle); font-size:.7rem; letter-spacing:.08em; text-transform:uppercase; background:var(--film-2); border-bottom:1px solid var(--divider); }.tool-table td{ padding:.7rem 1rem; color:var(--muted); border-bottom:1px solid var(--film-3); vertical-align:top; }.tool-table tr:last-child td{ border-bottom:0; }.tool-table tbody tr:hover{ background:var(--film); }.tool-table td.tool-name{ white-space:nowrap; width:1%; }.tool-table code{ font-family:var(--mono); font-size:.84rem; color:var(--accent); background:var(--accent-soft); padding:.12rem .42rem; border-radius:6px; }.tool-alias{ font-family:var(--mono); font-size:.72rem; color:var(--subtle); opacity:.7; }
+
+@media (max-width: 600px) {.tool-table td.tool-name{ white-space:normal; }.tool-table th, .tool-table td{ padding:.55rem .7rem; } }/* compare.html — page-local helpers, existing tokens only */
+  .matrix-scroll{ overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 3rem; border-radius: 12px; }.matrix-scroll .comparison-table{ margin-top: 0; min-width: 880px; }.matrix-scroll .comparison-table th, .matrix-scroll .comparison-table td{ vertical-align: top; }.matrix-scroll .comparison-table thead th{ white-space: nowrap; }.matrix-scroll .comparison-table tbody td{ font-size: 0.875rem; line-height: 1.5; }.cell-verdict{ display: block; font-weight: 600; color: var(--text); }.cell-note{ display: block; color: var(--subtle); font-size: 0.8125rem; margin-top: 0.15rem; }.comparison-table tbody td.ferrosa-col .cell-verdict{ color: var(--success); }.v-yes{ color: var(--success); }.v-no{ color: var(--subtle); }.v-partial{ color: var(--accent); }.v-unclear{ color: var(--accent-steel); }.matrix-legend{ margin-top: 1.25rem; font-size: 0.8125rem; color: var(--subtle); line-height: 1.7; }.matrix-legend strong{ color: var(--muted); }.compare-card{ display: flex; flex-direction: column; }.compare-card .what-is{ color: var(--muted); font-size: 0.9375rem; line-height: 1.65; }.compare-card .differs{ margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--divider); color: var(--text); font-size: 0.9375rem; }.compare-card .differs strong{ color: var(--primary); }.compare-card .nuance{ margin-top: 0.85rem; font-size: 0.8125rem; color: var(--subtle); line-height: 1.6; }.sources-list{ columns: 2; column-gap: 2.5rem; margin-top: 1.5rem; font-size: 0.8125rem; color: var(--subtle); line-height: 1.85; }.sources-list a{ color: var(--subtle); text-decoration: none; border-bottom: 1px solid var(--accent-soft); }.sources-list a:hover{ color: var(--accent); border-bottom-color: var(--accent); }.sources-list .src-vendor{ color: var(--muted); font-weight: 600; }
+
+@media (max-width: 700px) {.sources-list{ columns: 1; } }*{ box-sizing:border-box; }.legacy-doc body{ margin:0; font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); color:var(--text); line-height:1.65; }.legacy-doc nav{ position:sticky; top:0; background:var(--scrim); backdrop-filter:blur(16px); border-bottom:1px solid var(--divider); z-index:10; }.legacy-doc nav .inner{ max-width:1100px; margin:0 auto; padding:1rem 1.5rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; }.legacy-doc nav a{ color:var(--text); text-decoration:none; }.legacy-doc nav .links{ display:flex; gap:1rem; flex-wrap:wrap; }.legacy-doc nav .links a{ color:var(--muted); font-size:.92rem; }.legacy-doc nav .nav-cta{ background:var(--primary); color:var(--on-primary); border-radius:999px; padding:.5rem .9rem; font-weight:700; }.legacy-doc nav .nav-actions{ display:inline-flex; align-items:center; gap:.6rem; }.legacy-doc nav .nav-star, .legacy-doc nav .nav-discord{ display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; border:1px solid var(--divider); border-radius:999px; background:var(--surface); color:var(--text); text-decoration:none; transition:background .2s,border-color .2s; }.legacy-doc nav .nav-star:hover, .legacy-doc nav .nav-discord:hover{ background:var(--surface-inset); border-color:var(--muted); }.legacy-doc nav .nav-star svg, .legacy-doc nav .nav-discord svg{ width:17px; height:17px; flex-shrink:0; }.legacy-doc nav .nav-toggle{ display:none; align-items:center; justify-content:center; width:2.5rem; height:2.5rem; border:1px solid var(--divider); border-radius:8px; background:var(--surface); color:var(--text); cursor:pointer; }.legacy-doc nav .nav-toggle span, .legacy-doc nav .nav-toggle span::before, .legacy-doc nav .nav-toggle span::after{ display:block; width:1.1rem; height:2px; border-radius:2px; background:currentColor; content:''; transition:transform .2s, opacity .2s; }.legacy-doc nav .nav-toggle span{ position:relative; }.legacy-doc nav .nav-toggle span::before{ position:absolute; transform:translateY(-6px); }.legacy-doc nav .nav-toggle span::after{ position:absolute; transform:translateY(6px); }.legacy-doc nav.open .nav-toggle span{ background:transparent; }.legacy-doc nav.open .nav-toggle span::before{ background:var(--text); transform:rotate(45deg); }.legacy-doc nav.open .nav-toggle span::after{ background:var(--text); transform:rotate(-45deg); }.legacy-doc main{ max-width:980px; margin:0 auto; padding:3rem 1.5rem 5rem; }.legacy-doc h1{ font-size:clamp(2.2rem,5vw,4rem); line-height:1.05; letter-spacing:-.04em; margin:2rem 0 1rem; }.legacy-doc h2{ font-size:1.65rem; margin-top:3rem; border-top:1px solid var(--divider); padding-top:2rem; }.legacy-doc h3{ margin-top:2rem; }.legacy-doc p, .legacy-doc li, .legacy-doc td{ color:var(--muted); }.legacy-doc a{ color:var(--primary); }.hero-centered{ background:linear-gradient(135deg,var(--primary-soft),var(--accent-soft)); border:1px solid var(--divider); border-radius:22px; padding:2rem; }.pill{ display:inline-block; border:1px solid var(--primary-line); color:var(--primary); background:var(--primary-soft); border-radius:999px; padding:.25rem .7rem; font-size:.8rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }.grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem; margin:1rem 0; }.card{ background:var(--surface); border:1px solid var(--divider); border-radius:16px; padding:1.25rem; }.legacy-doc table{ width:100%; border-collapse:collapse; background:var(--surface-inset); border:1px solid var(--divider); border-radius:12px; overflow:hidden; display:table; }.legacy-doc th, .legacy-doc td{ padding:.75rem .9rem; border-bottom:1px solid var(--divider); text-align:left; vertical-align:top; }.legacy-doc th{ color:var(--text); font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; }.legacy-doc tr:last-child td{ border-bottom:0; }.legacy-doc pre{ background:var(--code-bg); border:1px solid var(--divider); border-radius:14px; padding:1rem; overflow:auto; }.legacy-doc code{ font-family:'JetBrains Mono','Fira Code',ui-monospace,monospace; color:var(--code-text); }.warn{ border-left:3px solid var(--accent); background:var(--accent-soft); padding:1rem 1.2rem; border-radius:0 12px 12px 0; color:var(--muted); }.legacy-doc footer{ border-top:1px solid var(--divider); }.footer-inner{ max-width:980px; margin:0 auto; padding:2.5rem 1.5rem; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:1.5rem; }.footer-community{ display:flex; align-items:center; gap:1rem; flex-wrap:wrap; }.community-title{ margin:0; border:0; padding:0; font-size:.95rem; font-weight:700; letter-spacing:-.02em; color:var(--text); }.social-links{ display:flex; gap:.6rem; }.social-link{ display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; border:1px solid var(--divider); border-radius:999px; background:var(--surface); color:var(--muted); transition:color 160ms ease, border-color 160ms ease, background 160ms ease; }.social-link:hover{ color:var(--text); border-color:var(--primary); background:var(--surface-inset); }.social-link svg{ width:18px; height:18px; }.footer-legal{ font-size:.85rem; color:var(--muted); text-align:center; }.footer-links{ display:flex; gap:1rem; flex-wrap:wrap; justify-content:flex-end; }.footer-links a{ color:var(--muted); text-decoration:none; }.footer-links a:hover{ color:var(--text); }
+
+@media (max-width: 768px) {.legacy-doc body{ overflow-x:hidden; }.legacy-doc nav .inner{ min-height:64px; padding:0 .5rem; gap:.5rem; position:relative; }.legacy-doc nav .nav-actions{ gap:.375rem; }.legacy-doc nav .inner > a:first-child{ margin-right:auto; }.legacy-doc nav .nav-cta{ flex-shrink:0; padding:.5rem .75rem; }.legacy-doc nav .nav-toggle{ display:inline-flex; }.legacy-doc nav .links{ position:fixed; top:64px; left:0; right:0; display:none; flex-direction:column; gap:0; padding:.5rem 1rem 1rem; background:var(--scrim-solid); border-bottom:1px solid var(--divider); box-shadow:0 18px 40px var(--shadow); }.legacy-doc nav.open .links{ display:flex; }.legacy-doc nav .links a{ display:block; padding:.75rem 0; white-space:nowrap; }.legacy-doc main{ width:100%; min-width:0; padding-left:1rem; padding-right:1rem; overflow-wrap:anywhere; }.hero-centered{ width:100%; min-width:0; padding:1.5rem; overflow-wrap:anywhere; }.legacy-doc h1{ font-size:clamp(2rem, 11vw, 3rem); }.footer-inner{ grid-template-columns:1fr; justify-items:center; text-align:center; gap:1.25rem; }.footer-community, .footer-links{ justify-content:center; }
+    }.grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1rem; margin:1rem 0; }.card h3{ margin-top:0; }
+
+
+/* ── Legacy developer-preview ribbon ────────────────────────────────────────
+   Shipped as position:fixed;top:64px, which collided with the section subnav
+   (both claimed the same 64px band) and hid it entirely. In flow it stacks
+   correctly after the nav and the subnav, and no longer needs the body padding
+   the fixed version implied.
+   ───────────────────────────────────────────────────────────────────────── */
+.product-page .beta-banner {
+  position: static;
+  top: auto;
+  width: auto;
+  z-index: auto;
+  border-bottom: 1px solid var(--divider);
+}
+/* The ribbon sits between the nav and the subnav, so the subnav can no longer
+   stick at the nav height alone — it would slide under the ribbon on scroll.
+   Sticking it at 0 under a sticky nav is wrong too; simplest correct answer is
+   that only the nav is sticky and the subnav scrolls with the page. */
+.product-page .subnav { position: static; }
+
+/* ── Button colour, last word ───────────────────────────────────────────────
+   `.legacy-doc a { color }` and `a.btn-primary { color }` are both (0,1,1), so
+   source order decided it and the ported layer came later — Forge's Install
+   button rendered its label in link blue on a blue fill. Settled here, after
+   every ported rule. */
+a.btn.btn-primary, a.button.button-primary, a.ferrosa-btn.ferrosa-btn--primary,
+.legacy-doc a.btn-primary, .legacy-doc a.button-primary {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.legacy-doc a.btn-secondary, .legacy-doc a.button-secondary,
+a.btn.btn-secondary, a.button.button-secondary {
+  color: var(--text);
+  border-color: var(--border);
+}
+
+/* ── Nav stacking, last word ────────────────────────────────────────────────
+   The ported layer carries `.product-page nav { position: fixed }` (0,1,1),
+   which out-specified `.site-nav { position: sticky }` (0,1,0). A fixed nav
+   occupies no flow space, so the ribbon and subnav slid underneath it and the
+   old layout compensated with an 11rem hero padding. Sticky keeps the same
+   pinned behaviour while still taking its own space, so the ribbon and subnav
+   stack correctly and the hero needs no magic padding.
+   ───────────────────────────────────────────────────────────────────────── */
+.product-page nav.site-nav,
+.legacy-doc nav.site-nav {
+  position: sticky;
+  top: 0;
+  width: auto;
+  z-index: 40;
+}
+
+/* ── Hero vs the ported section padding ─────────────────────────────────────
+   The ported layer carries `section { padding: 6rem 2rem }`, scoped to
+   `.product-page section` (0,1,1). That out-specifies `.hero` (0,1,0), so every
+   product-page hero was getting 96px of padding top AND bottom inside a box
+   that already sets its own rhythm — 192px of dead space the copy did not ask
+   for. The hero owns its own padding via .hero-body.
+
+   The min-height goes too. It was calc(100vh - --nav-h), which assumed the nav
+   was the only chrome; these pages also carry a ribbon and a subnav (148px in
+   total), so the hero ran past the fold and padded the difference with nothing.
+   Sized to content, the rhythm comes from .hero-body alone.
+   ───────────────────────────────────────────────────────────────────────── */
+.product-page section.hero,
+.legacy-doc section.hero {
+  padding: 0;
+  min-height: 0;
+}
+
+/* ── Vertical rhythm and card fill ──────────────────────────────────────────
+   Two sources of dead space found by measuring rendered pixels, not the DOM.
+
+   1. Stacked section padding. `.section` was 5rem top / 6rem bottom, so two
+      consecutive sections put 176px of nothing between their content. Now
+      1.5 modules each side, which keeps the sections distinct without the gap
+      reading as a missing element.
+
+   2. Cards in a grid stretch to the tallest sibling. Where the content is an
+      image, a shorter image left the card padded out with empty surface — 142px
+      on the homepage's two screenshots. Normalising the aspect ratio makes the
+      cards the same height for the right reason.
+   ───────────────────────────────────────────────────────────────────────── */
+.section { padding: calc(var(--module) * 1.5) var(--gutter); }
+.prose-note { margin-top: calc(var(--module) * 1.2); padding-top: calc(var(--module) * 0.8); }
+
+.card > img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: top center;
+}
+
+/* Same rhythm for the ported product-page sections. They shipped at 6rem top
+   AND bottom, so two consecutive sections put 192px of nothing between their
+   content — measured at 194px, 203px, 209px and 260px across the Database,
+   Memory, Compare and Forge pages. Vertical only: the horizontal padding is
+   left alone because those sections centre their own max-width container. */
+.product-page section,
+.legacy-doc section {
+  padding-top: calc(var(--module) * 1.5);
+  padding-bottom: calc(var(--module) * 1.5);
+}
+.product-page section.hero,
+.legacy-doc section.hero { padding: 0; min-height: 0; }
+
+/* The last two sources of dead space, same 6rem-stacking cause as the sections:
+   the closing CTA band on the Memory pages, and the Forge page's main, whose
+   5rem bottom padding sat on top of the footer's own 2.5rem. */
+.cta-section {
+  padding-top: calc(var(--module) * 1.5);
+  padding-bottom: calc(var(--module) * 1.5);
+}
+.legacy-doc main { padding-bottom: calc(var(--module) * 1.2); }
+
+/* A section's first child does not need its own top margin — the section's
+   padding already provides the separation, and stacking the two put ~40px of
+   extra dead space above every closing CTA heading. Same for the last child. */
+.section > :first-child,
+.cta-section > :first-child,
+.product-page section > :first-child,
+.legacy-doc section > :first-child { margin-top: 0; }
+.section > :last-child,
+.cta-section > :last-child,
+.product-page section > :last-child,
+.legacy-doc section > :last-child { margin-bottom: 0; }
+
+/* ── Product wordmark ───────────────────────────────────────────────────────
+   PR #19 and #21 added this because nothing on a product page said WHICH
+   product it was. The blueprint hero replaced those sections and dropped it —
+   restored here, honouring the same brand rule: "Ferrosa" SemiBold at full text
+   colour, the product word Regular at the muted colour.
+
+   Deliberately NOT at the display size those PRs used. That size was right for
+   a centred hero whose headline sat below it; in this hero it would compete
+   with the h1 for primacy, and the design rubric allows exactly one primary
+   element. It names the page; the headline still carries the argument.
+   ───────────────────────────────────────────────────────────────────────── */
+.product-wordmark {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.product-wordmark .co { font-weight: 600; }
+.product-wordmark .pr { font-weight: 400; color: var(--muted); }
+
+/* ── Theme toggle ───────────────────────────────────────────────────────────
+   Shows the icon for the theme you would switch TO. Both icons ship; CSS picks
+   which is visible so the control is correct before any script runs. */
+.theme-toggle .icon-sun { display: none; }
+.theme-toggle .icon-moon { display: block; }
+:root[data-theme="light"] .theme-toggle .icon-sun { display: block; }
+:root[data-theme="light"] .theme-toggle .icon-moon { display: none; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .theme-toggle .icon-sun { display: block; }
+  :root:not([data-theme="dark"]) .theme-toggle .icon-moon { display: none; }
+}
+
+/* ── Logo per surface ───────────────────────────────────────────────────────
+   brand.html is explicit: logo.svg on deep-field grounds (#05070c–#0e1726),
+   logo-light.svg on white to Ice Field. Both ship; CSS picks, so the correct
+   mark is showing before any script runs. */
+.site-nav .logo-light { display: none; }
+:root[data-theme="light"] .site-nav .logo-dark { display: none; }
+:root[data-theme="light"] .site-nav .logo-light { display: block; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .site-nav .logo-dark { display: none; }
+  :root:not([data-theme="dark"]) .site-nav .logo-light { display: block; }
+}

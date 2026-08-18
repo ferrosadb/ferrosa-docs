@@ -1,904 +1,81 @@
 <!DOCTYPE html>
 <!-- ferrosadb.com marketing site -->
-<html lang="en">
+<html lang="en" data-theme="">
 <head>
   <meta charset="UTF-8">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("ferrosa-ds-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ferrosa Database — AI Native Database</title>
   <meta name="description" content="Ferrosa Database is a Rust-native distributed database with CQL, graph, SPARQL, vector search, transactions, CDC, and S3-backed storage. Developer preview.">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <style>
-    :root {
-      --bg-primary: #05070c;
-      --bg-secondary: #09111f;
-      --bg-card: #0e1726;
-      --bg-card-hover: #16243a;
-      --text-primary: #e8f4ff;
-      --text-secondary: #9bb3cf;
-      --text-muted: #6d829a;
-      --accent: #348cff;
-      --accent-glow: rgba(52, 140, 255, 0.18);
-      --accent-secondary: #7ee7ff;
-      --accent-cool: #7ee7ff;
-      --accent-green: #6bc9a0;
-      --border: #17273d;
-      --border-hover: #25395a;
-      --code-bg: #060b14;
-      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: var(--font-sans);
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* ── Navigation ── */
-    nav {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      z-index: 100;
-      background: rgba(5, 7, 12, 0.85);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 2rem;
-    }
-
-    nav .nav-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 64px;
-    }
-
-    nav .logo {
-      font-size: 1.25rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: var(--text-primary);
-      text-decoration: none;
-    }
-
-    nav .logo span { color: var(--accent); }
-
-    nav .nav-links {
-      display: flex;
-      gap: 2rem;
-      list-style: none;
-    }
-
-    nav .nav-links a {
-      color: var(--text-secondary);
-      text-decoration: none;
-      font-size: 0.875rem;
-      font-weight: 500;
-      transition: color 0.2s;
-    }
-
-    nav .nav-links a:hover { color: var(--text-primary); }
-
-    nav .nav-cta {
-      background: var(--accent);
-      color: #fff;
-      padding: 0.5rem 1.25rem;
-      border-radius: 999px;
-      text-decoration: none;
-      font-size: 0.875rem;
-      font-weight: 600;
-      transition: opacity 0.2s;
-    }
-
-    nav .nav-cta:hover { opacity: 0.9; }
-
-    nav .nav-actions { display: inline-flex; align-items: center; gap: 0.6rem; }
-    nav .nav-star, nav .nav-discord {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      background: var(--bg-card);
-      color: var(--text-primary);
-      text-decoration: none;
-      transition: background 0.2s, border-color 0.2s;
-    }
-    nav .nav-star:hover, nav .nav-discord:hover { background: var(--bg-card-hover); border-color: var(--border-hover); }
-    nav .nav-star svg, nav .nav-discord svg { width: 17px; height: 17px; flex-shrink: 0; }
-
-    nav .nav-toggle {
-      display: none;
-      align-items: center;
-      justify-content: center;
-      width: 2.5rem;
-      height: 2.5rem;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: var(--bg-card);
-      color: var(--text-primary);
-      cursor: pointer;
-    }
-
-    nav .nav-toggle span,
-    nav .nav-toggle span::before,
-    nav .nav-toggle span::after {
-      display: block;
-      width: 1.1rem;
-      height: 2px;
-      border-radius: 2px;
-      background: currentColor;
-      content: '';
-      transition: transform 0.2s, opacity 0.2s;
-    }
-
-    nav .nav-toggle span { position: relative; }
-    nav .nav-toggle span::before { position: absolute; transform: translateY(-6px); }
-    nav .nav-toggle span::after { position: absolute; transform: translateY(6px); }
-
-    nav.nav-open .nav-toggle span { background: transparent; }
-    nav.nav-open .nav-toggle span::before { background: var(--text-primary); transform: rotate(45deg); }
-    nav.nav-open .nav-toggle span::after { background: var(--text-primary); transform: rotate(-45deg); }
-
-    /* ── Sections ── */
-    section {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 6rem 2rem;
-    }
-
-    /* ── Hero ── */
-    .hero {
-      padding-top: 11rem;
-      padding-bottom: 6rem;
-      text-align: center;
-      position: relative;
-    }
-
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -60%);
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    /* Product wordmark — the brand rule: "Ferrosa" SemiBold at full text
-       colour, the product word Regular at the muted colour. Size is the design
-       system's display step, not a one-off.
-       Kept on its own source line, and never merged onto the .hero-badge line:
-       scripts/update-site-versions.sh rewrites that line with a line-based
-       regex, and anything sharing it is in the blast radius. */
-    .product-wordmark {
-      font-size: clamp(2rem, 4vw, 2.75rem);
-      line-height: 1.1;
-      letter-spacing: -0.02em;
-      color: var(--text-primary);
-      margin: 0 auto 1.25rem;
-    }
-    .product-wordmark .co { font-weight: 600; }
-    .product-wordmark .pr { font-weight: 400; color: var(--text-secondary); }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 0.375rem 1rem;
-      font-size: 0.8125rem;
-      color: var(--text-secondary);
-      margin-bottom: 2rem;
-    }
-
-    .hero-badge .dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--accent-green);
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-
-    .hero h1 {
-      font-size: clamp(2.5rem, 6vw, 4.5rem);
-      font-weight: 800;
-      line-height: 1.08;
-      letter-spacing: -0.03em;
-      margin-bottom: 1.5rem;
-      position: relative;
-    }
-
-    .hero h1 .gradient {
-      background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .hero p {
-      font-size: 1.25rem;
-      color: var(--text-secondary);
-      max-width: 640px;
-      margin: 0 auto 2.5rem;
-      line-height: 1.7;
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-      padding: 0.75rem 2rem;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 1rem;
-      transition: transform 0.15s, box-shadow 0.15s;
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 30px var(--accent-glow);
-    }
-
-    .btn-secondary {
-      background: var(--bg-card);
-      color: var(--text-primary);
-      padding: 0.75rem 2rem;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 1rem;
-      border: 1px solid var(--border);
-      transition: border-color 0.2s, background 0.2s;
-    }
-
-    .btn-secondary:hover {
-      border-color: var(--border-hover);
-      background: var(--bg-card-hover);
-    }
-
-    /* ── Stats bar ── */
-    .stats-bar {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-      margin-top: 4rem;
-    }
-
-    .stat {
-      background: var(--bg-secondary);
-      padding: 1.75rem 1.5rem;
-      text-align: center;
-    }
-
-    .stat-value {
-      font-size: 2rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      color: var(--text-primary);
-    }
-
-    .stat-value .unit { color: var(--accent); }
-
-    .stat-label {
-      font-size: 0.8125rem;
-      color: var(--text-muted);
-      margin-top: 0.25rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    /* ── Section headers ── */
-    .section-label {
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--accent);
-      margin-bottom: 1rem;
-    }
-
-    .section-title {
-      font-size: clamp(1.75rem, 4vw, 2.75rem);
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      margin-bottom: 1rem;
-      line-height: 1.15;
-    }
-
-    .section-subtitle {
-      font-size: 1.125rem;
-      color: var(--text-secondary);
-      max-width: 640px;
-      line-height: 1.7;
-    }
-
-    .section-subtitle.centered {
-      margin: 0 auto;
-      text-align: center;
-    }
-
-    .section-title.centered { text-align: center; }
-    .section-label.centered { text-align: center; }
-
-    /* ── Problem section ── */
-    .problem {
-      background: var(--bg-secondary);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .problem section { padding: 5rem 2rem; }
-
-    .pain-points {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-      margin-top: 3rem;
-    }
-
-    .pain-card {
-      background: var(--bg-primary);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.75rem;
-      transition: border-color 0.2s;
-    }
-
-    .pain-card:hover { border-color: var(--border-hover); }
-
-    .pain-icon {
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .pain-card h3 {
-      font-size: 1.0625rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-    }
-
-    .pain-card p {
-      font-size: 0.9375rem;
-      color: var(--text-secondary);
-      line-height: 1.6;
-    }
-
-    /* ── Feature grid ── */
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-      gap: 1.5rem;
-      margin-top: 3rem;
-    }
-
-    .feature-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2.25rem;
-      transition: border-color 0.2s, transform 0.15s;
-    }
-
-    .feature-card:hover {
-      border-color: var(--border-hover);
-      transform: translateY(-2px);
-    }
-
-    .feature-card.highlight {
-      grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 3rem;
-      align-items: center;
-    }
-
-    .feature-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.25rem;
-      margin-bottom: 1.25rem;
-    }
-
-    .feature-icon.rust { background: rgba(226, 114, 91, 0.12); }
-    .feature-icon.s3 { background: rgba(244, 162, 97, 0.12); }
-    .feature-icon.cql { background: rgba(124, 156, 245, 0.12); }
-    .feature-icon.graph { background: rgba(107, 201, 160, 0.12); }
-    .feature-icon.lock { background: rgba(200, 130, 240, 0.12); }
-    .feature-icon.index { background: rgba(100, 200, 220, 0.12); }
-    .feature-icon.observe { background: rgba(240, 200, 100, 0.12); }
-
-    .feature-card h3 {
-      font-size: 1.1875rem;
-      font-weight: 700;
-      margin-bottom: 0.625rem;
-    }
-
-    .feature-card p {
-      font-size: 0.9375rem;
-      color: var(--text-secondary);
-      line-height: 1.65;
-    }
-
-    .feature-card .metric {
-      display: inline-block;
-      background: var(--bg-primary);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 0.25rem 0.625rem;
-      font-size: 0.8125rem;
-      font-family: var(--font-mono);
-      color: var(--accent);
-      margin-top: 0.75rem;
-    }
-
-    /* ── Code demo ── */
-    .code-demo {
-      background: var(--code-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    .code-tabs {
-      display: flex;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .code-tab {
-      padding: 0.75rem 1.25rem;
-      font-size: 0.8125rem;
-      font-family: var(--font-mono);
-      color: var(--text-muted);
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: color 0.2s, border-color 0.2s;
-      background: none;
-      border-top: none;
-      border-left: none;
-      border-right: none;
-    }
-
-    .code-tab.active {
-      color: var(--accent);
-      border-bottom-color: var(--accent);
-    }
-
-    .code-tab:hover { color: var(--text-secondary); }
-
-    .code-block {
-      padding: 1.5rem;
-      font-family: var(--font-mono);
-      font-size: 0.875rem;
-      line-height: 1.8;
-      overflow-x: auto;
-      display: none;
-    }
-
-    .code-block.active { display: block; }
-
-    .code-block .kw { color: #c792ea; }
-    .code-block .fn { color: #82aaff; }
-    .code-block .str { color: #c3e88d; }
-    .code-block .cm { color: #546e7a; }
-    .code-block .num { color: #f78c6c; }
-    .code-block .type { color: #ffcb6b; }
-    .code-block .op { color: #89ddff; }
-
-    /* ── Comparison table ── */
-    .comparison {
-      background: var(--bg-secondary);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .comparison-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 3rem;
-      font-size: 0.9375rem;
-    }
-
-    .comparison-table th,
-    .comparison-table td {
-      text-align: left;
-      padding: 1rem 1.25rem;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .comparison-table thead th {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-muted);
-      font-weight: 600;
-    }
-
-    .comparison-table thead th:first-child { color: var(--text-secondary); }
-
-    .comparison-table thead th.ferrosa-col {
-      color: var(--accent);
-    }
-
-    .comparison-table tbody td:first-child {
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-
-    .comparison-table tbody td {
-      color: var(--text-secondary);
-    }
-
-    .comparison-table tbody td.ferrosa-col {
-      color: var(--accent-green);
-      font-weight: 600;
-    }
-
-    .comparison-table tbody tr:hover {
-      background: rgba(255, 255, 255, 0.02);
-    }
-
-    .check { color: var(--accent-green); }
-    .cross { color: var(--text-muted); }
-
-    /* ── Architecture ── */
-    .arch-diagram {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 3rem;
-      margin-top: 3rem;
-      text-align: center;
-    }
-
-    .arch-layers {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      max-width: 700px;
-      margin: 0 auto;
-    }
-
-    .arch-layer {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      background: var(--bg-primary);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1rem 1.5rem;
-      transition: border-color 0.2s;
-    }
-
-    .arch-layer:hover { border-color: var(--accent); }
-
-    .arch-layer-label {
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-muted);
-      min-width: 100px;
-    }
-
-    .arch-layer-items {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .arch-item {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 0.375rem 0.75rem;
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-    }
-
-    .arch-arrow {
-      color: var(--text-muted);
-      font-size: 1.25rem;
-      text-align: center;
-    }
-
-    /* ── Use cases ── */
-    .use-cases {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
-      margin-top: 3rem;
-    }
-
-    .use-case {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2rem;
-      transition: border-color 0.2s;
-    }
-
-    .use-case:hover { border-color: var(--border-hover); }
-
-    .use-case-label {
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 0.75rem;
-    }
-
-    .use-case-label.migrate { color: var(--accent); }
-    .use-case-label.cloud { color: var(--accent-secondary); }
-    .use-case-label.graph-uc { color: var(--accent-green); }
-
-    .use-case h3 {
-      font-size: 1.125rem;
-      font-weight: 700;
-      margin-bottom: 0.625rem;
-    }
-
-    .use-case p {
-      font-size: 0.9375rem;
-      color: var(--text-secondary);
-      line-height: 1.65;
-    }
-
-    /* ── CTA section ── */
-    .cta-section {
-      text-align: center;
-      padding: 6rem 2rem;
-    }
-
-    .cta-section h2 {
-      font-size: clamp(2rem, 4vw, 3rem);
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      margin-bottom: 1rem;
-    }
-
-    .cta-section p {
-      font-size: 1.125rem;
-      color: var(--text-secondary);
-      margin-bottom: 2.5rem;
-      max-width: 500px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .cta-actions {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    /* ── Footer ── */
-    footer { border-top: 1px solid var(--border); }
-    .footer-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 2.5rem 2rem;
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      align-items: center;
-      gap: 1.5rem;
-    }
-    .footer-community { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
-    .community-title { margin: 0; border: 0; padding: 0; font-size: 0.95rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text-primary); text-transform: none; }
-    .social-links { display: flex; gap: 0.6rem; }
-    .social-link {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 38px; height: 38px; border: 1px solid var(--border); border-radius: 999px;
-      background: var(--bg-card); color: var(--text-secondary);
-      transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
-    }
-    .social-link:hover { color: var(--text-primary); border-color: var(--accent); background: var(--bg-card-hover); }
-    .social-link svg { width: 18px; height: 18px; }
-    .footer-legal { font-size: 0.85rem; color: var(--text-muted); text-align: center; }
-    .footer-links { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: flex-end; }
-    .footer-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.875rem; }
-    .footer-links a:hover { color: var(--text-primary); }
-
-    /* ── Beta Banner ── */
-    .beta-banner {
-      background: var(--bg-secondary);
-      border-bottom: 1px solid var(--border);
-      text-align: center;
-      padding: 0.5rem 1rem;
-      font-size: 0.8125rem;
-      color: var(--text-secondary);
-      position: fixed;
-      top: 64px;
-      width: 100%;
-      z-index: 99;
-    }
-
-    .beta-tag {
-      display: inline-block;
-      background: var(--accent);
-      color: #fff;
-      font-size: 0.6875rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      padding: 0.125rem 0.5rem;
-      border-radius: 4px;
-      margin-right: 0.375rem;
-      vertical-align: middle;
-    }
-
-    /* ── Responsive ── */
-    @media (max-width: 768px) {
-      .stats-bar { grid-template-columns: repeat(2, 1fr); }
-      .feature-card.highlight {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-      }
-      .features-grid { grid-template-columns: 1fr; }
-      nav { padding: 0 1rem; }
-      nav .nav-inner {
-        height: 64px;
-        min-height: 64px;
-        gap: 0.75rem;
-        padding: 0;
-        position: relative;
-      }
-      body { overflow-x: hidden; }
-      nav .logo { margin-right: auto; }
-      nav .nav-cta {
-        display: inline-flex;
-        flex-shrink: 0;
-        padding: 0.5rem 0.75rem;
-      }
-      nav .nav-toggle { display: inline-flex; }
-      nav .nav-links {
-        position: fixed;
-        top: 64px;
-        left: 0;
-        right: 0;
-        display: none;
-        flex-direction: column;
-        gap: 0;
-        padding: 0.5rem 1rem 1rem;
-        background: rgba(5, 7, 12, 0.98);
-        border-bottom: 1px solid var(--border);
-        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
-      }
-      nav.nav-open .nav-links { display: flex; }
-      nav .nav-links li { list-style: none; }
-      nav .nav-links a {
-        display: block;
-        padding: 0.75rem 0;
-        white-space: nowrap;
-      }
-      section {
-        width: 100%;
-        padding-left: 1rem;
-        padding-right: 1rem;
-        overflow-wrap: anywhere;
-      }
-      .hero { padding-top: 11rem; }
-      .hero h1 { font-size: clamp(2rem, 11vw, 3rem); }
-      .hero p { font-size: 1rem; }
-      .hero-actions { flex-direction: column; align-items: stretch; }
-      .btn-primary,
-      .btn-secondary { width: 100%; text-align: center; }
-      .beta-banner { top: 148px; font-size: 0.75rem; }
-      .comparison-table { font-size: 0.8125rem; }
-      .comparison-table th,
-      .comparison-table td { padding: 0.75rem 0.75rem; }
-      .footer-inner { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 1.25rem; padding: 2rem 1rem; }
-      .footer-community, .footer-links { justify-content: center; }
-    }
-  </style>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+  <link rel="stylesheet" href="../site.css">
 </head>
-<body>
+<body class="product-page">
 
 <!-- ═══════════════════ Navigation ═══════════════════ -->
-<nav>
-  <div class="nav-inner">
-    <a href="../" class="logo" style="display:flex;align-items:center;" aria-label="Ferrosa AI home">
-      <img src="../logo.svg" alt="Ferrosa AI" width="140" height="42">
-    </a>
-    <ul class="nav-links" id="site-nav-links">
-      <li><a href="#whats-new">What's New</a></li>
-      <li><a href="#features">Features</a></li>
-      <li><a href="#architecture">Architecture</a></li>
-      <li><a href="../productdocs/database/getting-started.html">Docs</a></li>
-    </ul>
-    <div class="nav-actions">
-      <a class="nav-star" href="https://github.com/ferrosadb/ferrosa" target="_blank" rel="noopener noreferrer" aria-label="Star Ferrosa on GitHub">
-        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
-      </a>
-      <a class="nav-discord" href="https://discord.gg/fxz9kNJ5a" target="_blank" rel="noopener noreferrer" aria-label="Join Ferrosa on Discord">
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.369a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.009c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.891.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.056c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028ZM8.02 15.331c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418Zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418Z"/></svg>
-      </a>
-      <a href="#get-started" class="nav-cta">Get Started</a>
+<nav class="site-nav" id="site-nav" aria-label="Primary">
+  <div class="site-nav-inner">
+    <a href="../" aria-label="Ferrosa AI home"><img class="logo-dark" src="../logo.svg" alt="Ferrosa AI" width="140" height="42"><img class="logo-light" src="../logo-light.svg" alt="Ferrosa AI" width="140" height="42"></a>
+    <div class="nav-links" id="nav-links">
+      <a href="../ferrosa-memory/">Memory</a>
+      <a href="../database/" aria-current="page">Database</a>
+      <a href="../forge/">Forge</a>
+      <a href="../productdocs/database/getting-started.html">Docs</a>
     </div>
-    <button class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="site-nav-links"><span></span></button>
+    <div class="nav-actions">
+      <button class="nav-icon theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Switch between light and dark theme" title="Switch theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg>
+      </button>
+      <a class="nav-icon" href="https://github.com/ferrosadb" target="_blank" rel="noopener noreferrer" aria-label="Ferrosa on GitHub"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
+      <a class="nav-icon" href="https://discord.gg/fxz9kNJ5a" target="_blank" rel="noopener noreferrer" aria-label="Ferrosa on Discord"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.369a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.009c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.891.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.056c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028ZM8.02 15.331c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418Zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418Z"/></svg></a>
+      <button class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="nav-links"><span></span></button>
+    </div>
   </div>
 </nav>
-
 <div class="beta-banner">
   <span class="beta-tag">BETA</span> Ferrosa Database is in active development.
 </div>
 
-<!-- ═══════════════════ Hero ═══════════════════ -->
-<section class="hero">
-  <div class="product-wordmark"><span class="co">Ferrosa</span> <span class="pr">Database</span></div>
-  <div class="hero-badge">
-    <span class="dot"></span>
-    <span class="fv" data-fv="ferrosa" data-fv-suffix=" — " hidden></span>active development
-  </div>
-  <h1>
-    One database. <span class="gradient">Many workloads.</span><br>
-    AI native. S3-backed.
-  </h1>
-  <p>
-    Search, vectors, graph, SPARQL, transactions, and real-time CDC on the same tables —
-    not separate stores. CQL compatible. Cypher + Bolt v5. SPARQL 1.1.
-    Strict-serializable transaction work via Accord, CQL compatibility, and S3-backed storage are under active development.
-    Local NVMe acts as cache while object storage is the durable layer. Start on a single node, then evaluate clustering and operational behavior with your workload before production.
-  </p>
-  <div class="hero-actions">
-    <a href="#get-started" class="btn-primary">Get Started</a>
-    <a href="#features" class="btn-secondary">See How It Works</a>
-  </div>
 
-  <div class="stats-bar">
-    <div class="stat">
-      <div class="stat-value">Rust</div>
-      <div class="stat-label">No JVM Heap Tuning</div>
+<!-- ═══════════════════ Hero ═══════════════════ -->
+  <section class="hero">
+      <div class="hero-ground" aria-hidden="true"></div>
+
+    <div class="hero-body">
+      <div class="hero-copy">
+        <p class="product-wordmark"><span class="co">Ferrosa</span> <span class="pr">Database</span></p>
+        <p class="eyebrow">Distributed database, Rust, S3-backed</p>
+        <h1>Object storage is the <em>source of truth.</em></h1>
+        <p class="lede">A distributed database compatible with the Cassandra CQL client surface, with S3-compatible object storage underneath. Local NVMe is a write-behind cache, not the record.</p>
+        <p class="lede">Nodes are ephemeral &mdash; a replacement reads from object storage rather than streaming a copy from its peers.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="../productdocs/database/getting-started.html">Get started</a>
+          <a class="btn btn-secondary" href="examples/">See the examples</a>
+        </div>
+
+        <div class="specimen">
+          <div class="specimen-hd"><b>THE STORAGE PATH</b> <span class="rt">where a row actually lives</span></div>
+          <dl class="specimen-rec">
+            <dt>source_of_truth</dt><dd class="val">s3://your-bucket/&hellip;</dd>
+            <dt>local_disk</dt><dd>write-behind cache</dd>
+            <dt>node_loss</dt><dd>re-reads S3, no peer stream</dd>
+            <dt>client</dt><dd>CQL native protocol</dd>
+          </dl>
+          <div class="specimen-ft">Losing a node is a cache miss, not a restore. <b>Protocol negotiation caps at v4</b>; v5 clients fall back, which every compliant driver does transparently.</div>
+        </div>
+      </div>
+      <div aria-hidden="true"></div>
     </div>
-    <div class="stat">
-      <div class="stat-value">S3</div>
-      <div class="stat-label">Durable Object Storage Layer</div>
-    </div>
-    <div class="stat">
-      <div class="stat-value">CQL+</div>
-      <div class="stat-label">Graph, Vector, SPARQL Surfaces</div>
-    </div>
-    <div class="stat">
-      <div class="stat-value">0.8</div>
-      <div class="stat-label">Developer Preview: Benchmark First</div>
-    </div>
-  </div>
-</section>
+  </section>
 
 <!-- ═══════════════════ Problem ═══════════════════ -->
 <div class="problem">
@@ -2142,5 +1319,33 @@ function showTab(name) {
   });
 </script>
 <script src="../versions.js"></script>
+<script>
+// Theme toggle. The button only ever writes an EXPLICIT choice; leaving it alone
+// keeps the page following the host computer, which is what the CSS defaults to.
+(function () {
+  var root = document.documentElement;
+  var btn = document.getElementById('theme-toggle');
+  if (!btn) { return; }
+  function current() {
+    var set = root.getAttribute('data-theme');
+    if (set === 'light' || set === 'dark') { return set; }
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+  function sync() { btn.setAttribute('aria-pressed', String(current() === 'dark')); }
+  btn.addEventListener('click', function () {
+    var next = current() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('ferrosa-ds-theme', next); } catch (e) {}
+    sync();
+  });
+  // Follow the OS live while no explicit choice is stored.
+  try {
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', function () {
+      if (!root.getAttribute('data-theme')) { sync(); }
+    });
+  } catch (e) {}
+  sync();
+})();
+</script>
 </body>
 </html>

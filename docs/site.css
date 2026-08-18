@@ -1373,3 +1373,24 @@ a.btn.btn-secondary, a.button.button-secondary {
 .cta-section > :last-child,
 .product-page section > :last-child,
 .legacy-doc section > :last-child { margin-bottom: 0; }
+
+/* ── Product wordmark ───────────────────────────────────────────────────────
+   PR #19 and #21 added this because nothing on a product page said WHICH
+   product it was. The blueprint hero replaced those sections and dropped it —
+   restored here, honouring the same brand rule: "Ferrosa" SemiBold at full text
+   colour, the product word Regular at the muted colour.
+
+   Deliberately NOT at the display size those PRs used. That size was right for
+   a centred hero whose headline sat below it; in this hero it would compete
+   with the h1 for primacy, and the design rubric allows exactly one primary
+   element. It names the page; the headline still carries the argument.
+   ───────────────────────────────────────────────────────────────────────── */
+.product-wordmark {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.product-wordmark .co { font-weight: 600; }
+.product-wordmark .pr { font-weight: 400; color: var(--muted); }

@@ -3,852 +3,185 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ferrosa Memory - durable memory server for AI agents</title>
-  <meta name="description" content="Ferrosa Memory is an MCP-native memory server for AI agents. Store typed facts, plans, skills, context folds, and graph relationships on a durable self-hosted service.">
+  <title>Ferrosa AI — Open infrastructure for AI agents</title>
+  <meta name="description" content="Ferrosa AI builds open infrastructure for AI agents. Ferrosa Memory, Ferrosa Database and Ferrosa Forge are Apache-2.0 and self-hosted, so the memory layer, the data layer and the model each stay a choice you can reverse.">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <style>
-    :root {
-      color-scheme: dark;
-      --ink: #e8f4ff;
-      --muted: #9bb3cf;
-      --quiet: #6d829a;
-      --bg: #05070c;
-      --panel: #09111f;
-      --panel-2: #0e1726;
-      --panel-3: #16243a;
-      --line: #1b314f;
-      --line-strong: #29486e;
-      --blue: #348cff;
-      --cyan: #7ee7ff;
-      --steel: #516d92;
-      --green: #6bc9a0;
-      --iron: #a8b2bf;
-      --loom: #c3a7ff;
-      --forge: #ff8a62;
-      --radius: 18px;
-      --shadow: 0 28px 90px rgba(0, 0, 0, 0.34);
-      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
-    }
-
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      font-family: var(--font-sans);
-      background:
-        radial-gradient(circle at 78% 10%, rgba(52, 140, 255, 0.20), transparent 28rem),
-        radial-gradient(circle at 12% 46%, rgba(126, 231, 255, 0.08), transparent 34rem),
-        linear-gradient(180deg, #05070c 0%, #07101d 48%, #05070c 100%);
-      color: var(--ink);
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 40;
-      opacity: 0.055;
-      background-image:
-        linear-gradient(rgba(255, 255, 255, 0.7) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.7) 1px, transparent 1px);
-      background-size: 42px 42px;
-      mask-image: linear-gradient(to bottom, black, transparent 72%);
-    }
-
-    a { color: inherit; }
-    .skip-link {
-      position: absolute;
-      left: 1rem;
-      top: -4rem;
-      z-index: 200;
-      background: var(--cyan);
-      color: #06101c;
-      padding: 0.7rem 1rem;
-      border-radius: 999px;
-      font-weight: 800;
-    }
-    .skip-link:focus { top: 1rem; }
-
-    .nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      border-bottom: 1px solid rgba(126, 231, 255, 0.14);
-      background: rgba(5, 7, 12, 0.82);
-      backdrop-filter: blur(18px);
-    }
-    .nav-inner {
-      max-width: 1320px;
-      height: 68px;
-      margin: 0 auto;
-      padding: 0 1.25rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-    }
-    .brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.75rem;
-      color: var(--ink);
-      text-decoration: none;
-      font-weight: 760;
-      letter-spacing: -0.03em;
-    }
-    .brand img {
-      width: 140px;
-      height: 42px;
-    }
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 1.2rem;
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      color: var(--muted);
-      font-size: 0.91rem;
-      font-weight: 620;
-    }
-    .nav-links a { text-decoration: none; }
-    .nav-links a:hover, .nav-links a:focus { color: var(--ink); }
-    .nav-cta {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 38px;
-      padding: 0.55rem 1rem;
-      border: 1px solid rgba(126, 231, 255, 0.36);
-      border-radius: 999px;
-      color: #06101c;
-      background: linear-gradient(180deg, #9bf0ff, #348cff);
-      text-decoration: none;
-      font-weight: 780;
-      box-shadow: 0 12px 34px rgba(52, 140, 255, 0.22);
-      transition: transform 160ms ease, box-shadow 160ms ease;
-    }
-    .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 18px 42px rgba(52, 140, 255, 0.30); }
-    .nav-cta:active, .button:active { transform: translateY(1px) scale(0.99); }
-    .nav-actions { display: inline-flex; align-items: center; gap: 0.6rem; }
-    .nav-star {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      min-height: 38px;
-      width: 40px;
-      height: 40px;
-      justify-content: center;
-      padding: 0;
-      border: 1px solid rgba(126, 231, 255, 0.22);
-      border-radius: 999px;
-      background: rgba(14, 23, 38, 0.68);
-      color: var(--ink);
-      text-decoration: none;
-      font-size: 0.88rem;
-      font-weight: 700;
-      white-space: nowrap;
-      transition: background 160ms ease, border-color 160ms ease;
-    }
-    .nav-star:hover { background: rgba(22, 36, 58, 0.78); border-color: rgba(126, 231, 255, 0.42); }
-    .nav-star svg { width: 17px; height: 17px; flex-shrink: 0; }
-    .nav-discord {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      min-height: 38px;
-      width: 40px;
-      height: 40px;
-      justify-content: center;
-      padding: 0;
-      border: 1px solid rgba(126, 231, 255, 0.22);
-      border-radius: 999px;
-      background: rgba(14, 23, 38, 0.68);
-      color: var(--ink);
-      text-decoration: none;
-      font-size: 0.88rem;
-      font-weight: 700;
-      white-space: nowrap;
-      transition: background 160ms ease, border-color 160ms ease;
-    }
-    .nav-discord:hover { background: rgba(22, 36, 58, 0.78); border-color: rgba(126, 231, 255, 0.42); }
-    .nav-discord svg { width: 17px; height: 17px; flex-shrink: 0; }
-    .footer-community {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-    .community-title { margin: 0; font-size: 0.95rem; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
-    .social-links { display: flex; gap: 0.6rem; }
-    .social-link {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 38px;
-      height: 38px;
-      border: 1px solid rgba(126, 231, 255, 0.18);
-      border-radius: 999px;
-      background: rgba(14, 23, 38, 0.55);
-      color: var(--muted);
-      transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
-    }
-    .social-link:hover { color: var(--ink); border-color: rgba(126, 231, 255, 0.42); background: rgba(22, 36, 58, 0.78); }
-    .social-link svg { width: 18px; height: 18px; }
-
-    main { overflow: hidden; }
-    .section {
-      max-width: 1320px;
-      margin: 0 auto;
-      padding: 6.8rem 1.25rem;
-    }
-
-    .hero {
-      min-height: calc(100dvh - 68px);
-      max-width: 1320px;
-      margin: 0 auto;
-      padding: 5.5rem 1.25rem 4.5rem;
-      display: grid;
-      grid-template-columns: minmax(0, 1.02fr) minmax(360px, 0.98fr);
-      gap: clamp(2.5rem, 6vw, 5.5rem);
-      align-items: center;
-    }
-    .hero-copy { max-width: 760px; }
-    h1 {
-      margin: 0;
-      font-size: clamp(3.5rem, 8vw, 7.2rem);
-      line-height: 0.93;
-      letter-spacing: -0.075em;
-      text-wrap: balance;
-    }
-    .hero h1 strong {
-      color: var(--cyan);
-      font-weight: 850;
-      text-shadow: 0 0 34px rgba(52, 140, 255, 0.18);
-    }
-    .lede {
-      max-width: 66ch;
-      margin: 1.7rem 0 0;
-      color: var(--muted);
-      font-size: clamp(1.03rem, 1.5vw, 1.22rem);
-      line-height: 1.68;
-    }
-    .hero-actions, .actions {
-      display: flex;
-      align-items: center;
-      gap: 0.9rem;
-      flex-wrap: wrap;
-      margin-top: 2.1rem;
-    }
-    .button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 48px;
-      padding: 0.84rem 1.25rem;
-      border-radius: 999px;
-      text-decoration: none;
-      font-weight: 790;
-      transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
-      white-space: nowrap;
-    }
-    .button-primary {
-      color: #06101c;
-      background: linear-gradient(180deg, #a8f3ff, #348cff);
-      border: 1px solid rgba(126, 231, 255, 0.38);
-      box-shadow: 0 16px 42px rgba(52, 140, 255, 0.28);
-    }
-    .button-secondary {
-      color: var(--ink);
-      background: rgba(14, 23, 38, 0.68);
-      border: 1px solid rgba(126, 231, 255, 0.22);
-    }
-    .button-secondary:hover { background: rgba(22, 36, 58, 0.78); border-color: rgba(126, 231, 255, 0.42); }
-
-    .visual-shell {
-      position: relative;
-      min-height: 640px;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-    .atom-field {
-      position: relative;
-      flex: 1;
-      border: 1px solid rgba(126, 231, 255, 0.18);
-      border-radius: 34px;
-      background:
-        radial-gradient(circle at 54% 42%, rgba(52, 140, 255, 0.28), transparent 15rem),
-        linear-gradient(145deg, rgba(14, 23, 38, 0.94), rgba(5, 7, 12, 0.58));
-      box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-      overflow: hidden;
-    }
-    .atom-field::before {
-      content: "";
-      position: absolute;
-      inset: -24%;
-      border-radius: 50%;
-      border: 1px solid rgba(126, 231, 255, 0.20);
-      transform: rotate(-17deg) scaleX(1.18);
-    }
-    .atom-field::after {
-      content: "";
-      position: absolute;
-      inset: 12%;
-      border-radius: 50%;
-      border: 1px dashed rgba(126, 231, 255, 0.22);
-      transform: rotate(29deg) scaleX(1.22);
-    }
-    .memory-core {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: min(54%, 284px);
-      aspect-ratio: 1;
-      transform: translate(-50%, -50%);
-      border-radius: 50%;
-      border: 1.5px solid rgba(126, 231, 255, 0.58);
-      background:
-        radial-gradient(circle at 50% 42%, rgba(126, 231, 255, 0.24), transparent 62%),
-        radial-gradient(circle at 50% 50%, rgba(52, 140, 255, 0.10), transparent 72%),
-        rgba(8, 16, 30, 0.88);
-      box-shadow:
-        inset 0 0 0 1px rgba(255, 255, 255, 0.07),
-        inset 0 0 48px rgba(126, 231, 255, 0.10),
-        0 0 64px rgba(52, 140, 255, 0.26),
-        0 28px 90px rgba(0, 0, 0, 0.48);
-      display: grid;
-      place-items: center;
-      text-align: center;
-      z-index: 5;
-    }
-    .memory-core b { position: relative; z-index: 2; display: block; font-size: clamp(3.2rem, 7vw, 5.4rem); line-height: 0.88; letter-spacing: -0.08em; }
-    .memory-core span { position: relative; z-index: 2; color: var(--muted); font-family: var(--font-mono); font-size: 0.76rem; }
-
-    .core-ring {
-      position: absolute;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 1;
-    }
-    .core-ring.ring-1 { inset: 10%; border: 1px solid rgba(126, 231, 255, 0.22); }
-    .core-ring.ring-2 { inset: 22%; border: 1px dashed rgba(126, 231, 255, 0.16); }
-    .core-ring.ring-3 { inset: 34%; border: 1px solid rgba(126, 231, 255, 0.10); }
-
-    .core-dot {
-      position: absolute;
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--cyan);
-      box-shadow: 0 0 8px rgba(126, 231, 255, 0.6);
-      z-index: 1;
-    }
-    .core-dot.dot-a { top: 11%; left: 50%; transform: translateX(-50%); }
-    .core-dot.dot-b { top: 50%; right: 11%; transform: translateY(-50%); }
-    .core-dot.dot-c { bottom: 14%; left: 28%; }
-    .core-dot.dot-d { top: 28%; left: 22%; }
-    .core-dot.dot-e { bottom: 24%; right: 26%; background: var(--loom); box-shadow: 0 0 8px rgba(195, 167, 255, 0.5); }
-    .core-dot.dot-f { top: 36%; right: 30%; background: var(--forge); box-shadow: 0 0 8px rgba(255, 138, 98, 0.5); }
-
-    .core-link {
-      position: absolute;
-      z-index: 1;
-      height: 1px;
-      background: rgba(126, 231, 255, 0.18);
-      transform-origin: left center;
-    }
-    .core-link.cl-1 { width: 30%; left: 50%; top: 14%; transform: translateX(-50%) rotate(96deg); }
-    .core-link.cl-2 { width: 26%; left: 50%; top: 50%; transform: translateX(-50%) rotate(-24deg); }
-    .core-link.cl-3 { width: 24%; left: 26%; top: 32%; transform: rotate(34deg); }
-
-    .field-dot {
-      position: absolute;
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: rgba(126, 231, 255, 0.40);
-      box-shadow: 0 0 6px rgba(126, 231, 255, 0.30);
-      z-index: 2;
-    }
-    .field-dot.fd-1 { top: 36%; left: 33%; }
-    .field-dot.fd-2 { top: 62%; right: 35%; }
-    .field-dot.fd-3 { bottom: 36%; right: 28%; background: rgba(195, 167, 255, 0.40); box-shadow: 0 0 6px rgba(195, 167, 255, 0.30); }
-    .field-dot.fd-4 { top: 46%; left: 40%; background: rgba(255, 138, 98, 0.40); box-shadow: 0 0 6px rgba(255, 138, 98, 0.30); }
-
-    .node {
-      position: absolute;
-      z-index: 6;
-      display: flex;
-      align-items: center;
-      gap: 0.55rem;
-      padding: 0.6rem 0.9rem 0.6rem 0.7rem;
-      border: 1px solid rgba(126, 231, 255, 0.22);
-      border-radius: 14px;
-      background: rgba(9, 17, 31, 0.92);
-      color: var(--ink);
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      font-weight: 600;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.40);
-      backdrop-filter: blur(6px);
-    }
-    .node::before {
-      content: "";
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-      background: var(--cyan);
-      box-shadow: 0 0 6px currentColor;
-    }
-    .node small { color: var(--quiet); display: block; font-family: var(--font-sans); font-size: 0.68rem; font-weight: 400; margin-top: 0.1rem; }
-    .node-forge { top: 4%; left: 4%; border-color: rgba(255, 138, 98, 0.30); color: #ffd4c5; }
-    .node-forge::before { background: var(--forge); box-shadow: 0 0 6px var(--forge); }
-    .node-loom { top: 4%; right: 4%; border-color: rgba(195, 167, 255, 0.30); color: #e1d4ff; }
-    .node-loom::before { background: var(--loom); box-shadow: 0 0 6px var(--loom); }
-    .node-iron { bottom: 4%; left: 4%; border-color: rgba(168, 178, 191, 0.28); color: #dce5f0; }
-    .node-iron::before { background: var(--iron); box-shadow: 0 0 6px var(--iron); }
-    .node-fm { bottom: 4%; right: 4%; border-color: rgba(126, 231, 255, 0.36); color: #c7f8ff; }
-    .node-fm::before { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
-    .edge {
-      position: absolute;
-      z-index: 3;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(126, 231, 255, 0.55), transparent);
-      transform-origin: left center;
-    }
-    .edge-a { width: 38%; left: 24%; top: 26%; transform: rotate(24deg); }
-    .edge-b { width: 40%; left: 38%; top: 30%; transform: rotate(-28deg); }
-    .edge-c { width: 38%; left: 20%; bottom: 23%; transform: rotate(-22deg); }
-    .edge-d { width: 36%; left: 44%; bottom: 20%; transform: rotate(20deg); }
-    .edge-e { width: 32%; left: 28%; top: 50%; transform: rotate(-6deg); }
-    .edge-f { width: 30%; right: 24%; top: 48%; transform: rotate(8deg); transform-origin: right center; }
-
-    .caption-strip {
-      position: relative;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1px;
-      border: 1px solid rgba(126, 231, 255, 0.18);
-      border-radius: var(--radius);
-      overflow: hidden;
-      background: rgba(126, 231, 255, 0.12);
-      margin-top: 0.75rem;
-    }
-    .metric {
-      padding: 0.85rem 0.95rem;
-      background: rgba(5, 7, 12, 0.70);
-    }
-    .metric strong { display: block; font-family: var(--font-mono); color: var(--cyan); font-size: 1rem; }
-    .metric span { color: var(--quiet); font-size: 0.77rem; }
-
-    .section-header { max-width: 760px; }
-    .section-header.center { margin: 0 auto; text-align: center; }
-    .eyebrow {
-      margin: 0 0 1rem;
-      color: var(--cyan);
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      letter-spacing: 0.08em;
-    }
-    h2 {
-      margin: 0;
-      font-size: clamp(2.1rem, 4.6vw, 4.6rem);
-      line-height: 0.98;
-      letter-spacing: -0.06em;
-      text-wrap: balance;
-    }
-    .section-header p {
-      margin: 1.25rem 0 0;
-      color: var(--muted);
-      font-size: 1.08rem;
-      max-width: 66ch;
-    }
-
-    .split-story {
-      display: grid;
-      grid-template-columns: minmax(0, 0.92fr) minmax(360px, 1.08fr);
-      gap: clamp(2rem, 5vw, 5rem);
-      align-items: start;
-    }
-    .story-panel {
-      position: sticky;
-      top: 96px;
-      border: 1px solid rgba(126, 231, 255, 0.18);
-      border-radius: 28px;
-      background:
-        radial-gradient(circle at 80% 0%, rgba(126, 231, 255, 0.16), transparent 16rem),
-        rgba(9, 17, 31, 0.76);
-      padding: clamp(1.3rem, 3vw, 2rem);
-      box-shadow: var(--shadow);
-    }
-    .story-panel img {
-      display: block;
-      width: 74px;
-      height: 74px;
-      border-radius: 18px;
-      margin-bottom: 1.2rem;
-    }
-    .story-panel p { color: var(--muted); margin: 1rem 0 0; }
-    .feature-lanes { display: grid; gap: 1rem; }
-    .lane {
-      display: grid;
-      grid-template-columns: 112px minmax(0, 1fr);
-      gap: 1rem;
-      align-items: start;
-      border: 1px solid rgba(126, 231, 255, 0.16);
-      border-radius: 24px;
-      background: rgba(14, 23, 38, 0.55);
-      padding: 1.15rem;
-    }
-    .lane code {
-      font-family: var(--font-mono);
-      color: var(--cyan);
-      background: rgba(126, 231, 255, 0.08);
-      border: 1px solid rgba(126, 231, 255, 0.14);
-      border-radius: 999px;
-      padding: 0.32rem 0.52rem;
-      width: max-content;
-      font-size: 0.78rem;
-    }
-    .lane h3 { margin: 0 0 0.35rem; font-size: 1.12rem; letter-spacing: -0.025em; }
-    .lane p { margin: 0; color: var(--muted); }
-
-    .theme-grid {
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 1rem;
-      margin-top: 2.2rem;
-    }
-    .theme-card {
-      min-height: 240px;
-      border: 1px solid rgba(126, 231, 255, 0.16);
-      border-radius: 28px;
-      background: rgba(9, 17, 31, 0.70);
-      padding: clamp(1.2rem, 2.4vw, 2rem);
-      box-shadow: 0 22px 70px rgba(0, 0, 0, 0.20);
-      position: relative;
-      overflow: hidden;
-    }
-    .theme-card::after {
-      content: "";
-      position: absolute;
-      right: -10%;
-      bottom: -28%;
-      width: 260px;
-      aspect-ratio: 1;
-      border-radius: 50%;
-      background: var(--card-glow, rgba(52, 140, 255, 0.14));
-      filter: blur(8px);
-      opacity: 0.78;
-    }
-    .theme-card h3 { margin: 0; font-size: clamp(1.45rem, 3vw, 2.45rem); line-height: 1; letter-spacing: -0.045em; }
-    .theme-card p { position: relative; z-index: 2; color: var(--muted); max-width: 54ch; }
-    .theme-card .symbol { font-family: var(--font-mono); color: var(--cyan); margin-bottom: 1.2rem; }
-    .forge { --card-glow: rgba(255, 138, 98, 0.15); }
-    .loom { --card-glow: rgba(195, 167, 255, 0.16); }
-    .iron { --card-glow: rgba(168, 178, 191, 0.13); }
-    .memory { --card-glow: rgba(126, 231, 255, 0.16); }
-
-    .proof-band {
-      border-top: 1px solid rgba(126, 231, 255, 0.14);
-      border-bottom: 1px solid rgba(126, 231, 255, 0.14);
-      background: rgba(9, 17, 31, 0.44);
-    }
-    .proof-inner {
-      max-width: 1320px;
-      margin: 0 auto;
-      padding: 4.4rem 1.25rem;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1px;
-      background: rgba(126, 231, 255, 0.10);
-    }
-    .proof-item {
-      background: rgba(5, 7, 12, 0.76);
-      padding: 1.4rem;
-      min-height: 142px;
-    }
-    .proof-item strong { display: block; font-size: clamp(1.8rem, 3.6vw, 3.2rem); line-height: 1; letter-spacing: -0.06em; color: var(--ink); }
-    .proof-item span { display: block; margin-top: 0.75rem; color: var(--muted); }
-
-    .screens {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.2rem;
-      margin-top: 2.2rem;
-    }
-    .screen-card {
-      display: block;
-      overflow: hidden;
-      text-decoration: none;
-      border: 1px solid rgba(126, 231, 255, 0.18);
-      border-radius: 28px;
-      background: rgba(14, 23, 38, 0.70);
-      transition: transform 180ms ease, border-color 180ms ease;
-    }
-    .screen-card:hover { transform: translateY(-3px); border-color: rgba(126, 231, 255, 0.38); }
-    .screen-card img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-bottom: 1px solid rgba(126, 231, 255, 0.16); }
-    .screen-card div { padding: 1rem 1.1rem 1.15rem; color: var(--muted); }
-    .screen-card strong { color: var(--ink); }
-
-    .cta {
-      max-width: 1320px;
-      margin: 0 auto;
-      padding: 7rem 1.25rem;
-    }
-    .cta-box {
-      border: 1px solid rgba(126, 231, 255, 0.22);
-      border-radius: 34px;
-      padding: clamp(1.4rem, 4vw, 3.6rem);
-      background:
-        radial-gradient(circle at 88% 18%, rgba(126, 231, 255, 0.17), transparent 21rem),
-        linear-gradient(140deg, rgba(14, 23, 38, 0.95), rgba(5, 7, 12, 0.72));
-      box-shadow: var(--shadow);
-      display: grid;
-      grid-template-columns: minmax(0, 0.92fr) minmax(340px, 1.08fr);
-      gap: 2rem;
-      align-items: center;
-    }
-    .code-block {
-      border: 1px solid rgba(126, 231, 255, 0.18);
-      border-radius: 24px;
-      background: #050914;
-      overflow-x: auto;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    }
-    pre { margin: 0; padding: 1.25rem; color: #b9c8dc; font-family: var(--font-mono); font-size: 0.9rem; line-height: 1.75; }
-    pre .prompt { color: var(--cyan); }
-
-    footer {
-      border-top: 1px solid rgba(126, 231, 255, 0.14);
-      color: var(--quiet);
-    }
-    .footer-inner {
-      max-width: 1320px;
-      margin: 0 auto;
-      padding: 2.5rem 1.25rem;
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      align-items: center;
-      gap: 1.5rem;
-    }
-    .footer-links { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: flex-end; }
-    .footer-links a { color: var(--muted); text-decoration: none; }
-    .footer-links a:hover { color: var(--ink); }
-    .footer-legal { font-size: 0.85rem; color: var(--quiet); text-align: center; }
-
-    @media (prefers-reduced-motion: no-preference) {
-      .atom-field::before { animation: orbit 24s linear infinite; }
-      .atom-field::after { animation: orbit 34s linear infinite reverse; }
-      .node { animation: float 6s ease-in-out infinite; }
-      .node-loom { animation-delay: -1.2s; }
-      .node-iron { animation-delay: -2.6s; }
-      .node-fm { animation-delay: -3.7s; }
-      .core-ring.ring-1 { animation: orbit 28s linear infinite; }
-      .core-ring.ring-2 { animation: orbit 40s linear infinite reverse; }
-      .core-ring.ring-3 { animation: orbit 18s linear infinite; }
-      .core-dot { animation: pulse 4s ease-in-out infinite; }
-      .core-dot.dot-b { animation-delay: -0.8s; }
-      .core-dot.dot-c { animation-delay: -1.6s; }
-      .core-dot.dot-d { animation-delay: -2.4s; }
-      .core-dot.dot-e { animation-delay: -3.0s; }
-      .core-dot.dot-f { animation-delay: -1.2s; }
-      .field-dot { animation: drift 9s ease-in-out infinite; }
-      .field-dot.fd-2 { animation-delay: -2.5s; }
-      .field-dot.fd-3 { animation-delay: -5s; }
-      .field-dot.fd-4 { animation-delay: -7s; }
-      @keyframes orbit { to { transform: rotate(343deg) scaleX(1.18); } }
-      @keyframes float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -9px; } }
-      @keyframes pulse { 0%, 100% { opacity: 1; scale: 1; } 50% { opacity: 0.5; scale: 1.35; } }
-      @keyframes drift { 0%, 100% { translate: 0 0; opacity: 0.85; } 50% { translate: 3px -4px; opacity: 0.35; } }
-    }
-
-    @media (max-width: 1020px) {
-      .nav-links { display: none; }
-      .hero, .split-story, .cta-box { grid-template-columns: 1fr; }
-      .hero { padding-top: 4rem; }
-      .visual-shell { min-height: 580px; }
-      .story-panel { position: relative; top: 0; }
-      .theme-grid { grid-template-columns: 1fr; }
-      .proof-inner { grid-template-columns: 1fr 1fr; }
-    }
-    @media (max-width: 720px) {
-      .nav-inner { height: 62px; }
-      .nav-cta { display: none; }
-      .hero, .section, .cta { padding-left: 1rem; padding-right: 1rem; }
-      h1 { font-size: clamp(3.1rem, 16vw, 4.9rem); }
-      .visual-shell { min-height: 580px; }
-      .atom-field { min-height: 460px; }
-      .node { font-size: 0.7rem; padding: 0.48rem 0.65rem; }
-      .node::before { width: 6px; height: 6px; }
-      .memory-core { width: min(60%, 220px) !important; }
-      .caption-strip, .proof-inner, .screens { grid-template-columns: 1fr; }
-      .caption-strip { margin-top: 0.75rem; }
-      .lane { grid-template-columns: 1fr; }
-      .button { width: 100%; }
-      .brand { letter-spacing: -0.04em; }
-      .nav-star span, .nav-discord span { display: none; }
-      .nav-star, .nav-discord { padding: 0.55rem 0.7rem; }
-      .footer-inner { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 1.25rem; }
-      .footer-community, .footer-links { justify-content: center; }
-    }
-  </style>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+  <link rel="stylesheet" href="site.css">
 </head>
 <body>
-  <a class="skip-link" href="#main">Skip to content</a>
-  <nav class="nav" aria-label="Primary navigation">
-    <div class="nav-inner">
-      <a class="brand" href="./" aria-label="Ferrosa AI home"><img src="logo.svg" alt="Ferrosa AI" width="140" height="42"></a>
-      <ul class="nav-links">
-        <li><a href="ferrosa-memory/">Docs</a></li>
-        <li><a href="ferrosa-memory/how-it-works.html">How it works</a></li>
-        <li><a href="ferrosa-memory/tools.html">Tools</a></li>
-        <li><a href="ferrosa-memory/compare.html">Compare</a></li>
-        <li><a href="database/">Database</a></li>
-        <li><a href="forge/">Forge</a></li>
-      </ul>
-      <div class="nav-actions">
-        <a class="nav-star" href="https://github.com/ferrosadb/ferrosa-memory" target="_blank" rel="noopener noreferrer" aria-label="Star Ferrosa Memory on GitHub">
-          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
-        </a>
-        <a class="nav-discord" href="https://discord.gg/fxz9kNJ5a" target="_blank" rel="noopener noreferrer" aria-label="Join Ferrosa on Discord">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.369a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.009c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.891.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.056c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028ZM8.02 15.331c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418Zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418Z"/></svg>
-        </a>
-        <a class="nav-cta" href="ferrosa-memory/getting-started.html">Set up</a>
-      </div>
-    </div>
-  </nav>
 
-  <main id="main">
-    <section class="hero" aria-labelledby="hero-title">
+<nav class="site-nav" id="site-nav" aria-label="Primary">
+  <div class="site-nav-inner">
+    <a href="./" aria-label="Ferrosa AI home"><img src="logo.svg" alt="Ferrosa AI" width="140" height="42"></a>
+    <div class="nav-links" id="nav-links">
+      <a href="ferrosa-memory/">Memory</a>
+      <a href="database/">Database</a>
+      <a href="forge/">Forge</a>
+      <a href="productdocs/database/getting-started.html">Docs</a>
+    </div>
+    <div class="nav-actions">
+      <a class="nav-icon" href="https://github.com/ferrosadb" target="_blank" rel="noopener noreferrer" aria-label="Ferrosa on GitHub"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
+      <a class="nav-icon" href="https://discord.gg/fxz9kNJ5a" target="_blank" rel="noopener noreferrer" aria-label="Ferrosa on Discord"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.369a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.009c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.891.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.056c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028ZM8.02 15.331c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418Zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418Z"/></svg></a>
+      <a class="btn btn-primary" href="#products">Products</a>
+      <button class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="nav-links"><span></span></button>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-ground" aria-hidden="true">
+        <img src="assets/diagrams/drafting-ground.svg" alt="" aria-hidden="true">
+      </div>
+
+    <div class="hero-body">
       <div class="hero-copy">
-        <h1 id="hero-title">Memory servers should be <strong>inspectable systems.</strong></h1>
-        <p class="lede">Ferrosa Memory gives AI agents typed recall: facts with history, plans, skills, graph edges, context folds, and auditable forgetting on a self-hosted MCP service.</p>
+        <p class="eyebrow">Open infrastructure for AI agents</p>
+        <h1 id="hero-title">Agent data has gravity. <em>Own where it lands.</em></h1>
+        <p class="lede">Every session leaves behind facts, plans, decisions, and the trajectory
+        that produced them. When that history accumulates inside a model provider, it stops being
+        an asset you own and becomes a reason you cannot leave.</p>
+        <p class="lede">The memory layer, the data layer, and the model should each be a choice
+        you make &mdash; and a choice you can reverse.</p>
         <div class="hero-actions">
-          <a class="button button-primary" href="ferrosa-memory/getting-started.html">Install locally</a>
-          <a class="button button-secondary" href="ferrosa-memory/how-it-works.html">Read the architecture</a>
+          <a class="btn btn-primary" href="#products">See the three products</a>
+          <a class="btn btn-secondary" href="https://github.com/ferrosadb" target="_blank" rel="noopener noreferrer">Read the source</a>
+        </div>
+
+        <div class="specimen">
+          <div class="specimen-hd"><b>THE EXITS</b> <span class="rt">where your data actually lives</span></div>
+          <dl class="specimen-rec">
+            <dt>storage</dt><dd class="val">s3://your-bucket/&hellip;</dd>
+            <dt>query</dt><dd>127.0.0.1:9042 &mdash; any Cassandra CQL driver</dd>
+            <dt>memory</dt><dd>127.0.0.1:18765/mcp &mdash; any MCP client</dd>
+            <dt>licence</dt><dd class="val">Apache-2.0 &nbsp;<span class="state state-current">ALL THREE</span></dd>
+          </dl>
+          <div class="specimen-ft">Nothing here is a proprietary endpoint. The point of publishing
+          the source is that you can <b>run it</b>, and that you can <b>check what you are relying on</b>.</div>
         </div>
       </div>
-      <div class="visual-shell" aria-label="Ferrosa Memory graph and atom illustration">
-        <div class="atom-field">
-          <div class="field-dot fd-1"></div><div class="field-dot fd-2"></div><div class="field-dot fd-3"></div><div class="field-dot fd-4"></div>
-          <div class="edge edge-a"></div><div class="edge edge-b"></div><div class="edge edge-c"></div><div class="edge edge-d"></div><div class="edge edge-e"></div><div class="edge edge-f"></div>
-          <div class="memory-core">
-            <div class="core-ring ring-1"></div><div class="core-ring ring-2"></div><div class="core-ring ring-3"></div>
-            <div class="core-dot dot-a"></div><div class="core-dot dot-b"></div><div class="core-dot dot-c"></div><div class="core-dot dot-d"></div><div class="core-dot dot-e"></div><div class="core-dot dot-f"></div>
-            <div class="core-link cl-1"></div><div class="core-link cl-2"></div><div class="core-link cl-3"></div>
-            <div><b>Fm</b><span>memory core</span></div>
-          </div>
-          <div class="node node-forge">Forge<small>workflows</small></div>
-          <div class="node node-loom">Loom<small>agent traces</small></div>
-          <div class="node node-iron">Ferrosa<small>durability</small></div>
-          <div class="node node-fm">Atoms<small>typed facts</small></div>
-        </div>
-        <div class="caption-strip" aria-hidden="true">
-          <div class="metric"><strong>graph</strong><span>entities and edges</span></div>
-          <div class="metric"><strong>facts</strong><span>bi-temporal history</span></div>
-          <div class="metric"><strong>folds</strong><span>context compression</span></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section split-story" id="memory-server">
-      <div class="story-panel">
-        <img src="logo-icon.svg" alt="Ferrosa AI">
-        <h2>A memory server, not a memory vibe.</h2>
-        <p>Most agent memory products stop at text chunks and vector similarity. Ferrosa Memory treats memory as operational data that can be linked, queried, corrected, explained, and removed.</p>
-      </div>
-      <div class="feature-lanes" aria-label="Ferrosa Memory capabilities">
-        <article class="lane"><code>fact</code><div><h3>Bi-temporal knowledge</h3><p>Facts keep valid-time and transaction-time history, so agents can ask what is true now and what changed earlier.</p></div></article>
-        <article class="lane"><code>graph</code><div><h3>Entity relationships</h3><p>People, projects, skills, sessions, documents, and tools are connected with typed edges instead of buried in prose.</p></div></article>
-        <article class="lane"><code>recall</code><div><h3>Hybrid retrieval</h3><p>Recall blends lexical, vector, phonetic, graph, workspace, recency, and feedback signals before returning evidence.</p></div></article>
-        <article class="lane"><code>forget</code><div><h3>Auditable forgetting</h3><p>Preview the blast radius, retract reversibly, or hard-delete with an append-only journal for trust and compliance work.</p></div></article>
-        <article class="lane"><code>mcp</code><div><h3>Agent-native tools</h3><p>Expose a focused default toolset for daily work, with advanced graph, fold, Datalog, and operator tools when needed.</p></div></article>
-      </div>
-    </section>
-
-    <section class="section" id="themes">
-      <div class="section-header center">
-        <h2>One system for every kind of agent memory.</h2>
-        <p>Ferrosa Memory unifies facts, plans, traces, relationships, and context under a single durable service.</p>
-      </div>
-      <div class="theme-grid">
-        <article class="theme-card forge"><div class="symbol">Forge</div><h3>Build durable workflows.</h3><p>Forge is the action layer: task plans, operator approvals, and automation paths that should survive beyond a single chat window.</p></article>
-        <article class="theme-card loom"><div class="symbol">Loom</div><h3>Weave traces into recall.</h3><p>Loom frames sessions, documents, and agent trajectories as threads that can be folded without losing provenance.</p></article>
-        <article class="theme-card iron"><div class="symbol">Ferrosa</div><h3>Keep the substrate honest.</h3><p>The database and operations layer: S3-backed durability, indexes, graph storage, and infrastructure you can run.</p></article>
-        <article class="theme-card memory"><div class="symbol">Memory</div><h3>Make recall atomic.</h3><p>Typed memory units, structured recall paths, and inspectable relationships between every fact, plan, and session.</p></article>
-      </div>
-    </section>
-
-    <section class="proof-band" aria-label="Product facts">
-      <div class="proof-inner">
-        <div class="proof-item"><strong>MCP</strong><span>Server-first integration for Claude Code, IDEs, and agent runtimes.</span></div>
-        <div class="proof-item"><strong>21</strong><span>Focused everyday tools for ingest, recall, feedback, config, tasks, and forgetting.</span></div>
-        <div class="proof-item"><strong>58</strong><span>Advanced operator tools for folds, Datalog, graph inference, and batch work.</span></div>
-        <div class="proof-item"><strong>S3</strong><span>Durable storage path when you graduate from local development to a cluster.</span></div>
-      </div>
-    </section>
-
-    <section class="section" id="inspect">
-      <div class="section-header">
-        <h2>Inspect the graph, then ship the memory server.</h2>
-        <p>Ferrosa Memory should feel like a real systems product: workbench, graph visualization, operations view, local setup, and clear comparison pages.</p>
-      </div>
-      <div class="screens">
-        <a class="screen-card" href="assets/screenshots/ferrosa-memory-viz.png"><img src="assets/screenshots/ferrosa-memory-viz.png" alt="Ferrosa Memory graph visualization"><div><strong>Memory visualization.</strong> Follow entities, facts, and relationships instead of scanning opaque chunks.</div></a>
-        <a class="screen-card" href="assets/screenshots/ferrosa-operations-console.png"><img src="assets/screenshots/ferrosa-operations-console.png" alt="Ferrosa operations console"><div><strong>Operations surface.</strong> Keep the database substrate visible when memory moves from laptop to cluster.</div></a>
-      </div>
-    </section>
-
-    <section class="cta" id="get-started">
-      <div class="cta-box">
-        <div>
-          <h2>Start with one command.</h2>
-          <p class="lede">Run local first, point your MCP client at the server, then decide whether your team needs a shared host or a Ferrosa-backed cluster.</p>
-          <div class="actions">
-            <a class="button button-primary" href="ferrosa-memory/getting-started.html">Open quickstart</a>
-            <a class="button button-secondary" href="ferrosa-memory/compare.html">Compare memory layers</a>
-          </div>
-        </div>
-        <div class="code-block" aria-label="Install command"><pre><code><span class="prompt">$</span> curl -fsSL https://ferrosa-memory.com/setup-memory.sh | bash
-
-<span class="prompt">$</span> ferrosa-memory serve
-listening on 127.0.0.1:18765
-mcp tools ready</code></pre></div>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <div class="footer-inner">
-      <div class="footer-community">
-      <h2 class="community-title">Join our community</h2>
-      <div class="social-links">
-        <a class="social-link" href="https://discord.gg/fxz9kNJ5a" target="_blank" rel="noopener noreferrer" aria-label="Ferrosa on Discord">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.369a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.009c.12.099.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.891.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.056c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028ZM8.02 15.331c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418Zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418Z"/></svg>
-        </a>
-        <a class="social-link" href="https://www.linkedin.com/company/ferrosainc/" target="_blank" rel="noopener noreferrer" aria-label="Ferrosa on LinkedIn">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z"/></svg>
-        </a>
-        <a class="social-link" href="https://github.com/ferrosadb" target="_blank" rel="noopener noreferrer" aria-label="Ferrosa on GitHub">
-          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
-        </a>
-      </div>
-      </div>
-      <div class="footer-legal">&copy; 2026 Ferrosa, Inc. All rights reserved.</div>
-      <div class="footer-links">
-        <a href="ferrosa-memory/">Memory</a>
-        <a href="database/">Database</a>
-        <a href="forge/">Forge</a>
-      </div>
+      <div aria-hidden="true"></div>
     </div>
-  </footer>
+
+    <div class="fact-strip">
+      <div><b>OPEN SOURCE</b><span>Apache-2.0. Three products, public repositories.</span></div>
+      <div><b>SELF-HOSTED</b><span>Your cluster, your bucket, your machine.</span></div>
+      <div><b>REVERSIBLE</b><span>Standard client surfaces, so you can leave.</span></div>
+      <div><b>DEVELOPER PREVIEW</b><span>All three. Evaluate before you depend on them.</span></div>
+    </div>
+  </section>
+
+  <section class="section" id="products">
+    <div class="section-hd">
+      <h2><em>Three products,</em> all open source.</h2>
+      <p>Each one is a layer you would otherwise rent from a provider. Each is Apache-2.0, runs on
+      your own machines, and speaks a client surface you already have a driver for. All three are
+      in developer preview &mdash; evaluate before you depend on them.</p>
+    </div>
+
+    <div class="card-grid cols-3">
+
+      <article class="card">
+        <div class="card-hd"><b>FERROSA MEMORY</b>
+          <span>An MCP-native memory server. Typed facts with history, plans, skills, graph
+          relationships and folded context &mdash; returned by meaning, keyword, sound, or graph
+          traversal. Forgetting is auditable and reversible.</span></div>
+        <div class="card-body"><pre><span class="c">// mcp</span>
+<span class="k">endpoint</span>  <span class="v">127.0.0.1:18765/mcp</span>
+<span class="k">recall</span>    <span class="v">vector &middot; lexical &middot; phonetic &middot; graph</span>
+<span class="k">forget</span>    <span class="v">"retract"</span>  <span class="c">// reversible</span>
+<span class="k">backend</span>   <span class="v">your ferrosa cluster</span></pre></div>
+        <div class="card-limit"><b>Developer preview.</b> Explicit valid-from/valid-until windows are
+        on foresight facts; other records carry insertion time plus supersession links.</div>
+      </article>
+
+      <article class="card">
+        <div class="card-hd"><b>FERROSA DATABASE</b>
+          <span>A distributed database written in Rust, compatible with the Cassandra CQL client
+          surface, with S3-compatible object storage as the source of truth. Nodes are ephemeral
+          &mdash; a node reads from object storage rather than streaming a copy from its peers.</span></div>
+        <div class="card-body"><pre><span class="c">// storage</span>
+<span class="k">source_of_truth</span>  <span class="v">s3://your-bucket/&hellip;</span>
+<span class="k">local_disk</span>       <span class="v">write-behind cache</span>
+<span class="k">node_loss</span>        <span class="v">re-reads S3, no peer stream</span>
+<span class="k">client</span>           <span class="v">CQL native protocol</span></pre></div>
+        <div class="card-limit"><b>Developer preview.</b> Protocol negotiation caps at <code>v4</code>;
+        v5 clients fall back, which every compliant driver does transparently.</div>
+      </article>
+
+      <article class="card">
+        <div class="card-hd"><b>FERROSA FORGE</b>
+          <span>A CLI and MCP server that wraps common developer operations and returns compact
+          structured output, so a coding agent reads machine-readable results instead of raw logs.</span></div>
+        <div class="card-body"><pre><span class="c">$ frg run cargo test</span>
+<span class="v">{</span>
+  <span class="k">"failed"</span><span class="v">: 2,</span>
+  <span class="k">"errors"</span><span class="v">: [{</span>
+    <span class="k">"file"</span><span class="v">: "src/engine.rs",</span>
+    <span class="k">"line"</span><span class="v">: 412 }]</span>
+<span class="v">}</span></pre></div>
+        <div class="card-limit"><b>Developer preview.</b> The CLI and the MCP tool surface may still
+        change before 1.0.</div>
+      </article>
+
+    </div>
+
+    <div class="prose-note">
+      <p>You can run all of this yourself. We publish the source so that you can, and so that you
+      can verify what you are relying on. <b>Our commercial products exist because operating it
+      well is real work</b> &mdash; and we would rather do that work than lock you in.</p>
+    </div>
+  </section>
+
+  <section class="section" id="inspect">
+    <div class="section-hd">
+      <h2><em>Look at it</em> while it runs.</h2>
+      <p>Inspectability is not a slogan if you can see the graph and the operational surface.</p>
+    </div>
+    <div class="card-grid">
+      <a class="card" href="assets/screenshots/ferrosa-memory-viz.png">
+        <img src="assets/screenshots/ferrosa-memory-viz.png" alt="Ferrosa Memory graph visualisation" style="display:block;width:100%;height:auto;border-bottom:1px solid var(--hairline)">
+        <div class="card-limit"><b>Memory visualisation.</b> Follow entities, facts and relationships
+        instead of scanning opaque chunks.</div>
+      </a>
+      <a class="card" href="assets/screenshots/ferrosa-operations-console.png">
+        <img src="assets/screenshots/ferrosa-operations-console.png" alt="Ferrosa operations console" style="display:block;width:100%;height:auto;border-bottom:1px solid var(--hairline)">
+        <div class="card-limit"><b>Operations surface.</b> Keep the database substrate visible when
+        memory moves from a laptop to a cluster.</div>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <div>&copy; 2026 Ferrosa, Inc. All rights reserved.</div>
+    <nav class="site-footer-links" aria-label="Site">
+      <a href="ferrosa-memory/">Memory</a>
+      <a href="database/">Database</a>
+      <a href="forge/">Forge</a>
+      <a href="productdocs/database/getting-started.html">Docs</a>
+      <a href="brand.html">Brand</a>
+      <a href="design-system.html">Design system</a>
+      <a href="https://github.com/ferrosadb" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+// Mobile nav. The only script this page needs.
+(function () {
+  var nav = document.getElementById('site-nav');
+  var btn = nav && nav.querySelector('.nav-toggle');
+  if (!btn) { return; }
+  btn.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    btn.setAttribute('aria-expanded', String(open));
+  });
+})();
+</script>
 </body>
 </html>

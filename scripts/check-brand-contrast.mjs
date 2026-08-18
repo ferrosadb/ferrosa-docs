@@ -26,6 +26,10 @@ const here = dirname(fileURLToPath(import.meta.url));
 const SOURCES = [
   ["design system", join(here, "..", "docs", "design-system.html")],
   ["examples theme", join(here, "..", "theme", "examples.css")],
+  // The site stylesheet declares its own --* tokens (not --ferrosa-*) in the
+  // same three blocks. It ships BOTH polarities, so both must be gated: a
+  // light palette that is only eyeballed is a light palette that drifts.
+  ["site stylesheet", join(here, "..", "docs", "site.css")],
 ];
 
 function linear(channel) {
@@ -49,12 +53,28 @@ function ratio(fg, bg) {
 // once for the explicit choice and once for prefers-color-scheme — and both
 // are checked, because a user reaching light mode either way must get the same
 // contrast.
-function tokensIn(block) {
+function tokensIn(block, prefix) {
   const found = {};
-  for (const [, name, value] of block.matchAll(/--ferrosa-([a-z0-9-]+):\s*(#[0-9a-fA-F]{6})/g)) {
-    found[name] = value.toLowerCase();
-  }
+  const re = prefix
+    ? /--ferrosa-([a-z0-9-]+):\s*(#[0-9a-fA-F]{6})/g
+    : /--([a-z0-9-]+):\s*(#[0-9a-fA-F]{6})/g;
+  for (const [, name, value] of block.matchAll(re)) found[name] = value.toLowerCase();
   return found;
+}
+
+// The two systems name the same roles differently. Map site.css onto the names
+// the CHECKS table already uses, rather than duplicating the table.
+const ALIAS = {
+  "bg": "bg", "surface": "surface", "text": "text", "muted": "text-muted",
+  "subtle": "text-subtle", "primary": "primary", "accent": "accent",
+  "success": "success", "warning": "warning", "danger": "danger",
+  "on-primary": "text-on-primary", "border": "border", "code-bg": "code-bg",
+};
+function normalise(tok, isSite) {
+  if (!isSite) return tok;
+  const out = {};
+  for (const [k, v] of Object.entries(tok)) out[ALIAS[k] ?? k] = v;
+  return out;
 }
 
 function themesIn(text, label) {
@@ -74,10 +94,12 @@ function themesIn(text, label) {
     process.exit(1);
   }
 
+  const isSite = label === "site stylesheet";
+  const pick = (a, b) => normalise(tokensIn(text.slice(a, b), !isSite), isSite);
   return [
-    ["dark", tokensIn(text.slice(darkStart, lightStart))],
-    ["light (explicit)", tokensIn(text.slice(lightStart, mediaStart))],
-    ["light (prefers-color-scheme)", tokensIn(text.slice(mediaStart))],
+    ["dark", pick(darkStart, lightStart)],
+    ["light (explicit)", pick(lightStart, mediaStart)],
+    ["light (prefers-color-scheme)", pick(mediaStart, text.length)],
   ];
 }
 
@@ -105,6 +127,14 @@ const CHECKS = [
   ["warning", "code-bg", 4.5, "numeric literal"],
   ["danger", "code-bg", 4.5, "tag"],
   ["text-subtle", "code-bg", 4.5, "comment"],
+  ["code-text", "code-bg", 4.5, "code body"],
+  ["syn-kw", "code-bg", 4.5, "keyword"],
+  ["syn-fn", "code-bg", 4.5, "identifier"],
+  ["syn-str", "code-bg", 4.5, "string"],
+  ["syn-num", "code-bg", 4.5, "number"],
+  ["syn-attr", "code-bg", 4.5, "attribute"],
+  ["syn-op", "code-bg", 4.5, "operator"],
+  ["syn-com", "code-bg", 4.5, "code comment"],
 ];
 
 let failures = 0;

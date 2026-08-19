@@ -1566,3 +1566,63 @@ a.btn.btn-secondary, a.button.button-secondary {
   :root:not([data-theme="dark"]) .site-nav .logo-dark { display: none; }
   :root:not([data-theme="dark"]) .site-nav .logo-light { display: block; }
 }
+
+/* ── Hero alignment, last word ──────────────────────────────────────────────
+   The hero is full-bleed on every page and sets its own measure via .hero-body.
+   Two ported rules were still constraining it, giving the site three different
+   left edges (80px, 193px, 327px):
+
+     .product-page section { max-width: 1200px; margin: 0 auto }   -> copy at 193
+     .legacy-doc main      { max-width: 980px;  margin: 0 auto }   -> copy at 327
+
+   The padding override landed earlier; the width did not. Both are neutralised
+   for the hero only — the legacy content column below it keeps its measure.
+   The nav gets the same treatment so its lockup shares the hero's left edge. */
+.product-page section.hero,
+.legacy-doc section.hero {
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+  width: 100%;
+}
+.product-page nav.site-nav,
+.legacy-doc nav.site-nav { padding: 0; }
+.product-page .subnav,
+.legacy-doc .subnav { padding: 0; }
+
+/* ── One container origin ───────────────────────────────────────────────────
+   The hero sits in a 1560px container with a --gutter inset, but the content
+   below it did not: ported sections centred a 1200px column and the legacy
+   pages centred a 980px <main>. Measured left edges were 80 / 145 / 247 on the
+   same site, so the copy stepped sideways as you scrolled past the hero.
+
+   Everything now shares the hero's container. The legacy pages keep a readable
+   text measure via a cap on the text itself rather than on the container —
+   capping the container is what pushed the whole column off the hero's edge. */
+.product-page section,
+.legacy-doc main {
+  max-width: 1560px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+.legacy-doc main > p,
+.legacy-doc main > ul,
+.legacy-doc main > ol,
+.legacy-doc main > .warn,
+.product-page section > p {
+  max-width: 78ch;
+}
+
+/* Sections nest on the ported pages. Applying the section rhythm at every level
+   stacks it — an outer section's 60px bottom padding meeting an inner one's
+   60px top padding, twice over. Only the outermost section carries the rhythm
+   and the container; nested ones inherit both. */
+.product-page section section,
+.legacy-doc section section {
+  padding: 0;
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+}

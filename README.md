@@ -78,18 +78,39 @@ Run the docs checks:
 scripts/generate-example-docs.sh
 python3 scripts/build-docs-nav.py
 scripts/check-site.py
-node scripts/check-brand-contrast.mjs
+node scripts/check-contrast.mjs design.config.json
+
+# the two rendered-page gates need the site served and Chrome
+(cd docs && python3 -m http.server 8779 &)
+node scripts/measure-anatomy.mjs design.config.json
+node scripts/find-empty-bands.mjs design.config.json
+
 git diff --check
 ```
 
-`check-brand-contrast.mjs` reads the `--ferrosa-*` token blocks out of
-`docs/design-system.html` **and** `theme/examples.css`, and asserts every
-foreground/background pair meets WCAG 2.1 AA in both themes — including the
-syntax-highlight colours against the code background. It prints
-`99 combinations checked, 0 below AA.` and exits non-zero on the first pair below
-threshold. It needs Node 18 or newer and uses only the standard library. (The
-Ferrosa Memory design system was retired along with its page, and its `--fm-`
-checker went with it.)
+### Design gates
+
+Three checks, all driven by `design.config.json`. They need Node 18+ and (for
+the last two) Chrome — no npm install. Each exits non-zero on failure. They are
+generalized copies of the `/ferrosa-design` skill's reference implementations,
+vendored here because that skill lives in a repo CI cannot check out; keep the
+two in step.
+
+| Script | Asserts |
+|---|---|
+| `check-contrast.mjs` | Every foreground/background pair meets WCAG 2.1 AA, in **every theme block each source declares** — dark, explicit light, and `prefers-color-scheme` — across `docs/design-system.html`, `theme/examples.css` and `docs/site.css`, including syntax colours on the code background. Prints `183 combinations checked, 0 below AA.` |
+| `measure-anatomy.mjs` | A shared component computes **identically** across the pages that share it, at desktop and phone widths. It measures computed style in a real browser, so it catches which rule *won* — a specificity tie, a ported bare-element selector — which no stylesheet audit can see. |
+| `find-empty-bands.mjs` | No band of dead vertical space over 200px, found by sampling what actually paints rather than by measuring element boxes. |
+
+`check-contrast.mjs` replaced `check-brand-contrast.mjs`, which located theme
+blocks with `indexOf` against the raw file. `site.css` documents its three theme
+selectors in its header comment, so those mentions were found first: the dark
+block resolved to a zero-length slice and every dark pair was silently skipped,
+while the third block ran to EOF and gave each token its last value anywhere in
+the file. It reported 127 clean comparisons while checking none of the site's
+default palette. Blocks are now located in a comment-stripped copy — 183 real
+comparisons. (The Ferrosa Memory design system was retired along with its page,
+and its `--fm-` checker went with it.)
 
 This repo now OWNS docs/ (the marketing site moved off ferrosadb/ferrosa). `sync-from-ferrosa.sh` no longer pulls docs/ by default — only the example SOURCES (sources/ferrosa/examples) track the engine repo. Use `--with-docs` only for a deliberate full re-mirror.
 

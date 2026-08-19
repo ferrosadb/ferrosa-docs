@@ -56,9 +56,17 @@ jobs:
       - name: Parse HTML and check local links
         run: scripts/check-site.py
 
+      # ── Design gates ──────────────────────────────────────────────────
+      # Three checks, all driven by design.config.json. They are generalized
+      # copies of the /ferrosa-design skill's reference implementations; the
+      # skill lives in a private repo this runner cannot check out, so they are
+      # vendored here rather than fetched. Keep the two in step — see the
+      # header comment in design.config.json.
+
       # The design system states in prose that it meets WCAG 2.1 AA in both
-      # themes. This makes that arithmetic. It exits non-zero on the first
-      # token pair below threshold, so a palette edit cannot quietly walk the
+      # themes. This makes that arithmetic, across every source that declares
+      # tokens and every theme block each one ships. It exits non-zero on the
+      # first pair below threshold, so a palette edit cannot quietly walk the
       # contrast back down the way it did before #11.
       #
       # There were two of these. The Ferrosa Memory system was retired along
@@ -67,7 +75,41 @@ jobs:
       - name: Check design system contrast
         run: |
           node --version
-          node scripts/check-brand-contrast.mjs
+          node scripts/check-contrast.mjs design.config.json
+
+      # The remaining two gates measure the RENDERED page, so they need the
+      # site served and a browser. ubuntu-latest ships Chrome at a stable path;
+      # assert it rather than discovering its absence as a confusing probe
+      # failure three steps later.
+      - name: Serve the site
+        run: |
+          test -x /usr/bin/google-chrome || {
+            echo "::error::google-chrome not found on the runner. The anatomy and whitespace gates need it."
+            exit 1
+          }
+          (cd docs && python3 -m http.server 8779 >/dev/null 2>&1 &)
+          for i in $(seq 1 20); do
+            curl -sf -o /dev/null http://127.0.0.1:8779/index.html && break
+            sleep 0.5
+          done
+          curl -sf -o /dev/null http://127.0.0.1:8779/index.html || {
+            echo "::error::static server never came up on 127.0.0.1:8779"
+            exit 1
+          }
+
+      # One component, one computed style, across every page that shares it.
+      # This is the gate that catches what a stylesheet audit cannot: which
+      # rule WON. It found the Forge hero rendering at 64px against 48px
+      # everywhere else, and fifteen buttons falling through to a ported
+      # stylesheet because they carried a modifier class without its base.
+      - name: Check page anatomy
+        run: node scripts/measure-anatomy.mjs design.config.json
+
+      # Dead vertical space, by sampling what actually paints. Measuring
+      # element boxes instead reports wrapping inline elements as spanning
+      # every line they touch, which buries the real gaps in false positives.
+      - name: Check for dead vertical space
+        run: node scripts/find-empty-bands.mjs design.config.json
 
       - name: Check whitespace
         run: git diff --check

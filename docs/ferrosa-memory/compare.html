@@ -197,28 +197,28 @@
 
   <div class="features-grid">
     <div class="feature-card compare-card">
-      <div class="feature-icon steel">🧩</div>
+      <div class="feature-icon steel"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.6 3.8 H13.2 V13.4 H3.7 V3.3"/><path d="M10.8 10.6 H20.4 V20.2 H10.9 V10.1"/></svg></div>
       <h3>Mem0</h3>
       <p class="what-is">An open-source "memory layer" for AI agents that remembers user preferences and facts across sessions. An LLM extracts memories from conversations and stores them as embeddings with user / session / agent scoping, retrieved by a hybrid of semantic search, BM25 keyword matching, and entity linking. Ships as a Python / JS library, a self-hostable server, and a managed cloud (app.mem0.ai), under Apache-2.0.</p>
       <p class="differs"><strong>How fmem differs:</strong> Mem0 centers on LLM-extracted free-form memories; Ferrosa Memory keeps a typed bi-temporal graph with rule-derived, explainable facts and auditable forgetting on a durable S3-tiered backend.</p>
     </div>
 
     <div class="feature-card compare-card">
-      <div class="feature-icon graph">🕸️</div>
+      <div class="feature-icon graph"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.9 5.1 A2.0 2.0 0 1 1 5.9 5.35"/><path d="M17.9 6.7 A2.0 2.0 0 1 1 16.9 6.95"/><path d="M12.1 16.0 A2.0 2.0 0 1 1 11.1 16.25"/><path d="M8.3 7.4 L15.5 8.2"/><path d="M7.4 8.9 L10.8 15.8"/><path d="M16.6 10.5 L12.6 16.0"/></svg></div>
       <h3>Zep / Graphiti</h3>
       <p class="what-is">Graphiti is an open-source temporal knowledge-graph engine (Apache-2.0) that is the core of Zep's commercial Context Graph platform. It ingests conversational and structured data into typed entity nodes, relationship edges, and episodes, and is explicitly bi-temporal: edges carry validity windows (<code>t_valid</code> / <code>t_invalid</code>) plus ingest timestamps, and conflicting facts are invalidated rather than deleted. Retrieval is hybrid — embeddings + BM25 + graph traversal.</p>
       <p class="differs"><strong>How fmem differs:</strong> Zep/Graphiti is the closest match on the typed bi-temporal graph story. Ferrosa Memory adds a Datalog rule/derivation engine, a dream-cycle consolidation pass, and a blast-radius forgetting UX — none of which Graphiti documents as such.</p>
     </div>
 
     <div class="feature-card compare-card">
-      <div class="feature-icon cyan">🧠</div>
+      <div class="feature-icon cyan"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.3 6.2 H17.7 V17.8 H6.4 V5.8"/><path d="M9.6 9.5 H14.5 V14.6 H9.6 V9.2"/><path d="M9.2 6.3 V3.4"/><path d="M12.1 6.3 V3.5"/><path d="M14.9 6.3 V3.4"/><path d="M9.2 17.7 V20.6"/><path d="M12.0 17.7 V20.5"/><path d="M14.9 17.7 V20.6"/><path d="M6.4 9.3 H3.5"/><path d="M6.4 12.1 H3.4"/><path d="M6.4 14.9 H3.5"/><path d="M17.6 9.3 H20.6"/><path d="M17.6 12.0 H20.5"/><path d="M17.6 14.9 H20.6"/></svg></div>
       <h3>Letta</h3>
       <p class="what-is">An open-source framework (Apache-2.0) for building stateful agents that manage their own memory, descended from the Berkeley MemGPT "LLM-as-OS" work. Memory is organized into labeled in-context "memory blocks" across OS-inspired tiers — core memory (always in-context), archival memory (external vector / graph store), and recall memory (searchable history). The agent actively edits its own memory via tool calls. Available as OSS and as Letta Cloud.</p>
       <p class="differs"><strong>How fmem differs:</strong> Letta centers on agent-driven self-editing memory blocks; Ferrosa Memory provides a typed graph, bi-temporal supersession, multi-signal fusion retrieval, and rule-based derivation as first-class server features rather than agent-managed state.</p>
     </div>
 
     <div class="feature-card compare-card">
-      <div class="feature-icon index">📚</div>
+      <div class="feature-icon index"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 9.4 V6.1 H19.7 V9.3 H3.9"/><path d="M4.6 13.2 V10.0 H19.3 V13.4 H4.1"/><path d="M4.2 17.4 V14.2 H19.8 V17.2 H4.5"/></svg></div>
       <h3>Vector + RAG baseline</h3>
       <p class="what-is">The default "roll-your-own" pattern (a category, not a product): store conversation or document chunks in a vector database — Pinecone, Weaviate, Qdrant, pgvector — and wire retrieval with a framework like LangChain or LlamaIndex, or simply lean on a long context window. Retrieval is vector similarity, optionally plus keyword or metadata filters; some frameworks add reranking. Both OSS components and managed clouds exist.</p>
       <p class="differs"><strong>How fmem differs:</strong> the baseline answers "what's similar?"; Ferrosa Memory adds a typed graph, bi-temporal history, multi-signal RRF fusion, explainable derivation, automatic consolidation, and auditable forgetting beyond delete-by-ID.</p>

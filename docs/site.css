@@ -949,7 +949,24 @@ html{ scroll-behavior: smooth; }body.product-page{
     }.feature-card:hover{
       border-color: var(--steel);
       transform: translateY(-2px);
-    }.feature-icon{
+    }/* ── Drafting marks ────────────────────────────────────────────────────
+       Icons are inline SVG drafting marks, not pictographs: monoline work at
+       1.5 units, stroked in currentColor so they flip with the theme, and
+       deliberately a little irregular — a rule that overshoots its corner, a
+       circle that does not quite close — the way a hand-drawn annotation is.
+
+       Colour is --muted, not --accent: rule 2 says the accent marks the
+       primary read and an icon is never that. --steel is the site's line
+       colour, but it sits at 3.79:1 on --bg and these marks are drawn over a
+       tinted ground that takes another bite out of that; --muted keeps them
+       clear of the 3:1 non-text floor in both polarities.
+       ─────────────────────────────────────────────────────────────────── */
+    .feature-icon,
+    .pain-icon{ color: var(--muted); }
+    .feature-icon > svg,
+    .pain-icon > svg{ display: block; }
+    .pain-icon{ line-height: 0; }
+    .feature-icon{
       width: 44px;
       height: 44px;
       border-radius: 10px;
@@ -958,7 +975,7 @@ html{ scroll-behavior: smooth; }body.product-page{
       justify-content: center;
       font-size: 1.25rem;
       margin-bottom: 1.25rem;
-    }.feature-icon.steel{ background: var(--primary-soft); }.feature-icon.cyan{ background: var(--accent-soft); }.feature-icon.cql{ background: rgba(124, 156, 245, 0.12); }.feature-icon.graph{ background: rgba(107, 201, 160, 0.12); }.feature-icon.lock{ background: rgba(200, 130, 240, 0.12); }.feature-icon.index{ background: rgba(100, 200, 220, 0.12); }.feature-icon.observe{ background: rgba(240, 200, 100, 0.12); }.feature-card h3{
+    }.feature-card h3{
       font-size: 1.1875rem;
       font-weight: 700;
       margin-bottom: 0.625rem;
@@ -1204,7 +1221,7 @@ html{ scroll-behavior: smooth; }body.product-page{
       grid-template-columns: 1fr 1fr;
       gap: 3rem;
       align-items: center;
-    }.feature-icon.rust{ background: rgba(226, 114, 91, 0.12); }.feature-icon.s3{ background: rgba(244, 162, 97, 0.12); }.feature-card .metric{
+    }.feature-card .metric{
       display: inline-block;
       background: var(--bg);
       border: 1px solid var(--divider);
@@ -1629,3 +1646,31 @@ a.btn.btn-secondary, a.button.button-secondary {
   margin-left: 0;
   margin-right: 0;
 }
+
+
+/* ── Icon chip ──────────────────────────────────────────────────────────────
+   One treatment for every icon. There were 21 different tints in play — nine
+   modifier classes (.steel .cyan .cql .graph .lock .index .observe .rust .s3)
+   plus twelve one-off inline backgrounds — so neighbouring cards had visibly
+   different chips for no semantic reason. The hue carried no meaning, and
+   "accent is rationed" means a decorative rainbow is exactly what this design
+   does not do. The modifier classes stay in the markup but no longer paint. */
+.feature-icon,
+.pain-icon {
+  /* Geometry as well as colour. .pain-icon previously carried no box at all —
+     it was a bare text node sized by font-size — so giving it a background
+     without a width stretched it into a full-card bar. Both are the same
+     44px chip now. */
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  color: var(--muted);
+}
+.feature-icon > svg,
+.pain-icon > svg { display: block; }

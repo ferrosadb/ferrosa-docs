@@ -1590,3 +1590,42 @@ a.btn.btn-secondary, a.button.button-secondary {
   :root:not([data-theme="dark"]) .site-nav .logo-dark { display: none; }
   :root:not([data-theme="dark"]) .site-nav .logo-light { display: block; }
 }
+
+/* ── Content inset matches the hero ─────────────────────────────────────────
+   #24 set the product-page geometry: a 1200px centred column inset by --gutter,
+   which puts the Forge hero and its content on the same left edge. The ported
+   sections on Memory, Database and Tools were still inset by the legacy 2rem
+   inside that same 1200px column, so their content sat 16–48px left of their
+   own hero. Same column, same inset. */
+.product-page section {
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+@media (max-width: 720px) {
+  .product-page section { padding-left: 1rem; padding-right: 1rem; }
+}
+
+/* Getting Started is the last page still wrapping its content in the legacy
+   980px <main>, which sat neither with its own hero nor with anything else.
+   Same treatment #24 gave Forge. */
+.legacy-doc main { max-width: none; margin: 0; padding: 0; }
+.legacy-doc .page-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: calc(var(--module) * 1.5) var(--gutter);
+}
+.legacy-doc .page-content > :first-child { margin-top: 0; }
+@media (max-width: 720px) {
+  .legacy-doc .page-content { padding-left: 1rem; padding-right: 1rem; }
+}
+
+/* Tools and Compare nest <section> inside <section>. The inset above applies at
+   every level, so their content sat a full gutter right of their own hero
+   (273px against 193px). Only the outermost section carries the column. */
+.product-page section section {
+  padding-left: 0;
+  padding-right: 0;
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+}

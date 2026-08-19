@@ -77,7 +77,19 @@ function normalise(tok, isSite) {
   return out;
 }
 
-function themesIn(text, label) {
+// Locate the blocks in a COMMENT-STRIPPED copy. site.css documents its three
+// theme selectors in its header comment, so the raw indexOf found those
+// mentions first: the dark block resolved to slice(2577, 2149) — start after
+// end, an empty string — and the prefers-color-scheme block ran from the
+// comment to EOF, swallowing every later declaration so each token took its
+// LAST value in the file. The gate reported 127 combinations and 0 failures
+// while checking none of site.css's dark palette and reading both light
+// palettes off contaminated blocks. Offsets are preserved (comments are blanked,
+// not deleted) so the slices still line up with the original text.
+const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, (m) => " ".repeat(m.length));
+
+function themesIn(raw, label) {
+  const text = stripComments(raw);
   const darkStart = text.indexOf(":root {");
   const lightStart = text.indexOf(':root[data-theme="light"]');
   const mediaStart = text.indexOf("@media (prefers-color-scheme: light)");

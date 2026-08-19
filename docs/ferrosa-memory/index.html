@@ -57,46 +57,35 @@
 </div>
 
   <section class="hero">
-      <div class="hero-ground" aria-hidden="true"></div>
+<div class="hero-ground" aria-hidden="true"></div>
 
-    <div class="hero-body">
-      <div class="hero-copy">
-        <p class="product-wordmark"><span class="co">Ferrosa</span> <span class="pr">Memory</span></p>
-        <p class="eyebrow">MCP-native memory server</p>
-        <h1>Memory servers should be <em>inspectable systems.</em></h1>
-        <p class="lede">Typed facts with history, plans, skills, graph relationships and folded context &mdash; returned by meaning, keyword, sound, or graph traversal.</p>
-        <p class="lede">Forgetting is auditable and reversible, with an actor, a reason, and a way back.</p>
-        <div class="hero-actions">
-          <a class="btn btn-primary" href="getting-started.html">Install locally</a>
-          <a class="btn btn-secondary" href="how-it-works.html">Read the architecture</a>
-        </div>
+<div class="hero-body">
+<div class="hero-copy">
+<p class="product-wordmark"><span class="co">Ferrosa</span> <span class="pr">Memory</span></p>
+<p class="eyebrow">MCP-native memory server</p>
+<h1>Knowledge that survives <em>the session, and the model.</em></h1>
+<p class="lede">A session ends and its context goes with it. The next one rebuilds the same understanding from scratch, at the same token cost, and arrives at a slightly different answer.</p>
+<p class="lede">Ferrosa Memory is where that understanding lives instead &mdash; typed, bi-temporal, exportable, and open source, running next to your agent, as a shared service, or in a container.</p>
+<div class="hero-actions">
+<a class="btn btn-primary" href="getting-started.html">Install locally</a>
+<a class="btn btn-secondary" href="how-it-works.html">Read the architecture</a>
+</div>
 
-        <div class="specimen">
-          <div class="specimen-hd"><b>SPECIMEN</b> <span class="rt">agent_memory.temporal_events</span></div>
-          <dl class="specimen-rec">
-            <dt>fact_text</dt><dd>&ldquo;version sync opens a PR nightly&rdquo;</dd>
-            <dt>event_time</dt><dd>2026-07-18T09:01Z</dd>
-            <dt>valid_until</dt><dd class="val">2026-08-17T22:14Z &nbsp;<span class="state state-past">CLOSED</span></dd>
-          </dl>
-          <div class="specimen-ft">The row was not overwritten. Its replacement <b>points at it</b>, so the current answer and the history both stay queryable.</div>
-        </div>
-      </div>
-      <div aria-hidden="true"></div>
-    </div>
-  </section>
-
-<section id="overview">
-  <div class="section-label cool">Why it exists</div>
-  <h2 class="section-title">Most "agent memory" is a vector store with a summary on top.</h2>
-  <p class="section-subtitle">That loses the things agents actually need: when a fact changed, how facts relate, why a memory exists, and how to safely remove it. Ferrosa Memory treats memory as structured, queryable data — not opaque text.</p>
-  <div class="doc-grid">
-    <div class="doc-card"><h3>Bi-temporal facts</h3><p>Record what changed over time instead of overwriting history. The current fact stays easy to retrieve, while superseded facts remain inspectable for audit, debugging, and time-travel queries.</p></div>
-    <div class="doc-card"><h3>Typed entity graph</h3><p>Entities, folds, facts, skills, and tags are connected with typed edges (<code>depends_on</code>, <code>contains</code>, <code>calls</code>, <code>references</code>…) so an agent can follow relationships, not just match text.</p></div>
-    <div class="doc-card"><h3>Hybrid retrieval</h3><p>Recall fuses lexical, vector, phonetic, graph, workspace, and recency signals with Reciprocal Rank Fusion, then expands around raw context or document chunks to recover neighboring evidence.</p></div>
-    <div class="doc-card"><h3>Explainable derivation</h3><p>Datalog-style rules derive and <em>explain</em> higher-level facts from graph state, so memory behavior can be inspected and audited instead of trusted blindly.</p></div>
-    <div class="doc-card"><h3>Auditable forgetting</h3><p>The <code>forget</code> flow shows the blast radius before anything changes, then retracts reversibly (or hard-deletes) with an append-only journal. Memory you can remove is memory you can trust.</p></div>
-    <div class="doc-card"><h3>Durable, tiered storage</h3><p>Built on Ferrosa DB: CQL storage, HNSW vector indexes, a property graph, and S3-backed durability with hot/warm/cold tiering. Memory survives restarts and scales past one process.</p></div>
-  </div>
+<div class="specimen">
+<div class="specimen-hd"><b>SPECIMEN</b> <span class="rt">agent_memory.temporal_events</span></div>
+<dl class="specimen-rec">
+<dt>fact_text</dt><dd>&ldquo;deferring the retry backoff to a later pass&rdquo;</dd>
+<dt>entity</dt><dd>ferrosa-dbaas / SnapshotScheduler</dd>
+<dt>event_time</dt><dd>2026-06-02T14:09Z</dd>
+<dt>valid_until</dt><dd class="val">&mdash; &nbsp;<span class="state state-current">STILL OPEN</span></dd>
+</dl>
+<div class="specimen-ft">Eleven weeks and four sessions later, still queryable and still attached to the
+entity it belongs to. <b>A decision an agent made about your project is a fact about your project</b> &mdash;
+and it is the kind that scrolls out of a chat log.</div>
+</div>
+</div>
+<div aria-hidden="true"></div>
+</div>
 </section>
 
 <section id="how" class="problem">
@@ -192,7 +181,7 @@
 <section id="compare">
   <div class="section-label cool">How it compares</div>
   <h2 class="section-title">Built for structure, not just similarity.</h2>
-  <p class="section-subtitle">Vector stores and most memory layers answer "what looks similar?" Ferrosa Memory also answers "what changed, what's connected, why does this exist, and can I safely remove it?"</p>
+  <p class="section-subtitle">Vector stores answer &ldquo;what looks similar?&rdquo; That is a useful signal and a poor ranking. In Ferrosa Memory <strong>similarity is three of seventeen weighted channels</strong> &mdash; lexical BM25 and full-text carry exactly as much weight, alongside phonetic matching, graph authority, workspace affinity and recency.</p>
   <table class="comparison-table">
     <thead>
       <tr>
@@ -204,7 +193,7 @@
     <tbody>
       <tr><td>Typed knowledge graph</td><td class="ferrosa-col">Yes</td><td>No — similarity only</td></tr>
       <tr><td>Bi-temporal fact history</td><td class="ferrosa-col">Yes</td><td>Overwrite / append</td></tr>
-      <tr><td>Hybrid retrieval (lexical+vector+graph+recency)</td><td class="ferrosa-col">Yes — RRF over ~11 signals</td><td>Vector (± keyword)</td></tr>
+      <tr><td>Hybrid retrieval (lexical + vector + phonetic + graph)</td><td class="ferrosa-col">Yes &mdash; RRF over 17 weighted channels</td><td>Vector (&plusmn; keyword)</td></tr>
       <tr><td>Explainable derived facts</td><td class="ferrosa-col">Yes — Datalog</td><td>No</td></tr>
       <tr><td>Auditable forgetting</td><td class="ferrosa-col">Yes — blast radius + journal</td><td>Manual delete</td></tr>
       <tr><td>Automatic consolidation</td><td class="ferrosa-col">Yes — dream cycle</td><td>No</td></tr>

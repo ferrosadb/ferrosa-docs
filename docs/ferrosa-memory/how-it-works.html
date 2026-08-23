@@ -201,12 +201,12 @@
 
   <div class="two-col" style="margin-top:2.5rem;">
     <div class="feature-card">
-      <div class="feature-icon cyan">⚖️</div>
+      <div class="feature-icon cyan"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.05 5.0 V19.9"/><path d="M5.8 20.0 H18.4"/><path d="M4.0 7.1 L20.0 8.0"/><path d="M4.1 7.2 V10.2"/><path d="M1.6 10.2 L4.15 12.2 L6.9 10.1"/><path d="M19.9 8.0 V11.1"/><path d="M17.3 11.1 L19.85 13.1 L22.3 11.0"/></svg></div>
       <h3>Fusion, then judgment</h3>
       <p>Optional <strong>query decomposition</strong> expands a request into lexical and LLM-generated variants before retrieval. Reciprocal Rank Fusion merges every signal's ranking into one list. <strong>Workspace-aware reranking</strong> then boosts or demotes results by the current working directory, so local context wins. An optional <strong>LLM judge / reranker</strong> can take a final pass — but it is <em>off by default</em>.</p>
     </div>
     <div class="feature-card">
-      <div class="feature-icon steel">🔁</div>
+      <div class="feature-icon steel"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19.44 10.01 A7.7 7.7 0 1 1 17.45 6.56"/><path d="M16.7 3.0 L17.5 6.6 L13.9 5.8"/></svg></div>
       <h3>A retrieval loop that learns</h3>
       <p>Relevance feedback on a result set is recorded and folded back into the <em>feedback reputation</em> signal, so future rankings reflect what actually helped. Recall is treated as a system that improves with use — not a fixed similarity threshold frozen at index time.</p>
     </div>
@@ -254,12 +254,12 @@
 
   <div class="two-col" style="margin-top:2.5rem;">
     <div class="feature-card">
-      <div class="feature-icon lock">↩️</div>
+      <div class="feature-icon lock"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.1 4.8 L4.0 8.8 L8.2 12.7"/><path d="M4.1 8.8 H15.0 a4.9 4.9 0 0 1 0 9.8 H9.2"/></svg></div>
       <h3>Reversible retract vs. hard delete</h3>
       <p>The default mode is a <strong>reversible retraction</strong> — a soft-delete to <code>state=unavailable</code> that hides the memory from recall but keeps it restorable via <code>restore_forgotten</code>. When you genuinely need it gone, a <strong>hard delete</strong> performs a graph <code>DETACH DELETE</code>. Both are journaled.</p>
     </div>
     <div class="feature-card">
-      <div class="feature-icon observe">🛟</div>
+      <div class="feature-icon observe"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2 L4.5 6.2 c0 6.9 3.0 11.7 7.5 14.5 4.5-2.8 7.5-7.7 7.4-14.6 L12.4 3.0"/><path d="M8.8 11.1 L12.0 14.0 L15.5 9.5"/></svg></div>
       <h3>Crash recovery</h3>
       <p>Because every forget is journaled before it executes, a crash mid-operation can't leave memory half-deleted. A startup <strong>recovery sweep</strong> reprocesses incomplete forgets to a clean state — the append-only journal is the source of truth.</p>
     </div>
@@ -275,32 +275,32 @@
     <p class="section-subtitle">The best memory layer is one an agent doesn't have to think about. Ferrosa Memory wires into the session lifecycle through hooks, so recall and capture happen automatically, scoped to the workspace, and biased toward silence over noise.</p>
     <div class="features-grid">
       <div class="feature-card">
-        <div class="feature-icon steel">🌅</div>
+        <div class="feature-icon steel"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.3 17.2 H20.9"/><path d="M4.2 20.6 H12.9"/><path d="M6.5 17.3 a5.6 5.6 0 0 1 11.0-.4"/><path d="M12 4.1 V6.5"/><path d="M5.4 7.1 L7.2 9.0"/><path d="M18.7 7.0 L16.8 8.9"/></svg></div>
         <h3>SessionStart recall</h3>
         <p>When a session begins, a hook automatically runs <code>check_intentions</code> and a hybrid search for the current context — so the agent opens with what it already knows, before it reads a single file.</p>
       </div>
       <div class="feature-card">
-        <div class="feature-icon cyan">✍️</div>
+        <div class="feature-icon cyan"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.9 3.3 H15.0 L19.1 7.5 V20.6 H6.0 V3.0"/><path d="M15.0 3.5 V7.6 H19.2"/><path d="M8.7 11.1 H16.4"/><path d="M8.6 14.6 H15.5"/><path d="M8.9 18.0 H13.2"/></svg></div>
         <h3>Turn capture</h3>
         <p>A turn-capture hook persists conversation turns into context segments and queues consolidation, so today's work becomes tomorrow's recallable memory without an explicit save step.</p>
       </div>
       <div class="feature-card">
-        <div class="feature-icon graph">🧭</div>
+        <div class="feature-icon graph"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.4 4.3 A1.5 1.5 0 1 1 11.4 4.5"/><path d="M12 2.5 V4.3"/><path d="M11.9 7.2 L6.4 19.7"/><path d="M12.15 7.2 L17.7 19.6"/><path d="M7.4 17.3 A6.7 6.7 0 0 0 16.8 17.2"/></svg></div>
         <h3>Workspace isolation</h3>
         <p>Stable, per-workspace hook sessions are derived instead of leaning on process-global state, and fallback recall stays semantic and procedural, never a raw episodic transcript leaking across sessions.</p>
       </div>
       <div class="feature-card">
-        <div class="feature-icon lock">🤫</div>
+        <div class="feature-icon lock"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.8 12 C4.3 3.6 7.4 4.0 8.6 12 C9.6 18.6 11.6 18.2 12.6 12 C13.3 8.0 14.6 8.2 15.3 12 C15.8 14.4 16.6 14.3 17.2 12 H21.2"/></svg></div>
         <h3>Prefer silence over noise</h3>
         <p>Recall-relevance guards, lexical-overlap checks, and workspace filtering mean a hook would rather surface nothing than inject low-confidence context. Quiet recall keeps the agent's window clean.</p>
       </div>
       <div class="feature-card">
-        <div class="feature-icon observe">⏳</div>
+        <div class="feature-icon observe"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.3 3.5 H17.6"/><path d="M6.6 20.5 H17.9"/><path d="M7.5 3.2 V6.7 L11.9 11.9 L7.8 17.2 V20.8"/><path d="M16.5 3.3 V6.6 L12.1 11.95 L16.4 17.4 V20.7"/><path d="M9.5 17.3 H14.6"/></svg></div>
         <h3>Intentions — prospective memory</h3>
         <p><code>set_intention</code> defers an action to fire later on a Topic, FilePattern, Duration, or Context trigger; <code>check_intentions</code> fires the matching ones at session start. Memory remembers not just the past, but what to do next.</p>
       </div>
       <div class="feature-card">
-        <div class="feature-icon index">📌</div>
+        <div class="feature-icon index"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.8 3.9 H15.4"/><path d="M10.4 4.0 V9.2 L7.4 12.1 H16.8 L13.8 9.2 V3.8"/><path d="M12.1 12.2 V20.6"/></svg></div>
         <h3>Durable session tasks</h3>
         <p>A focus stack, working set, and recovery hints survive restarts and support multi-agent handoff — so an interrupted agent can pick up exactly where the last one left off.</p>
       </div>
@@ -313,8 +313,8 @@
   <h2>See it as tools, and against the alternatives.</h2>
   <p>The architecture is the why. The tool catalog is the how — and the comparison shows what structured memory buys you over a vector store.</p>
   <div class="hero-actions">
-    <a href="tools.html" class="btn-primary">Browse the tools</a>
-    <a href="compare.html" class="btn-secondary">Compare alternatives</a>
+    <a href="tools.html" class="btn btn-primary">Browse the tools</a>
+    <a href="compare.html" class="btn btn-secondary">Compare alternatives</a>
   </div>
 </section>
 

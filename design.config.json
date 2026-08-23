@@ -1,0 +1,111 @@
+{
+  "_comment": "Design gates for www.ferrosadb.com. Consumed by scripts/check-contrast.mjs, scripts/measure-anatomy.mjs and scripts/find-empty-bands.mjs, all three of which are generalized copies of the /ferrosa-design skill's reference implementations. Paths are relative to this file.",
+
+  "baseUrl": "http://127.0.0.1:8779",
+  "docRoot": "docs",
+  "viewports": ["1440x900", "390x844"],
+  "whitespaceThreshold": 200,
+
+  "tokenSources": [
+    { "label": "design system", "path": "docs/design-system.html", "prefix": "ferrosa-" },
+    { "label": "examples theme", "path": "theme/examples.css", "prefix": "ferrosa-" },
+    {
+      "label": "site stylesheet",
+      "path": "docs/site.css",
+      "prefix": "",
+      "alias": {
+        "muted": "text-muted",
+        "subtle": "text-subtle",
+        "on-primary": "text-on-primary"
+      }
+    }
+  ],
+
+  "checks": [
+    ["text", "bg", 4.5, "body text"],
+    ["text", "surface", 4.5, "body text on a surface"],
+    ["text-muted", "surface", 4.5, "muted text"],
+    ["text-subtle", "surface", 4.5, "subtle text"],
+    ["text-subtle", "bg", 4.5, "subtle text on the page"],
+    ["primary", "surface", 4.5, "primary as a link or label"],
+    ["accent", "surface", 4.5, "accent as code or data"],
+    ["success", "surface", 4.5, "status word"],
+    ["warning", "surface", 4.5, "status word"],
+    ["danger", "surface", 4.5, "status word"],
+    ["text-on-primary", "primary", 4.5, "primary button label"],
+    ["border", "surface", 3.0, "component boundary (1.4.11)"],
+    ["border", "bg", 3.0, "component boundary (1.4.11)"],
+
+    ["text-muted", "code-bg", 4.5, "code text"],
+    ["primary", "code-bg", 4.5, "keyword"],
+    ["accent", "code-bg", 4.5, "identifier / inline code"],
+    ["success", "code-bg", 4.5, "string literal"],
+    ["warning", "code-bg", 4.5, "numeric literal"],
+    ["danger", "code-bg", 4.5, "tag"],
+    ["text-subtle", "code-bg", 4.5, "comment"],
+    ["code-text", "code-bg", 4.5, "code body"],
+    ["syn-kw", "code-bg", 4.5, "keyword"],
+    ["syn-fn", "code-bg", 4.5, "identifier"],
+    ["syn-str", "code-bg", 4.5, "string"],
+    ["syn-num", "code-bg", 4.5, "number"],
+    ["syn-attr", "code-bg", 4.5, "attribute"],
+    ["syn-op", "code-bg", 4.5, "operator"],
+    ["syn-com", "code-bg", 4.5, "code comment"]
+  ],
+
+  "pages": [
+    "index.html",
+    "database/index.html",
+    "forge/index.html",
+    "ferrosa-memory/index.html",
+    "ferrosa-memory/how-it-works.html",
+    "ferrosa-memory/how-to-use.html",
+    "ferrosa-memory/compare.html",
+    "ferrosa-memory/tools.html",
+    "ferrosa-memory/getting-started.html"
+  ],
+
+  "uniform": [
+    {
+      "name": "hero h1 (landings)",
+      "selector": ".hero-copy h1",
+      "properties": ["fontSize", "letterSpacing", "lineHeight", "fontWeight", "marginTop"],
+      "expectCount": 1,
+      "pages": ["index.html", "database/index.html", "forge/index.html", "ferrosa-memory/index.html"]
+    },
+    {
+      "name": "hero h1 (sub-pages)",
+      "selector": ".hero-compact .hero-copy h1",
+      "properties": ["fontSize", "letterSpacing", "lineHeight", "fontWeight", "marginTop"],
+      "expectCount": 1,
+      "pages": [
+        "ferrosa-memory/how-it-works.html",
+        "ferrosa-memory/how-to-use.html",
+        "ferrosa-memory/compare.html",
+        "ferrosa-memory/tools.html",
+        "ferrosa-memory/getting-started.html"
+      ]
+    },
+    {
+      "name": "icon chip",
+      "selector": ".feature-icon, .pain-icon",
+      "properties": ["backgroundColor", "borderColor", "color", "borderRadius"],
+      "uniformBox": true
+    },
+    {
+      "name": "primary button",
+      "selector": ".btn-primary",
+      "properties": ["backgroundColor", "color", "fontSize", "borderRadius", "paddingTop", "paddingLeft"]
+    },
+    {
+      "name": "secondary button",
+      "selector": ".btn-secondary",
+      "properties": ["color", "fontSize", "borderRadius", "paddingTop", "paddingLeft"]
+    },
+    {
+      "name": "nav",
+      "selector": "body > nav, body > header nav",
+      "properties": ["position", "height"]
+    }
+  ]
+}

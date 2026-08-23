@@ -605,6 +605,81 @@ a.ferrosa-btn--secondary:hover, a.btn-secondary:hover, a.button-secondary:hover 
 .section-hd h2 em { font-style: normal; color: var(--text); }
 .section-hd p { margin: 0; font-size: 0.95rem; line-height: 1.5; color: var(--subtle); }
 
+/* ── Signup band ────────────────────────────────────────────────────────────
+   Email capture. A CONTAINED band, not a full-bleed section: the border is
+   what stops it reading as footer furniture when it sits directly above the
+   footer. Heading left, field right, on one row; stacks on a phone.
+
+   Rule 2 (ACCENT IS RATIONED): the submit control is .btn-secondary, never
+   .btn-primary. Every page already spends its one primary button in the hero;
+   a second primary here would mean the page has none.
+   ───────────────────────────────────────────────────────────────────────── */
+.section-signup { padding-top: var(--module); padding-bottom: var(--module); }
+
+.signup-band {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 23rem);
+  align-items: center;
+  gap: 1.5rem 2.5rem;
+  padding: 1.4rem 1.6rem;
+  border: 1px solid var(--hairline);
+  background: var(--surface-a2);
+  border-radius: var(--radius-sm);
+}
+.signup-band .section-hd { margin: 0; max-width: 52ch; }
+.signup-band .section-hd h2 { font-size: 1.25rem; margin-bottom: 0; }
+.signup-band .section-hd p { font-size: 0.9rem; }
+
+.signup { display: flex; flex-wrap: nowrap; gap: 0.6rem; }
+/* [hidden] is display:none in the UA sheet, which ANY author `display` rule
+   out-specifies. Without this the form stays on screen after a successful
+   submit and the reader cannot tell anything happened. */
+.signup[hidden] { display: none; }
+.signup input[type="email"] {
+  flex: 1 1 auto;
+  min-width: 0;                      /* flex items default to min-width:auto */
+  font: 400 0.9rem/1.2 var(--sans);
+  padding: 9px 12px;
+  color: var(--text);
+  background: var(--surface-inset);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--dur) var(--ease);
+}
+.signup input[type="email"]::placeholder { color: var(--muted); }  /* --subtle is 4.38:1 in light */
+.signup input[type="email"]:focus { outline: none; border-color: var(--primary); }
+
+/* A <button> falls through to the PORTED .btn-secondary further down this file
+   (`border: 1px solid var(--divider)` -- 1.23:1 in light, effectively invisible).
+   The canonical rule only out-specifies it for <a>, via `a.btn-secondary`. The
+   site had no <button> until now, so nothing had hit this. Restating the
+   canonical values here rather than editing the ported block, which is Ben's. */
+.signup .btn-secondary {
+  padding: 6px 12px;                 /* canonical -- the anatomy gate requires
+                                        every secondary button to compute the
+                                        same padding; flex stretch matches the
+                                        field height, so don't tune it here */
+  font: 600 0.8125rem/1 var(--sans);
+  background: transparent;
+  border-color: var(--border);
+  border-radius: var(--radius-sm);
+}
+.signup .btn-secondary:hover { background: var(--surface-2); }
+
+.signup-status {
+  grid-column: 2;                    /* lands where the form was */
+  margin: 0;
+  font-size: 0.9rem; line-height: 1.5; color: var(--text);
+}
+.signup-status[hidden] { display: none; }
+
+@media (max-width: 720px) {
+  .signup-band { grid-template-columns: minmax(0, 1fr); }
+  .signup { flex-wrap: wrap; }
+  .signup input[type="email"] { flex: 1 1 100%; }
+  .signup-status { grid-column: 1; }
+}
+
 .card-grid { display: grid; gap: 2.5rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .card-grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 

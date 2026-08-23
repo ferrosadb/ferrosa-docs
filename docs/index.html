@@ -163,6 +163,20 @@
     </div>
   </section>
 
+  <section class="section section-signup" id="signup">
+    <div class="signup-band">
+      <div class="section-hd">
+        <h2>Sign up for <em>updates and early access.</em></h2>
+      </div>
+      <form class="signup" id="signup-form" novalidate>
+        <input type="email" name="email" required autocomplete="email"
+               placeholder="you@company.com" aria-label="Email address">
+        <button type="submit" class="btn btn-secondary">Sign up</button>
+      </form>
+      <p class="signup-status" id="signup-status" role="status" aria-live="polite" hidden></p>
+    </div>
+  </section>
+
 </main>
 
 <footer class="site-footer">
@@ -180,6 +194,46 @@
   </div>
 </footer>
 
+<script>
+// Signup. Posts the address straight to HubSpot's form endpoint. Deliberately
+// NOT HubSpot's embed script: that snippet also installs visitor tracking and
+// cookies across the page. This sends one field and nothing else -- no tracking
+// cookie (hutk), no analytics, no third-party code loaded.
+(function () {
+  var form = document.getElementById('signup-form');
+  if (!form) { return; }
+  var status = document.getElementById('signup-status');
+  var btn = form.querySelector('button');
+  var endpoint = 'https://api-na2.hsforms.com/submissions/v3/integration/submit/'
+               + '247138965/f0c26f31-32f6-4e60-95de-17d1a16fbb85';
+
+  function say(msg) { status.textContent = msg; status.hidden = false; }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = form.elements.email.value.trim();
+    if (email.indexOf('@') < 1 || email.indexOf('.') < 0) {
+      say('That does not look like an email address.');
+      return;
+    }
+    btn.disabled = true;
+    fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fields: [{ objectTypeId: '0-1', name: 'email', value: email }]
+      })
+    }).then(function (r) {
+      if (!r.ok) { throw new Error(r.status); }
+      form.hidden = true;
+      say('Thanks. You are on the list.');
+    }).catch(function () {
+      btn.disabled = false;
+      say('That did not go through. Try again in a moment.');
+    });
+  });
+})();
+</script>
 <script>
 // Mobile nav. The only script this page needs.
 (function () {

@@ -655,7 +655,10 @@ a.ferrosa-btn--secondary:hover, a.btn-secondary:hover, a.button-secondary:hover 
    site had no <button> until now, so nothing had hit this. Restating the
    canonical values here rather than editing the ported block, which is Ben's. */
 .signup .btn-secondary {
-  padding: 9px 16px;
+  padding: 6px 12px;                 /* canonical -- the anatomy gate requires
+                                        every secondary button to compute the
+                                        same padding; flex stretch matches the
+                                        field height, so don't tune it here */
   font: 600 0.8125rem/1 var(--sans);
   background: transparent;
   border-color: var(--border);

@@ -3,18 +3,18 @@
 # downloads ONBOARDING.md, optionally clones source repos, optionally pulls
 # the Nomic embedding model, and hands off to a selected LLM harness.
 #
-# Reads https://ferrosadb.com/LATEST (a plain-text version tag like "v0.18.0")
-# for the ferrosa release artifact and https://ferrosadb.com/LATEST-MEMORY
+# Reads https://www.ferrosa.ai/LATEST (a plain-text version tag like "v0.18.0")
+# for the ferrosa release artifact and https://www.ferrosa.ai/LATEST-MEMORY
 # (e.g. "v0.24.0") for the ferrosa-memory artifact — the two projects version
 # independently. No source compile.
 #
 # Usage:
-#   curl -fsSL https://ferrosadb.com/setup-memory.sh | bash
-#   curl -fsSL https://ferrosadb.com/setup-memory.sh | bash -s -- --version v0.16.0 --no-clone
+#   curl -fsSL https://www.ferrosa.ai/setup-memory.sh | bash
+#   curl -fsSL https://www.ferrosa.ai/setup-memory.sh | bash -s -- --version v0.16.0 --no-clone
 #
 # Env overrides (mostly for testing):
-#   FERROSA_LATEST_URL    — ferrosa version pointer (default https://ferrosadb.com/LATEST)
-#   MEMORY_LATEST_URL     — ferrosa-memory version pointer (default https://ferrosadb.com/LATEST-MEMORY)
+#   FERROSA_LATEST_URL    — ferrosa version pointer (default https://www.ferrosa.ai/LATEST)
+#   MEMORY_LATEST_URL     — ferrosa-memory version pointer (default https://www.ferrosa.ai/LATEST-MEMORY)
 #   FERROSA_RELEASE_HOST  — ferrosa releases root
 #   MEMORY_RELEASE_HOST   — ferrosa-memory releases root
 #   ONBOARDING_URL        — ONBOARDING.md source (default github raw on main)
@@ -25,8 +25,8 @@ set -euo pipefail
 
 FERROSA_REPO="ferrosadb/ferrosa"
 MEMORY_REPO="ferrosadb/ferrosa-memory"
-LATEST_URL="${FERROSA_LATEST_URL:-https://ferrosadb.com/LATEST}"
-MEMORY_LATEST_URL="${MEMORY_LATEST_URL:-https://ferrosadb.com/LATEST-MEMORY}"
+LATEST_URL="${FERROSA_LATEST_URL:-https://www.ferrosa.ai/LATEST}"
+MEMORY_LATEST_URL="${MEMORY_LATEST_URL:-https://www.ferrosa.ai/LATEST-MEMORY}"
 FERROSA_RELEASE_HOST="${FERROSA_RELEASE_HOST:-https://github.com/${FERROSA_REPO}/releases}"
 MEMORY_RELEASE_HOST="${MEMORY_RELEASE_HOST:-https://github.com/${MEMORY_REPO}/releases}"
 ONBOARDING_URL="${ONBOARDING_URL:-https://raw.githubusercontent.com/${MEMORY_REPO}/main/ONBOARDING.md}"

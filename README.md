@@ -6,10 +6,12 @@ This repository owns the standalone deployable static site under `docs/`.
 It is intentionally separate from the Ferrosa engine repositories so website
 updates are not blocked by unrelated storage, cluster, or CQL CI failures.
 
-Current staging URL: <https://ferrosadb.github.io/ferrosa-docs/>
+Production URL: <https://www.ferrosa.ai/>
 
-Production cutover to `www.ferrosadb.com` is a separate operation because the
-domain is currently configured on the legacy `ferrosadb/ferrosa` Pages site.
+This repository owns the deployed site. The cutover from the legacy
+`ferrosadb/ferrosa` Pages site is complete, and the custom domain moved from
+`www.ferrosadb.com` to `www.ferrosa.ai` on 2026-08-24; `ferrosadb.com`
+now 301-redirects here, preserving paths.
 
 ## QA URLs
 
@@ -201,14 +203,19 @@ Release-note sections (`What's new in vX.Y.Z`) are deliberately **not** wired to
 this. They describe one specific release, so filling them from "latest" would
 put the wrong heading over the right content.
 
-## Production Cutover
+## Production
 
-When ready to move production traffic:
+The site is live at <https://www.ferrosa.ai/>, deployed from this repository.
 
-1. Confirm the latest `Deploy Docs` workflow is green in this repository.
-2. Disable or remove the `www.ferrosadb.com` Pages custom domain from
-   `ferrosadb/ferrosa`.
-3. Configure this repository's Pages custom domain as `www.ferrosadb.com`.
-4. Confirm GitHub Pages reports the certificate as approved and HTTPS enforced.
-5. Keep `ferrosadb/ferrosa` docs workflows limited to source generation or sync
-   dispatches, not production deployment.
+This repo uses a **GitHub Actions** Pages deployment (`upload-pages-artifact` +
+`deploy-pages`), so `docs/CNAME` does NOT control the custom domain — that is a
+repository setting. Changing the file alone has no effect; the domain must be
+set in Settings → Pages (or via `PUT /repos/{owner}/{repo}/pages`), and a fresh
+deployment run is needed before the new hostname serves.
+
+`ferrosadb.com` and `www.ferrosadb.com` 301-redirect here via a Cloudflare
+Redirect Rule that preserves the path. That matters beyond tidiness: this site
+also serves the install and update endpoints (`/LATEST`, `/install.sh`,
+`/install-memory.sh`, `/setup.sh`, `/setup-memory.sh`), which are compiled into
+already-installed clients. Those clients fetch with `curl -fsSL` and follow the
+redirect, so the old domain must keep resolving and redirecting indefinitely.

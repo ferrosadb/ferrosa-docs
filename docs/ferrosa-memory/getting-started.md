@@ -11,13 +11,13 @@ For most users, start with the hosted setup scripts instead of cloning repositor
 Ferrosa Database only:
 
 ```bash
-curl -fsSL https://ferrosadb.com/install.sh | bash
+curl -fsSL https://www.ferrosa.ai/install.sh | bash
 ```
 
 Ferrosa Memory plus agent onboarding:
 
 ```bash
-curl -fsSL https://ferrosadb.com/setup-memory.sh | bash
+curl -fsSL https://www.ferrosa.ai/setup-memory.sh | bash
 ```
 
 `setup-memory.sh` downloads the onboarding prompt, optionally clones or updates the public repositories, offers to pull the local Nomic embedding model, and then hands the user to the selected LLM harness with:

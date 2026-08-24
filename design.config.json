@@ -7,7 +7,7 @@
   "whitespaceThreshold": 200,
 
   "tokenSources": [
-    { "label": "design system", "path": "docs/design-system.html", "prefix": "ferrosa-" },
+    { "label": "design system", "path": "docs/internal/design-system.html", "prefix": "ferrosa-" },
     { "label": "examples theme", "path": "theme/examples.css", "prefix": "ferrosa-" },
     {
       "label": "site stylesheet",
@@ -60,7 +60,7 @@
     "ferrosa-memory/index.html",
     "ferrosa-memory/how-it-works.html",
     "ferrosa-memory/how-to-use.html",
-    "ferrosa-memory/compare.html",
+    "internal/compare.html",
     "ferrosa-memory/tools.html",
     "ferrosa-memory/getting-started.html"
   ],
@@ -81,7 +81,7 @@
       "pages": [
         "ferrosa-memory/how-it-works.html",
         "ferrosa-memory/how-to-use.html",
-        "ferrosa-memory/compare.html",
+        "internal/compare.html",
         "ferrosa-memory/tools.html",
         "ferrosa-memory/getting-started.html"
       ]

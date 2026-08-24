@@ -1531,6 +1531,34 @@ a.btn.btn-secondary, a.button.button-secondary {
   border-color: var(--border);
 }
 
+/* ── Footer heading, last word ────────────────────────────────
+   "Join our community" is an <h2>, and the ported layer carries
+   `.legacy-doc h2 { font-size; margin-top; border-top; padding-top }` (0,1,1),
+   which out-specified the canonical `.community-title` (0,1,0). On the two
+   pages that carry .legacy-doc — forge/index.html and
+   ferrosa-memory/getting-started.html — the footer heading rendered at 26px
+   with a divider rule and ~80px of stacked space above it, making the footer
+   258px tall against 119px everywhere else. Restated here, after every ported
+   rule, rather than editing the ported block.
+   ────────────────────────────────────────────────────────────── */
+/* The homepage body carries neither .product-page nor .legacy-doc, so the
+   ported `.product-page footer { border-top }` never reached it and its footer
+   sat 1px shorter than every other page's. */
+body:not(.product-page):not(.legacy-doc) footer {
+  border-top: 1px solid var(--divider);
+}
+
+.legacy-doc .community-title,
+.product-page .community-title {
+  margin: 0;
+  border: 0;
+  padding: 0;
+  font-size: .95rem;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  color: var(--text);
+}
+
 /* ── Nav stacking, last word ────────────────────────────────────────────────
    The ported layer carries `.product-page nav { position: fixed }` (0,1,1),
    which out-specified `.site-nav { position: sticky }` (0,1,0). A fixed nav

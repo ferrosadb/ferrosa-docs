@@ -1,5 +1,5 @@
 {
-  "_comment": "Design gates for www.ferrosadb.com. Consumed by scripts/check-contrast.mjs, scripts/measure-anatomy.mjs and scripts/find-empty-bands.mjs, all three of which are generalized copies of the /ferrosa-design skill's reference implementations. Paths are relative to this file.",
+  "_comment": "Design gates for www.ferrosa.ai. Consumed by scripts/check-contrast.mjs, scripts/measure-anatomy.mjs and scripts/find-empty-bands.mjs, all three of which are generalized copies of the /ferrosa-design skill's reference implementations. Paths are relative to this file.",
 
   "baseUrl": "http://127.0.0.1:8779",
   "docRoot": "docs",

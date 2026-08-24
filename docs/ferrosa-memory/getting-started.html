@@ -83,7 +83,7 @@
   <h2 id="agent-onboarding">Option 1 · Agent-driven onboarding</h2>
   <p>The fastest path. Run one command, then let your AI agent handle the rest.</p>
   <pre><code># Install Ferrosa Memory and download the onboarding guide
-curl -fsSL https://ferrosadb.com/setup-memory.sh | bash</code></pre>
+curl -fsSL https://www.ferrosa.ai/setup-memory.sh | bash</code></pre>
   <p>Once the server is running, point your MCP client at <code>http://127.0.0.1:18765/mcp</code> and tell your agent:</p>
   <pre><code>Onboard me using the ONBOARDING.md file that setup-memory.sh downloaded.</code></pre>
   <p>Your agent reads the onboarding guide, configures session hooks, pulls the Nomic embedding model if Ollama is available, wires its own harness config, and verifies the tool list. You watch it work. When it finishes, memory is live and your agent is using it.</p>
@@ -94,10 +94,10 @@ curl -fsSL https://ferrosadb.com/setup-memory.sh | bash</code></pre>
   <h2 id="quickstart">Option 2 · Manual setup</h2>
   <p>If you prefer to control each step, or the agent-driven path hit something it couldn't resolve.</p>
   <pre><code># Ferrosa Database only
-curl -fsSL https://ferrosadb.com/install.sh | bash
+curl -fsSL https://www.ferrosa.ai/install.sh | bash
 
 # Ferrosa Memory plus LLM onboarding
-curl -fsSL https://ferrosadb.com/setup-memory.sh | bash</code></pre>
+curl -fsSL https://www.ferrosa.ai/setup-memory.sh | bash</code></pre>
   <p><code>setup-memory.sh</code> installs Ferrosa Database and the long-running Ferrosa Memory HTTP service, downloads the onboarding guide, optionally clones or updates the public repos, and offers to pull the Nomic embedding model. After it finishes, your agent takes over using the onboarding guide.</p>
   <div class="warn"><strong>Next release:</strong> first-run setup starts and verifies Ferrosa before configuring Memory. The local service and database listeners remain loopback-only; shared deployments must explicitly configure network exposure, TLS, and credentials.</div>
 

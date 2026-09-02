@@ -1785,3 +1785,12 @@ body:not(.product-page):not(.legacy-doc) footer {
 }
 .feature-icon > svg,
 .pain-icon > svg { display: block; }
+
+/* ── A panel that ends the page ───────────────────────────────
+   .problem is an inset, tinted band. On every page that ends with a closing
+   block, that block sits on the page background between the panel and the
+   footer. On a page that ends on the panel itself, the panel's cut edge meets
+   the footer directly and reads as a mistake. Give it the same run-out.
+   Memory "How it works" is the only page that ends this way today.
+   ────────────────────────────────────────────────────────────── */
+.problem:has(+ footer) { margin-bottom: calc(var(--module) * 1.5); }

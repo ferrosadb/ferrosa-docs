@@ -162,6 +162,314 @@
         }
       }
 
+      /* ============================================================
+         Accessible palette — every text token 4.5:1 or better against every
+         surface it can be drawn on, every boundary and focus indicator 3:1 or
+         better (WCAG 2.2 1.4.3 and 1.4.11). Same hues as the base palette at
+         different lightness; Core Blue is still the one action colour and
+         Electric Cyan still the highlight. Values were computed against the
+         surfaces below, not chosen by eye.
+         ============================================================ */
+      :root[data-contrast="accessible"] {
+        --ferrosa-bg: #05070c;
+        --ferrosa-surface: #0e1726;
+        --ferrosa-surface-2: #16243a;
+        --ferrosa-surface-inset: #09111f;
+        --ferrosa-text: #e8f4ff;
+        --ferrosa-text-muted: #9bb3cf;
+        --ferrosa-text-subtle: #788ca2;
+        --ferrosa-border: #436eaa;
+        --ferrosa-divider: #2e5389;
+        --ferrosa-primary: #348cff;
+        --ferrosa-primary-hover: #539dff;
+        --ferrosa-primary-soft: rgba(52, 140, 255, 0.16);
+        --ferrosa-text-on-primary: #04101f;
+        --ferrosa-accent: #7ee7ff;
+        --ferrosa-accent-soft: rgba(126, 231, 255, 0.12);
+        --ferrosa-info: #7ee7ff;
+        --ferrosa-info-soft: rgba(126, 231, 255, 0.1);
+        --ferrosa-success: #6bc9a0;
+        --ferrosa-success-soft: rgba(107, 201, 160, 0.14);
+        --ferrosa-warning: #f4a261;
+        --ferrosa-warning-soft: rgba(244, 162, 97, 0.14);
+        --ferrosa-danger: #e35f5f;
+        --ferrosa-danger-soft: rgba(227, 95, 95, 0.14);
+        --ferrosa-focus-ring: #7ee7ff;
+        --ferrosa-shadow-1: 0 1px 2px rgba(2, 8, 20, 0.5);
+        --ferrosa-shadow-2: 0 4px 12px rgba(2, 8, 20, 0.55);
+        --ferrosa-shadow-3: 0 12px 32px rgba(2, 8, 20, 0.6);
+        color-scheme: dark;
+      }
+
+      /* Accessible, light — on explicit choice… */
+      :root[data-contrast="accessible"][data-theme="light"] {
+        --ferrosa-bg: #f4f8fd;
+        --ferrosa-surface: #ffffff;
+        --ferrosa-surface-2: #e7eef7;
+        --ferrosa-surface-inset: #eef4fb;
+        --ferrosa-text: #0c1a2b;
+        --ferrosa-text-muted: #44586f;
+        --ferrosa-text-subtle: #5c6d83;
+        --ferrosa-border: #618cbb;
+        --ferrosa-divider: #8dacd4;
+        --ferrosa-primary: #206acb;
+        --ferrosa-primary-hover: #1c5cb1;
+        --ferrosa-primary-soft: rgba(32, 106, 203, 0.1);
+        --ferrosa-text-on-primary: #ffffff;
+        --ferrosa-accent: #0d7497;
+        --ferrosa-accent-soft: rgba(13, 116, 151, 0.1);
+        --ferrosa-info: #0d7497;
+        --ferrosa-info-soft: rgba(13, 116, 151, 0.08);
+        --ferrosa-success: #1c7a58;
+        --ferrosa-success-soft: rgba(28, 122, 88, 0.1);
+        --ferrosa-warning: #9f5b14;
+        --ferrosa-warning-soft: rgba(159, 91, 20, 0.12);
+        --ferrosa-danger: #c23b3b;
+        --ferrosa-danger-soft: rgba(194, 59, 59, 0.1);
+        --ferrosa-focus-ring: #2270d8;
+        --ferrosa-shadow-1: 0 1px 2px rgba(12, 26, 43, 0.08);
+        --ferrosa-shadow-2: 0 4px 12px rgba(12, 26, 43, 0.1);
+        --ferrosa-shadow-3: 0 12px 32px rgba(12, 26, 43, 0.14);
+        color-scheme: light;
+      }
+
+      /* …and when the system prefers light and no explicit choice was made. */
+      @media (prefers-color-scheme: light) {
+        :root[data-contrast="accessible"]:not([data-theme="dark"]):not([data-theme="light"]) {
+          --ferrosa-bg: #f4f8fd;
+          --ferrosa-surface: #ffffff;
+          --ferrosa-surface-2: #e7eef7;
+          --ferrosa-surface-inset: #eef4fb;
+          --ferrosa-text: #0c1a2b;
+          --ferrosa-text-muted: #44586f;
+          --ferrosa-text-subtle: #5c6d83;
+          --ferrosa-border: #618cbb;
+          --ferrosa-divider: #8dacd4;
+          --ferrosa-primary: #206acb;
+          --ferrosa-primary-hover: #1c5cb1;
+          --ferrosa-primary-soft: rgba(32, 106, 203, 0.1);
+          --ferrosa-text-on-primary: #ffffff;
+          --ferrosa-accent: #0d7497;
+          --ferrosa-accent-soft: rgba(13, 116, 151, 0.1);
+          --ferrosa-info: #0d7497;
+          --ferrosa-info-soft: rgba(13, 116, 151, 0.08);
+          --ferrosa-success: #1c7a58;
+          --ferrosa-success-soft: rgba(28, 122, 88, 0.1);
+          --ferrosa-warning: #9f5b14;
+          --ferrosa-warning-soft: rgba(159, 91, 20, 0.12);
+          --ferrosa-danger: #c23b3b;
+          --ferrosa-danger-soft: rgba(194, 59, 59, 0.1);
+          --ferrosa-focus-ring: #2270d8;
+          --ferrosa-shadow-1: 0 1px 2px rgba(12, 26, 43, 0.08);
+          --ferrosa-shadow-2: 0 4px 12px rgba(12, 26, 43, 0.1);
+          --ferrosa-shadow-3: 0 12px 32px rgba(12, 26, 43, 0.14);
+          color-scheme: light;
+        }
+      }
+
+      /* ============================================================
+         High-contrast palette — text 7:1 or better (WCAG 2.2 1.4.6),
+         boundaries and focus 3:1 or better. The surface steps flatten so the
+         hues do not have to bleach to reach 7:1; grouping leans on the border
+         and divider tokens instead, which both clear 3:1 here.
+         ============================================================ */
+      :root[data-contrast="more"] {
+        --ferrosa-bg: #010204;
+        --ferrosa-surface: #05070c;
+        --ferrosa-surface-2: #0a0e17;
+        --ferrosa-surface-inset: #03050a;
+        --ferrosa-text: #e8f4ff;
+        --ferrosa-text-muted: #9bb3cf;
+        --ferrosa-text-subtle: #8d9eb0;
+        --ferrosa-border: #4e7cba;
+        --ferrosa-divider: #345f9d;
+        --ferrosa-primary: #529dff;
+        --ferrosa-primary-hover: #71aeff;
+        --ferrosa-primary-soft: rgba(82, 157, 255, 0.16);
+        --ferrosa-text-on-primary: #040e1c;
+        --ferrosa-accent: #7ee7ff;
+        --ferrosa-accent-soft: rgba(126, 231, 255, 0.12);
+        --ferrosa-info: #7ee7ff;
+        --ferrosa-info-soft: rgba(126, 231, 255, 0.1);
+        --ferrosa-success: #6bc9a0;
+        --ferrosa-success-soft: rgba(107, 201, 160, 0.14);
+        --ferrosa-warning: #f4a261;
+        --ferrosa-warning-soft: rgba(244, 162, 97, 0.14);
+        --ferrosa-danger: #e87d7d;
+        --ferrosa-danger-soft: rgba(232, 125, 125, 0.14);
+        --ferrosa-focus-ring: #7ee7ff;
+        --ferrosa-shadow-1: 0 1px 2px rgba(2, 8, 20, 0.5);
+        --ferrosa-shadow-2: 0 4px 12px rgba(2, 8, 20, 0.55);
+        --ferrosa-shadow-3: 0 12px 32px rgba(2, 8, 20, 0.6);
+        color-scheme: dark;
+      }
+
+      /* High contrast, light — on explicit choice… */
+      :root[data-contrast="more"][data-theme="light"] {
+        --ferrosa-bg: #f7fafd;
+        --ferrosa-surface: #ffffff;
+        --ferrosa-surface-2: #f1f5fa;
+        --ferrosa-surface-inset: #f5f9fc;
+        --ferrosa-text: #0c1a2b;
+        --ferrosa-text-muted: #41556b;
+        --ferrosa-text-subtle: #475465;
+        --ferrosa-border: #4673a4;
+        --ferrosa-divider: #6690c5;
+        --ferrosa-primary: #19529d;
+        --ferrosa-primary-hover: #154483;
+        --ferrosa-primary-soft: rgba(25, 82, 157, 0.1);
+        --ferrosa-text-on-primary: #ffffff;
+        --ferrosa-accent: #0a5a75;
+        --ferrosa-accent-soft: rgba(10, 90, 117, 0.1);
+        --ferrosa-info: #0a5a75;
+        --ferrosa-info-soft: rgba(10, 90, 117, 0.08);
+        --ferrosa-success: #155e44;
+        --ferrosa-success-soft: rgba(21, 94, 68, 0.1);
+        --ferrosa-warning: #7b460f;
+        --ferrosa-warning-soft: rgba(123, 70, 15, 0.12);
+        --ferrosa-danger: #962e2e;
+        --ferrosa-danger-soft: rgba(150, 46, 46, 0.1);
+        --ferrosa-focus-ring: #2270d8;
+        --ferrosa-shadow-1: 0 1px 2px rgba(12, 26, 43, 0.08);
+        --ferrosa-shadow-2: 0 4px 12px rgba(12, 26, 43, 0.1);
+        --ferrosa-shadow-3: 0 12px 32px rgba(12, 26, 43, 0.14);
+        color-scheme: light;
+      }
+
+      /* …and when the system prefers light and no explicit choice was made. */
+      @media (prefers-color-scheme: light) {
+        :root[data-contrast="more"]:not([data-theme="dark"]):not([data-theme="light"]) {
+          --ferrosa-bg: #f7fafd;
+          --ferrosa-surface: #ffffff;
+          --ferrosa-surface-2: #f1f5fa;
+          --ferrosa-surface-inset: #f5f9fc;
+          --ferrosa-text: #0c1a2b;
+          --ferrosa-text-muted: #41556b;
+          --ferrosa-text-subtle: #475465;
+          --ferrosa-border: #4673a4;
+          --ferrosa-divider: #6690c5;
+          --ferrosa-primary: #19529d;
+          --ferrosa-primary-hover: #154483;
+          --ferrosa-primary-soft: rgba(25, 82, 157, 0.1);
+          --ferrosa-text-on-primary: #ffffff;
+          --ferrosa-accent: #0a5a75;
+          --ferrosa-accent-soft: rgba(10, 90, 117, 0.1);
+          --ferrosa-info: #0a5a75;
+          --ferrosa-info-soft: rgba(10, 90, 117, 0.08);
+          --ferrosa-success: #155e44;
+          --ferrosa-success-soft: rgba(21, 94, 68, 0.1);
+          --ferrosa-warning: #7b460f;
+          --ferrosa-warning-soft: rgba(123, 70, 15, 0.12);
+          --ferrosa-danger: #962e2e;
+          --ferrosa-danger-soft: rgba(150, 46, 46, 0.1);
+          --ferrosa-focus-ring: #2270d8;
+          --ferrosa-shadow-1: 0 1px 2px rgba(12, 26, 43, 0.08);
+          --ferrosa-shadow-2: 0 4px 12px rgba(12, 26, 43, 0.1);
+          --ferrosa-shadow-3: 0 12px 32px rgba(12, 26, 43, 0.14);
+          color-scheme: light;
+        }
+      }
+
+      /* The site applies the high-contrast set to anyone whose system asks for
+         more contrast and who has not picked a palette here. The values are a
+         copy of the three blocks above; sync-ferrosa-design-tokens.mjs compares
+         them and fails on any drift, so a copy cannot rot quietly. */
+      @media (prefers-contrast: more) {
+        :root:not([data-contrast]) {
+          --ferrosa-bg: #010204;
+          --ferrosa-surface: #05070c;
+          --ferrosa-surface-2: #0a0e17;
+          --ferrosa-surface-inset: #03050a;
+          --ferrosa-text: #e8f4ff;
+          --ferrosa-text-muted: #9bb3cf;
+          --ferrosa-text-subtle: #8d9eb0;
+          --ferrosa-border: #4e7cba;
+          --ferrosa-divider: #345f9d;
+          --ferrosa-primary: #529dff;
+          --ferrosa-primary-hover: #71aeff;
+          --ferrosa-primary-soft: rgba(82, 157, 255, 0.16);
+          --ferrosa-text-on-primary: #040e1c;
+          --ferrosa-accent: #7ee7ff;
+          --ferrosa-accent-soft: rgba(126, 231, 255, 0.12);
+          --ferrosa-info: #7ee7ff;
+          --ferrosa-info-soft: rgba(126, 231, 255, 0.1);
+          --ferrosa-success: #6bc9a0;
+          --ferrosa-success-soft: rgba(107, 201, 160, 0.14);
+          --ferrosa-warning: #f4a261;
+          --ferrosa-warning-soft: rgba(244, 162, 97, 0.14);
+          --ferrosa-danger: #e87d7d;
+          --ferrosa-danger-soft: rgba(232, 125, 125, 0.14);
+          --ferrosa-focus-ring: #7ee7ff;
+          --ferrosa-shadow-1: 0 1px 2px rgba(2, 8, 20, 0.5);
+          --ferrosa-shadow-2: 0 4px 12px rgba(2, 8, 20, 0.55);
+          --ferrosa-shadow-3: 0 12px 32px rgba(2, 8, 20, 0.6);
+          color-scheme: dark;
+        }
+
+        :root:not([data-contrast])[data-theme="light"] {
+          --ferrosa-bg: #f7fafd;
+          --ferrosa-surface: #ffffff;
+          --ferrosa-surface-2: #f1f5fa;
+          --ferrosa-surface-inset: #f5f9fc;
+          --ferrosa-text: #0c1a2b;
+          --ferrosa-text-muted: #41556b;
+          --ferrosa-text-subtle: #475465;
+          --ferrosa-border: #4673a4;
+          --ferrosa-divider: #6690c5;
+          --ferrosa-primary: #19529d;
+          --ferrosa-primary-hover: #154483;
+          --ferrosa-primary-soft: rgba(25, 82, 157, 0.1);
+          --ferrosa-text-on-primary: #ffffff;
+          --ferrosa-accent: #0a5a75;
+          --ferrosa-accent-soft: rgba(10, 90, 117, 0.1);
+          --ferrosa-info: #0a5a75;
+          --ferrosa-info-soft: rgba(10, 90, 117, 0.08);
+          --ferrosa-success: #155e44;
+          --ferrosa-success-soft: rgba(21, 94, 68, 0.1);
+          --ferrosa-warning: #7b460f;
+          --ferrosa-warning-soft: rgba(123, 70, 15, 0.12);
+          --ferrosa-danger: #962e2e;
+          --ferrosa-danger-soft: rgba(150, 46, 46, 0.1);
+          --ferrosa-focus-ring: #2270d8;
+          --ferrosa-shadow-1: 0 1px 2px rgba(12, 26, 43, 0.08);
+          --ferrosa-shadow-2: 0 4px 12px rgba(12, 26, 43, 0.1);
+          --ferrosa-shadow-3: 0 12px 32px rgba(12, 26, 43, 0.14);
+          color-scheme: light;
+        }
+      }
+      @media (prefers-contrast: more) and (prefers-color-scheme: light) {
+        :root:not([data-contrast]):not([data-theme="dark"]):not([data-theme="light"]) {
+          --ferrosa-bg: #f7fafd;
+          --ferrosa-surface: #ffffff;
+          --ferrosa-surface-2: #f1f5fa;
+          --ferrosa-surface-inset: #f5f9fc;
+          --ferrosa-text: #0c1a2b;
+          --ferrosa-text-muted: #41556b;
+          --ferrosa-text-subtle: #475465;
+          --ferrosa-border: #4673a4;
+          --ferrosa-divider: #6690c5;
+          --ferrosa-primary: #19529d;
+          --ferrosa-primary-hover: #154483;
+          --ferrosa-primary-soft: rgba(25, 82, 157, 0.1);
+          --ferrosa-text-on-primary: #ffffff;
+          --ferrosa-accent: #0a5a75;
+          --ferrosa-accent-soft: rgba(10, 90, 117, 0.1);
+          --ferrosa-info: #0a5a75;
+          --ferrosa-info-soft: rgba(10, 90, 117, 0.08);
+          --ferrosa-success: #155e44;
+          --ferrosa-success-soft: rgba(21, 94, 68, 0.1);
+          --ferrosa-warning: #7b460f;
+          --ferrosa-warning-soft: rgba(123, 70, 15, 0.12);
+          --ferrosa-danger: #962e2e;
+          --ferrosa-danger-soft: rgba(150, 46, 46, 0.1);
+          --ferrosa-focus-ring: #2270d8;
+          --ferrosa-shadow-1: 0 1px 2px rgba(12, 26, 43, 0.08);
+          --ferrosa-shadow-2: 0 4px 12px rgba(12, 26, 43, 0.1);
+          --ferrosa-shadow-3: 0 12px 32px rgba(12, 26, 43, 0.14);
+          color-scheme: light;
+        }
+      }
+
       @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after { animation: none !important; transition: none !important; }
       }
@@ -721,6 +1029,75 @@
             <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#516d92"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Blued Steel</div><div class="ds-swatch__val">#516d92</div></div></div>
             <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#05070c"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Deep Field</div><div class="ds-swatch__val">#05070c</div></div></div>
             <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#eef4fb;border-bottom:1px solid var(--ferrosa-border)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Ice Field</div><div class="ds-swatch__val">#eef4fb</div></div></div>
+          </div>
+          <h3 class="ferrosa-h3 ds-subhead">Accessible palette &mdash; <code>data-contrast="accessible"</code></h3>
+          <p class="ds-lede ferrosa-small">The same hues at different lightness: Core Blue is still the one action colour and Electric Cyan still the highlight. Every text token clears <strong>4.5:1</strong> against every one of the four surfaces it can be drawn on (worst measured pair 4.50:1), and the border and focus tokens clear <strong>3:1</strong> (worst 3.01:1) &mdash; WCAG 2.2 <a href="https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html">1.4.3</a> and <a href="https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html">1.4.11</a>. The focus ring is opaque here; the base ring is translucent, which is what costs it its ratio. Every value was computed against these surfaces, not chosen by eye. The ratios below are each token's <em>worst</em> of the four.</p>
+          <p class="ds-lede ferrosa-small">Dark</p>
+          <div class="ds-swatches">
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#05070c;border-bottom:1px solid var(--ferrosa-border)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Background</div><div class="ds-swatch__val">--ferrosa-bg</div><div class="ds-swatch__val">#05070c</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#0e1726;border-bottom:1px solid var(--ferrosa-border)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Surface</div><div class="ds-swatch__val">--ferrosa-surface</div><div class="ds-swatch__val">#0e1726</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#16243a;border-bottom:1px solid var(--ferrosa-border)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Surface raised</div><div class="ds-swatch__val">--ferrosa-surface-2</div><div class="ds-swatch__val">#16243a</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#09111f;border-bottom:1px solid var(--ferrosa-border)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Surface inset</div><div class="ds-swatch__val">--ferrosa-surface-inset</div><div class="ds-swatch__val">#09111f</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#348cff"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Primary</div><div class="ds-swatch__val">--ferrosa-primary</div><div class="ds-swatch__val">#348cff &middot; 4.71:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#7ee7ff"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Accent</div><div class="ds-swatch__val">--ferrosa-accent</div><div class="ds-swatch__val">#7ee7ff &middot; 10.95:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#e8f4ff"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Text</div><div class="ds-swatch__val">--ferrosa-text</div><div class="ds-swatch__val">#e8f4ff &middot; 13.96:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#788ca2"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Text subtle</div><div class="ds-swatch__val">--ferrosa-text-subtle</div><div class="ds-swatch__val">#788ca2 &middot; 4.51:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#6bc9a0"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Success</div><div class="ds-swatch__val">--ferrosa-success</div><div class="ds-swatch__val">#6bc9a0 &middot; 7.78:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#f4a261"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Warning</div><div class="ds-swatch__val">--ferrosa-warning</div><div class="ds-swatch__val">#f4a261 &middot; 7.56:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#e35f5f"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Danger</div><div class="ds-swatch__val">--ferrosa-danger</div><div class="ds-swatch__val">#e35f5f &middot; 4.50:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#436eaa"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Border</div><div class="ds-swatch__val">--ferrosa-border</div><div class="ds-swatch__val">#436eaa &middot; 3.01:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#7ee7ff"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Focus ring</div><div class="ds-swatch__val">--ferrosa-focus-ring</div><div class="ds-swatch__val">#7ee7ff &middot; 10.95:1 worst</div></div></div>
+          </div>
+          <p class="ds-lede ferrosa-small">Light</p>
+          <div class="ds-swatches">
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#f4f8fd;border-bottom:1px solid var(--ferrosa-border)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Background</div><div class="ds-swatch__val">--ferrosa-bg</div><div class="ds-swatch__val">#f4f8fd</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#ffffff;border-bottom:1px solid var(--ferrosa-border)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Surface</div><div class="ds-swatch__val">--ferrosa-surface</div><div class="ds-swatch__val">#ffffff</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#e7eef7;border-bottom:1px solid var(--ferrosa-border)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Surface raised</div><div class="ds-swatch__val">--ferrosa-surface-2</div><div class="ds-swatch__val">#e7eef7</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#eef4fb;border-bottom:1px solid var(--ferrosa-border)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Surface inset</div><div class="ds-swatch__val">--ferrosa-surface-inset</div><div class="ds-swatch__val">#eef4fb</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#206acb"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Primary</div><div class="ds-swatch__val">--ferrosa-primary</div><div class="ds-swatch__val">#206acb &middot; 4.51:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#0d7497"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Accent</div><div class="ds-swatch__val">--ferrosa-accent</div><div class="ds-swatch__val">#0d7497 &middot; 4.54:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#0c1a2b"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Text</div><div class="ds-swatch__val">--ferrosa-text</div><div class="ds-swatch__val">#0c1a2b &middot; 15.00:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#5c6d83"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Text subtle</div><div class="ds-swatch__val">--ferrosa-text-subtle</div><div class="ds-swatch__val">#5c6d83 &middot; 4.53:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#1c7a58"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Success</div><div class="ds-swatch__val">--ferrosa-success</div><div class="ds-swatch__val">#1c7a58 &middot; 4.52:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#9f5b14"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Warning</div><div class="ds-swatch__val">--ferrosa-warning</div><div class="ds-swatch__val">#9f5b14 &middot; 4.51:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#c23b3b"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Danger</div><div class="ds-swatch__val">--ferrosa-danger</div><div class="ds-swatch__val">#c23b3b &middot; 4.51:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#618cbb"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Border</div><div class="ds-swatch__val">--ferrosa-border</div><div class="ds-swatch__val">#618cbb &middot; 3.01:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#2270d8"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Focus ring</div><div class="ds-swatch__val">--ferrosa-focus-ring</div><div class="ds-swatch__val">#2270d8 &middot; 4.11:1 worst</div></div></div>
+          </div>
+
+          <h3 class="ferrosa-h3 ds-subhead">High-contrast palette &mdash; <code>data-contrast="more"</code></h3>
+          <p class="ds-lede ferrosa-small">Applied on this site automatically under <code>prefers-contrast: more</code>. Text clears <strong>7:1</strong> (worst 7.01:1) &mdash; WCAG 2.2 <a href="https://www.w3.org/WAI/WCAG22/Understanding/contrast-enhanced.html">1.4.6</a> &mdash; and border and focus clear <strong>3:1</strong> (worst 4.38:1). The four surface steps flatten so the brand hues do not have to bleach to reach 7:1; grouping leans on <code>--ferrosa-border</code> and <code>--ferrosa-divider</code> instead, which both clear 3:1 here. Core Blue cannot reach 7:1 on any background at all &mdash; 6.34:1 on pure black is its ceiling &mdash; so the dark high-contrast <code>--ferrosa-primary</code> is Core Blue lifted to the first lightness that clears the floor.</p>
+          <p class="ds-lede ferrosa-small">Dark</p>
+          <div class="ds-swatches">
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#010204;border-bottom:1px solid var(--ferrosa-border)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Background</div><div class="ds-swatch__val">--ferrosa-bg</div><div class="ds-swatch__val">#010204</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#05070c;border-bottom:1px solid var(--ferrosa-border)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Surface</div><div class="ds-swatch__val">--ferrosa-surface</div><div class="ds-swatch__val">#05070c</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#0a0e17;border-bottom:1px solid var(--ferrosa-border)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Surface raised</div><div class="ds-swatch__val">--ferrosa-surface-2</div><div class="ds-swatch__val">#0a0e17</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#03050a;border-bottom:1px solid var(--ferrosa-border)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Surface inset</div><div class="ds-swatch__val">--ferrosa-surface-inset</div><div class="ds-swatch__val">#03050a</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#529dff"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Primary</div><div class="ds-swatch__val">--ferrosa-primary</div><div class="ds-swatch__val">#529dff &middot; 7.01:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#7ee7ff"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Accent</div><div class="ds-swatch__val">--ferrosa-accent</div><div class="ds-swatch__val">#7ee7ff &middot; 13.57:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#e8f4ff"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Text</div><div class="ds-swatch__val">--ferrosa-text</div><div class="ds-swatch__val">#e8f4ff &middot; 17.29:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#8d9eb0"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Text subtle</div><div class="ds-swatch__val">--ferrosa-text-subtle</div><div class="ds-swatch__val">#8d9eb0 &middot; 7.03:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#6bc9a0"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Success</div><div class="ds-swatch__val">--ferrosa-success</div><div class="ds-swatch__val">#6bc9a0 &middot; 9.64:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#f4a261"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Warning</div><div class="ds-swatch__val">--ferrosa-warning</div><div class="ds-swatch__val">#f4a261 &middot; 9.36:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#e87d7d"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Danger</div><div class="ds-swatch__val">--ferrosa-danger</div><div class="ds-swatch__val">#e87d7d &middot; 7.04:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#4e7cba"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Border</div><div class="ds-swatch__val">--ferrosa-border</div><div class="ds-swatch__val">#4e7cba &middot; 4.52:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#7ee7ff"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Focus ring</div><div class="ds-swatch__val">--ferrosa-focus-ring</div><div class="ds-swatch__val">#7ee7ff &middot; 13.57:1 worst</div></div></div>
+          </div>
+          <p class="ds-lede ferrosa-small">Light</p>
+          <div class="ds-swatches">
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#f7fafd;border-bottom:1px solid var(--ferrosa-border)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Background</div><div class="ds-swatch__val">--ferrosa-bg</div><div class="ds-swatch__val">#f7fafd</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#ffffff;border-bottom:1px solid var(--ferrosa-border)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Surface</div><div class="ds-swatch__val">--ferrosa-surface</div><div class="ds-swatch__val">#ffffff</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#f1f5fa;border-bottom:1px solid var(--ferrosa-border)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Surface raised</div><div class="ds-swatch__val">--ferrosa-surface-2</div><div class="ds-swatch__val">#f1f5fa</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#f5f9fc;border-bottom:1px solid var(--ferrosa-border)"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Surface inset</div><div class="ds-swatch__val">--ferrosa-surface-inset</div><div class="ds-swatch__val">#f5f9fc</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#19529d"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Primary</div><div class="ds-swatch__val">--ferrosa-primary</div><div class="ds-swatch__val">#19529d &middot; 7.01:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#0a5a75"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Accent</div><div class="ds-swatch__val">--ferrosa-accent</div><div class="ds-swatch__val">#0a5a75 &middot; 7.02:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#0c1a2b"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Text</div><div class="ds-swatch__val">--ferrosa-text</div><div class="ds-swatch__val">#0c1a2b &middot; 16.01:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#475465"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Text subtle</div><div class="ds-swatch__val">--ferrosa-text-subtle</div><div class="ds-swatch__val">#475465 &middot; 7.04:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#155e44"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Success</div><div class="ds-swatch__val">--ferrosa-success</div><div class="ds-swatch__val">#155e44 &middot; 7.06:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#7b460f"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Warning</div><div class="ds-swatch__val">--ferrosa-warning</div><div class="ds-swatch__val">#7b460f &middot; 7.04:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#962e2e"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Danger</div><div class="ds-swatch__val">--ferrosa-danger</div><div class="ds-swatch__val">#962e2e &middot; 7.03:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#4673a4"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Border</div><div class="ds-swatch__val">--ferrosa-border</div><div class="ds-swatch__val">#4673a4 &middot; 4.51:1 worst</div></div></div>
+            <div class="ds-swatch"><div class="ds-swatch__chip" style="background:#2270d8"></div><div class="ds-swatch__meta"><div class="ds-swatch__name">Focus ring</div><div class="ds-swatch__val">--ferrosa-focus-ring</div><div class="ds-swatch__val">#2270d8 &middot; 4.38:1 worst</div></div></div>
           </div>
         </section>
 

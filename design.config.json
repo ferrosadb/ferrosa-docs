@@ -7,7 +7,23 @@
   "whitespaceThreshold": 200,
 
   "tokenSources": [
-    { "label": "design system", "path": "docs/design-system.html", "prefix": "ferrosa-" },
+    {
+      "label": "design system",
+      "path": "docs/design-system.html",
+      "prefix": "ferrosa-",
+      "_comment": "Nine palette blocks: base, accessible and high contrast, each dark plus the two light spellings. `textFloor` raises the 4.5 text checks to 7 for the high-contrast set; the 3.0 boundary checks are unaffected. The three prefers-contrast mirrors are not listed — they are copies, and sync-ferrosa-design-tokens.mjs is what fails on drift between a copy and its source.",
+      "themes": [
+        { "name": "dark", "open": ":root {" },
+        { "name": "light (explicit)", "open": ":root[data-theme=\"light\"] {" },
+        { "name": "light (prefers-color-scheme)", "open": "@media (prefers-color-scheme: light) {" },
+        { "name": "accessible dark", "open": ":root[data-contrast=\"accessible\"] {" },
+        { "name": "accessible light (explicit)", "open": ":root[data-contrast=\"accessible\"][data-theme=\"light\"] {" },
+        { "name": "accessible light (prefers-color-scheme)", "open": ":root[data-contrast=\"accessible\"]:not([data-theme=\"dark\"]):not([data-theme=\"light\"]) {" },
+        { "name": "high contrast dark", "open": ":root[data-contrast=\"more\"] {", "textFloor": 7.0 },
+        { "name": "high contrast light (explicit)", "open": ":root[data-contrast=\"more\"][data-theme=\"light\"] {", "textFloor": 7.0 },
+        { "name": "high contrast light (prefers-color-scheme)", "open": ":root[data-contrast=\"more\"]:not([data-theme=\"dark\"]):not([data-theme=\"light\"]) {", "textFloor": 7.0 }
+      ]
+    },
     { "label": "examples theme", "path": "theme/examples.css", "prefix": "ferrosa-" },
     {
       "label": "site stylesheet",

@@ -36,14 +36,24 @@ const ratio = (fg, bg) => {
   return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 };
 
-// Themes are identified by the CSS selector that opens their block. Each block
-// runs to the start of the next one, so a token redefined per theme is read
-// from its own theme.
-const themeSelectors = cfg.themes ?? [
+// Themes are identified by the CSS selector that opens their block. A block runs
+// to its OWN closing brace, not to the next marker: a stylesheet that declares
+// more palettes than the config names — an accessible and a high-contrast set,
+// say — would otherwise have its last configured theme run to end of file and
+// read whichever redefinition came last. That reports a ratio, and the ratio is
+// not the one the theme ships.
+//
+// A theme may raise the text floor with `textFloor`. It lifts every check whose
+// declared threshold is a text threshold (>= 4.5) and leaves the non-text ones
+// (1.4.11, 3.0) alone, so one `checks` list gates an AA palette at 4.5 and a
+// high-contrast palette at 7 without being written out twice.
+const defaultThemes = [
   { name: "dark", open: ":root {" },
   { name: "light (explicit)", open: ':root[data-theme="light"]' },
   { name: "light (prefers-color-scheme)", open: "@media (prefers-color-scheme: light)" },
 ];
+const themesFor = (src) => src.themes ?? cfg.themes ?? defaultThemes;
+const TEXT_THRESHOLD = 4.5;
 
 // Comments are stripped before locating blocks. A stylesheet that DOCUMENTS its
 // theme selectors in a header comment — as a good one does — otherwise has those
@@ -51,7 +61,20 @@ const themeSelectors = cfg.themes ?? [
 // That silently empties the first block and skips every pair in it.
 const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, (m) => " ".repeat(m.length));
 
-function blocksFor(raw, label) {
+// Slice from `at` to the brace that closes the rule (or the @media wrapper) that
+// starts there. Unbalanced braces are an ERROR, not a slice to end of file.
+function ruleAt(text, at, label, open) {
+  const first = text.indexOf("{", at);
+  if (first < 0) throw new Error(`${label}: "${open}" has no opening brace`);
+  let depth = 0;
+  for (let i = first; i < text.length; i += 1) {
+    if (text[i] === "{") depth += 1;
+    else if (text[i] === "}" && (depth -= 1) === 0) return text.slice(at, i + 1);
+  }
+  throw new Error(`${label}: "${open}" is never closed`);
+}
+
+function blocksFor(raw, label, themeSelectors) {
   const text = stripComments(raw);
   const marks = themeSelectors.map((t) => ({ ...t, at: text.indexOf(t.open) }));
   const missing = marks.filter((m) => m.at < 0);
@@ -63,8 +86,9 @@ function blocksFor(raw, label) {
     );
     process.exit(1);
   }
-  const ordered = [...marks].sort((a, b) => a.at - b.at);
-  return ordered.map((m, i) => [m.name, text.slice(m.at, ordered[i + 1]?.at ?? text.length)]);
+  return [...marks]
+    .sort((a, b) => a.at - b.at)
+    .map((m) => [m.name, ruleAt(text, m.at, label, m.open), m.textFloor ?? 0]);
 }
 
 // Resolve `--name: #hex`, and one level of `--name: var(--other)` aliasing,
@@ -92,10 +116,11 @@ const unresolved = [];
 for (const src of cfg.tokenSources) {
   const text = readFileSync(resolve(root, src.path), "utf8");
   console.log(`\n=== ${src.label ?? src.path} ===`);
-  for (const [theme, block] of blocksFor(text, src.label ?? src.path)) {
+  for (const [theme, block, textFloor] of blocksFor(text, src.label ?? src.path, themesFor(src))) {
     const tokens = applyAlias(tokensIn(block, src.prefix ?? ""), src.alias);
     console.log(`\n${theme}`);
-    for (const [fg, bg, threshold, what] of cfg.checks) {
+    for (const [fg, bg, declared, what] of cfg.checks) {
+      const threshold = declared >= TEXT_THRESHOLD ? Math.max(declared, textFloor) : declared;
       if (!tokens[fg] || !tokens[bg]) {
         // Legitimately absent (a theme inherits it, or this source has no use
         // for it) — but recorded and reported, never silently dropped.

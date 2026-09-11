@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# ── STOP: memory-public is NOT TO BE USED ──────────────────────────────────
+# Build, clone, pin and link ferrosadb/ferrosa-memory-private, never the old
+# public mirror. This script still reads the memory release feed from
+# memory-public only because the LATEST-MEMORY pointer it writes is consumed
+# by the end-user installers, and anonymous users get a 404 from the private
+# repo. That is a KNOWN VIOLATION, tracked by forge task t_03a95aa5 (move
+# end-user downloads to downloads.ferrosa.ai). Do not copy this feed anywhere
+# else. Find every such line with:   git grep -n 'KNOWN VIOLATION t_03a95aa5'
+# ───────────────────────────────────────────────────────────────────────────
+#
 # Resolve the latest STABLE public release of each product and write the version
 # data the site serves.
 #
@@ -26,9 +36,13 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
+# The memory feed is held in its own variable so its marker can be a trailing
+# shell comment; a comment inside the $'...' table below would become data.
+MEMORY_FEED_REPO="ferrosadb/ferrosa-memory"  # memory-public-ok: KNOWN VIOLATION t_03a95aa5 — end-user download source pending
+
 # key <TAB> repo <TAB> pointer file consumed by the installers ("-" for none)
 PRODUCTS=$'ferrosa\tferrosadb/ferrosa\tLATEST
-memory\tferrosadb/ferrosa-memory\tLATEST-MEMORY
+memory\t'"${MEMORY_FEED_REPO}"$'\tLATEST-MEMORY
 forge\tferrosadb/forge\tLATEST-FORGE'
 
 # Newest release whose tag is a plain 3-segment SemVer. This is what excludes

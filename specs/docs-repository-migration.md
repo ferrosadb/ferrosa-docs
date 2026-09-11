@@ -23,7 +23,7 @@ regenerates `docs/database/examples/*.html` from that source on every PR.
 flowchart TD
     F[ferrosadb/ferrosa] -->|sync workflow| E[sources/ferrosa/examples]
     F -->|sync workflow| S[docs static site]
-    M[ferrosadb/ferrosa-memory] -->|release/docs PRs| S
+    M[ferrosadb/ferrosa-memory-private] -->|release/docs PRs| S
     E -->|asciidoctor in CI| G[docs/database/examples/*.html]
     S --> C[Docs CI: parse, link, drift]
     G --> C

@@ -150,7 +150,7 @@ mkdir -p ~/src/ferrosa-suite
 cd ~/src/ferrosa-suite
 
 git clone https://github.com/ferrosadb/ferrosa.git ferrosa
-git clone https://github.com/ferrosadb/ferrosa-memory.git ferrosa-memory
+git clone https://github.com/ferrosadb/ferrosa-memory.git ferrosa-memory  # memory-public-ok: KNOWN VIOLATION t_03a95aa5 — end-user download source pending
 ```
 
 If you already have the repositories:

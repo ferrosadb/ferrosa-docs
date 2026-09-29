@@ -117,7 +117,7 @@
     </div>
     <div class="card">
       <h3>Claude Code hooks &amp; analytics</h3>
-      <p><code>frg init --install</code> wires a pre-tool-call output filter into Claude Code; <code>frg gain</code> and <code>frg analytics</code> report the token savings per tool.</p>
+      <p><code>frg init --global</code> wires a pre-tool-call output filter into Claude Code; <code>frg gain</code> and <code>frg analytics</code> report the token savings per tool.</p>
     </div>
   </div>
 
@@ -161,7 +161,7 @@ cp target/release/frg ~/.cargo/bin/frg    # or anywhere on your PATH</code></pre
   <pre><code>frg --mcp-http --mcp-http-addr 127.0.0.1:9977
 # MCP endpoint: http://127.0.0.1:9977/mcp</code></pre>
   <p>Ferrosa Memory's next release installs and validates Forge for its research and ingestion workflows, including <code>project_summary</code> and dry-run <code>ingest</code>. Then install the Claude Code output-filtering hooks:</p>
-  <pre><code>frg init --install</code></pre>
+  <pre><code>frg init --global</code></pre>
 
   <h3>Optional backends</h3>
   <p>The core tools are standalone. Some tool families need a backend, and each fails loud rather than silently degrading:</p>

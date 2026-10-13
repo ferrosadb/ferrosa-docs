@@ -198,14 +198,14 @@
   <h3 style="margin-top:2.5rem; font-size:1.25rem; font-weight:700;">The signals fused by RRF</h3>
   <ul class="signal-list">
     <li><b>Phonetic entity match</b> — fuzzy name recall via Double Metaphone.</li>
-    <li><b>Entity ANN</b> — approximate-nearest-neighbour over entity embeddings (HNSW).</li>
+    <li><b>Entity ANN</b> — approximate-nearest-neighbor over entity embeddings (HNSW).</li>
     <li><b>Fold-summary ANN</b> — semantic recall over sealed trajectory summaries.</li>
     <li><b>Context-segment BM25</b> — lexical match over raw conversation segments.</li>
     <li><b>Context-segment ANN</b> — semantic match over the same segments.</li>
     <li><b>Document-chunk BM25</b> — lexical match over document chunks.</li>
     <li><b>Document-chunk ANN</b> — semantic match over document chunks.</li>
     <li><b>Document phonetic</b> — phonetic match against document content.</li>
-    <li><b>Warmth / recency</b> — session-aware decay favouring recently relevant memory.</li>
+    <li><b>Warmth / recency</b> — session-aware decay favoring recently relevant memory.</li>
     <li><b>PageRank centrality</b> — graph-structural authority of an entity.</li>
     <li><b>Feedback reputation</b> — accumulated user-feedback signal on past results.</li>
   </ul>
@@ -222,7 +222,7 @@
       <p>Relevance feedback on a result set is recorded and folded back into the <em>feedback reputation</em> signal, so future rankings reflect what actually helped. Recall is treated as a system that improves with use — not a fixed similarity threshold frozen at index time.</p>
     </div>
   </div>
-  <div class="note">Retrieval is capability-tuned, not magic. The point of fusing eleven signals is robustness: a result wins because phonetic, lexical, semantic, structural, and behavioural evidence agree — not because one embedding happened to land close.</div>
+  <div class="note">Retrieval is capability-tuned, not magic. The point of fusing eleven signals is robustness: a result wins because phonetic, lexical, semantic, structural, and behavioral evidence agree — not because one embedding happened to land close.</div>
 </section>
 
 <!-- ═══════════════════ Consolidation ═══════════════════ -->

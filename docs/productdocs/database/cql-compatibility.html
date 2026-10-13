@@ -666,9 +666,9 @@
   </table>
 
   <h3>How indexes work</h3>
-  <p>Ferrosa indexes are <strong>storage-attached</strong> — built as companion files alongside SSTables. Indexes are built <strong>asynchronously</strong> after memtable flush, off the foreground write acknowledgement path. This means:</p>
+  <p>Ferrosa indexes are <strong>storage-attached</strong> — built as companion files alongside SSTables. Indexes are built <strong>asynchronously</strong> after memtable flush, off the foreground write acknowledgment path. This means:</p>
   <ul>
-    <li><strong>Foreground write acknowledgements are not blocked</strong> by index maintenance</li>
+    <li><strong>Foreground write acknowledgments are not blocked</strong> by index maintenance</li>
     <li><strong>Indexes are eventually consistent</strong> — there's a brief window between write and index availability</li>
     <li><strong>Per-index staleness tracking</strong> via <code>system_views.secondary_indexes</code> lets you monitor how far behind each index is</li>
     <li><strong>Best-effort queries</strong> — queries union indexed SSTable results with scans of not-yet-indexed SSTables, so results are always complete</li>
@@ -872,7 +872,7 @@
       <tr>
         <td>Secondary index consistency window</td>
         <td>SAI indexes are updated synchronously on the write path</td>
-        <td>Indexes are built asynchronously after memtable flush; a brief staleness window exists between write acknowledgement and index availability</td>
+        <td>Indexes are built asynchronously after memtable flush; a brief staleness window exists between write acknowledgment and index availability</td>
         <td>Queries immediately after a write may not see the new row via an index. Use partition-key reads for read-your-writes guarantees. Monitor staleness via <code>system_views.secondary_indexes</code>.</td>
       </tr>
       <tr>

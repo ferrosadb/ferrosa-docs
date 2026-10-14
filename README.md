@@ -39,8 +39,10 @@ own unless they genuinely need a rule the stylesheet does not provide.
 
 To add a page:
 
-1. Copy `docs/productdocs/database/_template.html` to `docs/productdocs/<product>/<name>.html`.
-   Its relative paths are already correct for any product directory.
+1. Copy `templates/docs-page.html` to `docs/productdocs/<product>/<name>.html`.
+   Its relative paths are written for a product directory, so they resolve once the
+   copy is in place, not before. The template lives outside `docs/` so the site never
+   publishes it.
 2. Replace the `<title>`, the `<meta name="description">` and the body. Leave the
    header, the footer and the `<!-- docs-* -->` marker comments exactly as they are.
 3. Add one entry to that product's `pages` array in `docs/productdocs/nav.json`, in
@@ -57,8 +59,9 @@ Notes:
   `<!-- docs-prevnext:start/end -->` markers is generated, and so is
   `docs/productdocs/database/print.html`.** Hand-edits there are overwritten on the
   next run, and CI regenerates and fails on drift. Change `nav.json` instead.
-- The generator is idempotent, and it skips files whose name starts with `_`, so the
-  template keeps its markers empty for the next page copied from it.
+- The generator is idempotent, and it only walks `docs/productdocs/`, so the
+  template's markers stay empty for the next page copied from it. It also skips
+  any file there whose name starts with `_`.
 - `docs/productdocs/index.html` and `docs/productdocs/database/index.html` are
   meta-refresh stubs onto Getting Started — the docs open on the first page rather
   than on a table of contents. They carry no markers and the generator skips them.

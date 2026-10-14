@@ -298,9 +298,16 @@ img { max-width: 100%; }
 
    Written with the `a.` prefix as well, because the ported `.legacy-doc a`
    rule (0,2,0) would otherwise out-specify the label colour.
+
+   And with the `button.` prefix, because the ported `.btn-primary` and
+   `.btn-secondary` further down this file tie the bare class names at (0,1,0)
+   and win on source order. Without it a <button class="btn btn-secondary">
+   takes the ported padding, 16px label, 8px radius and near-invisible
+   `--divider` border, while the same classes on an <a> render canonically.
    ───────────────────────────────────────────────────────────────────────── */
 .ferrosa-btn, .btn, .button, .nav-cta,
-a.ferrosa-btn, a.btn, a.button, a.nav-cta {
+a.ferrosa-btn, a.btn, a.button, a.nav-cta,
+button.btn, button.button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -319,24 +326,28 @@ a.ferrosa-btn, a.btn, a.button, a.nav-cta {
 .ferrosa-btn:disabled, .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .ferrosa-btn--primary, .btn-primary, .button-primary, .nav-cta,
-a.ferrosa-btn--primary, a.btn-primary, a.button-primary, a.nav-cta {
+a.ferrosa-btn--primary, a.btn-primary, a.button-primary, a.nav-cta,
+button.btn-primary, button.button-primary {
   background: var(--primary);
   color: var(--on-primary);
 }
 .ferrosa-btn--primary:hover, .btn-primary:hover, .button-primary:hover, .nav-cta:hover,
-a.ferrosa-btn--primary:hover, a.btn-primary:hover, a.button-primary:hover, a.nav-cta:hover {
+a.ferrosa-btn--primary:hover, a.btn-primary:hover, a.button-primary:hover, a.nav-cta:hover,
+button.btn-primary:hover, button.button-primary:hover {
   background: var(--primary-hover, var(--primary));
   color: var(--on-primary);
 }
 
 .ferrosa-btn--secondary, .btn-secondary, .button-secondary,
-a.ferrosa-btn--secondary, a.btn-secondary, a.button-secondary {
+a.ferrosa-btn--secondary, a.btn-secondary, a.button-secondary,
+button.btn-secondary, button.button-secondary {
   background: transparent;
   color: var(--text);
   border-color: var(--border);
 }
 .ferrosa-btn--secondary:hover, .btn-secondary:hover, .button-secondary:hover,
-a.ferrosa-btn--secondary:hover, a.btn-secondary:hover, a.button-secondary:hover {
+a.ferrosa-btn--secondary:hover, a.btn-secondary:hover, a.button-secondary:hover,
+button.btn-secondary:hover, button.button-secondary:hover {
   background: var(--surface-2);
   color: var(--text);
 }
@@ -649,22 +660,12 @@ a.ferrosa-btn--secondary:hover, a.btn-secondary:hover, a.button-secondary:hover 
 .signup input[type="email"]::placeholder { color: var(--muted); }  /* --subtle is 4.38:1 in light */
 .signup input[type="email"]:focus { outline: none; border-color: var(--primary); }
 
-/* A <button> falls through to the PORTED .btn-secondary further down this file
-   (`border: 1px solid var(--divider)` -- 1.23:1 in light, effectively invisible).
-   The canonical rule only out-specifies it for <a>, via `a.btn-secondary`. The
-   site had no <button> until now, so nothing had hit this. Restating the
-   canonical values here rather than editing the ported block, which is Ben's. */
-.signup .btn-secondary {
-  padding: 6px 12px;                 /* canonical -- the anatomy gate requires
-                                        every secondary button to compute the
-                                        same padding; flex stretch matches the
-                                        field height, so don't tune it here */
-  font: 600 0.8125rem/1 var(--sans);
-  background: transparent;
-  border-color: var(--border);
-  border-radius: var(--radius-sm);
-}
-.signup .btn-secondary:hover { background: var(--surface-2); }
+/* The submit is a <button class="btn btn-secondary"> and takes the canonical
+   button with no local override: the `button.` selectors on the canonical
+   rules are what keep it off the ported .btn-secondary. Don't restate the
+   button's padding or font here -- the anatomy gate requires every secondary
+   button to compute the same style, and flex stretch already matches the
+   field height. */
 
 .signup-status {
   grid-column: 2;                    /* lands where the form was */

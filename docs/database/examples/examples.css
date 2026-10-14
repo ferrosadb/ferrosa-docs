@@ -563,9 +563,20 @@ body.toc2 #toc.toc2 {
   .listingblock pre, .literalblock pre { padding: 1rem; font-size: 0.8125rem; }
 
   /* Tables are the one block that cannot reflow, so the table scrolls
-     inside its own box instead of widening the page. */
-  .tableblock, .imageblock { max-width: 100%; overflow-x: auto; }
-  table.tableblock { font-size: 0.8125rem; }
+     inside its own box instead of widening the page. Asciidoctor emits the
+     <table> with no wrapper, and overflow does nothing on a display:table box,
+     so the table itself becomes the scroll container. It has to be written
+     as table.tableblock: a bare .tableblock loses to the overflow:hidden on
+     the base rule, which left the last columns clipped on an upright phone.
+     max-content keeps a narrow table's border hugging its columns. */
+  .imageblock { max-width: 100%; overflow-x: auto; }
+  table.tableblock {
+    display: block;
+    width: max-content;
+    max-width: 100%;
+    overflow-x: auto;
+    font-size: 0.8125rem;
+  }
   table.tableblock th, table.tableblock td { padding: 0.5rem 0.75rem; }
 
   .site-footer-inner { flex-direction: column; align-items: flex-start; }

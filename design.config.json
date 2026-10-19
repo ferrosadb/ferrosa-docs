@@ -71,6 +71,8 @@
 
   "pages": [
     "index.html",
+    "support/index.html",
+    "privacy/index.html",
     "database/index.html",
     "forge/index.html",
     "ferrosa-memory/index.html",

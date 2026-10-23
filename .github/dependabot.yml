@@ -1,0 +1,18 @@
+version: 2
+
+# Dependabot keeps the SHA pins current. Without it, pinning actions to a SHA
+# trades a supply-chain risk for a staleness one: the pin never moves, so
+# security fixes in the action never arrive either.
+#
+# GitHub Actions only. The WASM examples under sources/ferrosa are synced from
+# ferrosadb/ferrosa and have no dependencies.
+
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci(deps)"

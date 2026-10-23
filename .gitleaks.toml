@@ -1,0 +1,21 @@
+# gitleaks configuration for the Secret Scan (.github/workflows/security.yml).
+# Start from gitleaks' default rules and allow only documented, public values.
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = """
+Default logins the documentation prints in its curl examples, so a reader can
+copy them: Cassandra's published default (cassandra:cassandra) in the Cypher
+pages, and the ferrosa-memory example compose stack's local default on the
+getting-started page. They are public by design, not leaked.
+Exact values only, never a path: these pages are regenerated (print.html is
+built from the others), so a path allowlist would make them unscannable, and a
+real credential written into the same pages would still fail the scan.
+"""
+regexTarget = "secret"
+regexes = [
+  '''^cassandra:cassandra$''',
+  '''^ferrosa_user:ferrosa_user$''',
+]

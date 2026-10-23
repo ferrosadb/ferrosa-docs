@@ -1,0 +1,98 @@
+name: Security
+
+# The secret scan from the org baseline (ferrosa-coordinator's security.yml).
+# There is no dependency advisory job: the only lockfiles are the two WASM
+# UDF examples under sources/ferrosa/examples, synced from ferrosadb/ferrosa,
+# and neither has a single dependency. .gitleaks.toml allows the default
+# logins the docs print, by exact value.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  merge_group:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  secrets:
+    name: Secret Scan
+    # GitHub's pool, deliberately: this repository is public, so a pull request
+    # can come from a fork, and a fork's code must never run on Ferrosa's own
+    # machines.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: block
+          allowed-endpoints: >
+            github.com:443
+            api.github.com:443
+            objects.githubusercontent.com:443
+            release-assets.githubusercontent.com:443
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          # gitleaks needs history to scan commits, not just the tree.
+          fetch-depth: 0
+      # The gitleaks ACTION requires a paid licence for organisation repos.
+      # The binary is MIT and has no such restriction, so it is used directly.
+      - name: Install gitleaks
+        env:
+          VERSION: 8.30.1
+          # https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_checksums.txt
+          SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+        run: |
+          set -euo pipefail
+          # Into the job's temp directory rather than the checkout, so the
+          # tarball never sits inside the tree being scanned.
+          dir="$RUNNER_TEMP/gitleaks"
+          mkdir -p "$dir"
+          curl -fsSL -o "$dir/gitleaks.tar.gz" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${VERSION}/gitleaks_${VERSION}_linux_x64.tar.gz"
+          echo "${SHA256}  $dir/gitleaks.tar.gz" | sha256sum -c -
+          tar -xzf "$dir/gitleaks.tar.gz" -C "$dir" gitleaks
+          echo "$dir" >> "$GITHUB_PATH"
+          "$dir/gitleaks" version
+
+      # --log-opts=HEAD: the history of the ref under test, not every ref in
+      # the clone (`gitleaks git` otherwise runs `git log --all`). For a pull
+      # request HEAD is the merge commit, so main's full history and the PR's
+      # own commits are both still scanned.
+      - name: Scan history for secrets
+        run: gitleaks git . --log-opts=HEAD --redact --verbose --exit-code 1
+
+  codeql:
+    name: CodeQL
+    # GitHub's pool, for the same reason as the secret scan.
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Gated on a repository variable, as in every Ferrosa repository, so it is
+    # turned on deliberately (set CODE_SECURITY_ENABLED=true in Settings >
+    # Secrets and variables > Actions > Variables). This repository is public,
+    # so code scanning needs no Code Security licence here. SKIPPED is visibly
+    # not PASSED: the job never reports green while it is not actually running.
+    if: vars.CODE_SECURITY_ENABLED == 'true'
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        # The site's checks and generators (scripts/*.mjs, scripts/*.py) and
+        # the workflows themselves.
+        language: [javascript-typescript, python, actions]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: github/codeql-action/init@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+      - uses: github/codeql-action/analyze@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1

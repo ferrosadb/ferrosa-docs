@@ -1,0 +1,38 @@
+name: Actions Pin Guard
+
+# Fails the PR if any third-party GitHub Action `uses:` line is not pinned to a
+# 40-char commit SHA (or explicitly allowlisted in .github/actions-allowlist
+# with a documented justification).
+#
+# Same guard, same script, as ferrosa, ferrosa-memory and ferrosa-coordinator.
+# A tag like @v4 is a moving pointer somebody else controls; pinning to a SHA
+# is what stops a compromised action from silently entering this repo's supply
+# chain.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  # Required check must also report on the merge-queue branch.
+  merge_group:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: actions-pin-guard-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  guard:
+    name: Verify SHA pins
+    # GitHub's pool, deliberately. This repository is public, so a pull request
+    # can come from a fork, and a fork's code must never run on Ferrosa's own
+    # machines. Hosted minutes are free for public repositories.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Run guard
+        run: bash .github/scripts/check-actions-pinned.sh

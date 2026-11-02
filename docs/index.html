@@ -54,7 +54,7 @@
 
 <main id="main">
 
-  <section class="hero" aria-labelledby="hero-title">
+  <section class="hero" aria-labelledby="hero-title" style="min-height:0">
       <div class="hero-ground" aria-hidden="true"></div>
 
     <div class="hero-body">
@@ -64,8 +64,8 @@
         <p class="lede">Every session leaves behind facts, plans, decisions, and the trajectory
         that produced them. When that history accumulates inside a model provider, it stops being
         an asset you own and becomes a reason you cannot leave.</p>
-        <p class="lede">The memory layer, the data layer, and the model should each be a choice
-        you make &mdash; and a choice you can reverse.</p>
+        <p class="lede">The memory layer, the data layer and the model should each be a choice
+        you make, and a choice you can reverse.</p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="#products">See the three products</a>
           <a class="btn btn-secondary" href="https://github.com/ferrosadb" target="_blank" rel="noopener noreferrer">Read the source</a>
@@ -85,21 +85,13 @@
       </div>
       <div aria-hidden="true"></div>
     </div>
-
-    <div class="fact-strip">
-      <div><b>OPEN SOURCE</b><span>Apache-2.0. Three products, public repositories.</span></div>
-      <div><b>SELF-HOSTED</b><span>Your cluster, your bucket, your machine.</span></div>
-      <div><b>REVERSIBLE</b><span>Standard client surfaces, so you can leave.</span></div>
-      <div><b>DEVELOPER PREVIEW</b><span>All three. Evaluate before you depend on them.</span></div>
-    </div>
   </section>
 
   <section class="section" id="products">
     <div class="section-hd">
-      <h2><em>Three products,</em> all open source.</h2>
-      <p>Each one is a layer you would otherwise rent from a provider. Each is Apache-2.0, runs on
-      your own machines, and speaks a client surface you already have a driver for. All three are
-      in developer preview &mdash; evaluate before you depend on them.</p>
+      <h2><em>Products</em></h2>
+      <p>Each one is a layer you would otherwise rent from a provider, runs on your own machines,
+      and works with drivers you already use.</p>
     </div>
 
     <div class="card-grid cols-3">
@@ -114,8 +106,6 @@
 <span class="k">recall</span>    <span class="v">vector &middot; lexical &middot; phonetic &middot; graph</span>
 <span class="k">forget</span>    <span class="v">"retract"</span>  <span class="c">// reversible</span>
 <span class="k">backend</span>   <span class="v">your ferrosa cluster</span></pre></div>
-        <div class="card-limit"><b>Developer preview.</b> Explicit valid-from/valid-until windows are
-        on foresight facts; other records carry insertion time plus supersession links.</div>
       </article>
 
       <article class="card">
@@ -128,8 +118,6 @@
 <span class="k">local_disk</span>       <span class="v">write-behind cache</span>
 <span class="k">node_loss</span>        <span class="v">re-reads S3, no peer stream</span>
 <span class="k">client</span>           <span class="v">CQL native protocol</span></pre></div>
-        <div class="card-limit"><b>Developer preview.</b> Protocol negotiation caps at <code>v4</code>;
-        v5 clients fall back, which every compliant driver does transparently.</div>
       </article>
 
       <article class="card">
@@ -143,23 +131,15 @@
     <span class="k">"file"</span><span class="v">: "src/engine.rs",</span>
     <span class="k">"line"</span><span class="v">: 412 }]</span>
 <span class="v">}</span></pre></div>
-        <div class="card-limit"><b>Developer preview.</b> The CLI and the MCP tool surface may still
-        change before 1.0.</div>
       </article>
 
-    </div>
-
-    <div class="prose-note">
-      <p>You can run all of this yourself. We publish the source so that you can, and so that you
-      can verify what you are relying on. <b>Our commercial products exist because operating it
-      well is real work</b> &mdash; and we would rather do that work than lock you in.</p>
     </div>
   </section>
 
   <section class="section" id="inspect">
     <div class="section-hd">
-      <h2><em>Look at it</em> while it runs.</h2>
-      <p>Inspectability is not a slogan if you can see the graph and the operational surface.</p>
+      <h2><em>See it running.</em></h2>
+      <p>What your agents remember, and where it lives.</p>
     </div>
     <div class="card-grid">
       <a class="card" href="assets/screenshots/ferrosa-memory-viz.png">
@@ -170,7 +150,7 @@
       <a class="card" href="assets/screenshots/ferrosa-operations-console.png">
         <img src="assets/screenshots/ferrosa-operations-console.png" alt="Ferrosa operations console" style="display:block;width:100%;height:auto;border-bottom:1px solid var(--hairline)">
         <div class="card-limit"><b>Operations surface.</b> Keep the database substrate visible when
-        memory moves from a laptop to a cluster.</div>
+        memory moves to a cluster.</div>
       </a>
     </div>
   </section>

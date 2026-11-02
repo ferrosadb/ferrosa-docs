@@ -61,9 +61,9 @@
       <div class="hero-copy">
         <p class="product-wordmark"><span class="co">Ferrosa</span> <span class="pr">Forge</span></p>
         <p class="eyebrow">CLI and MCP server for coding agents</p>
-        <h1>Agents should read results, <em>not scrollback.</em></h1>
+        <h1>Give agents <em>results they can read.</em></h1>
         <p class="lede">Forge wraps common developer operations &mdash; builds, tests, diffs, lint, code analysis &mdash; and returns compact structured output.</p>
-        <p class="lede">A coding agent reads machine-readable results instead of paying for raw logs.</p>
+        <p class="lede">A coding agent reads machine-readable results and spends fewer tokens on raw logs.</p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="#install">Install</a>
           <a class="btn btn-secondary" href="https://github.com/ferrosadb/forge" target="_blank" rel="noopener noreferrer">Read the source</a>
@@ -75,7 +75,7 @@
             <dt>failed</dt><dd class="val">2</dd>
             <dt>errors[0].file</dt><dd>src/engine.rs</dd>
             <dt>errors[0].line</dt><dd>412</dd>
-            <dt>output</dt><dd>structured JSON, not wall-of-text</dd>
+            <dt>output</dt><dd>structured JSON</dd>
           </dl>
           <div class="specimen-ft">The same run, as an agent sees it. <b>Developer preview</b> &mdash; the CLI and MCP tool surface may still change before 1.0.</div>
         </div>
@@ -145,7 +145,7 @@ frg --version</code></pre>
 cd forge
 cargo build --release
 cp target/release/frg ~/.cargo/bin/frg    # or anywhere on your PATH</code></pre>
-  <p>Any platform with a Rust toolchain works — unlike the database and memory server, <code>frg</code> has no Apple-Silicon-only constraint.</p>
+  <p>Any platform with a Rust toolchain works; <code>frg</code> has no Apple-Silicon-only constraint.</p>
 
   <h2 id="mcp">Connect it to your agent</h2>
   <p>Expose the stdio MCP server by adding Forge to <code>~/.claude/settings.json</code> (Claude Code):</p>
@@ -164,7 +164,7 @@ cp target/release/frg ~/.cargo/bin/frg    # or anywhere on your PATH</code></pre
   <pre><code>frg init --global</code></pre>
 
   <h3>Optional backends</h3>
-  <p>The core tools are standalone. Some tool families need a backend, and each fails loud rather than silently degrading:</p>
+  <p>The core tools are standalone. Some tool families need a backend, and each fails loudly when its backend is missing:</p>
   <table>
     <thead><tr><th>Tool family</th><th>Needs</th><th>Resolution</th></tr></thead>
     <tbody>

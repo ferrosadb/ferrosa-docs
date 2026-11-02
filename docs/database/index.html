@@ -67,7 +67,7 @@
         <p class="product-wordmark"><span class="co">Ferrosa</span> <span class="pr">Database</span></p>
         <p class="eyebrow">Distributed database, Rust, S3-backed</p>
         <h1>Object storage is the <em>source of truth.</em></h1>
-        <p class="lede">A distributed database compatible with the Cassandra CQL client surface, with S3-compatible object storage underneath. Local NVMe is a write-behind cache, not the record.</p>
+        <p class="lede">A distributed database compatible with the Cassandra CQL client surface, with S3-compatible object storage underneath. Local NVMe serves as a write-behind cache.</p>
         <p class="lede">Nodes are ephemeral &mdash; a replacement reads from object storage rather than streaming a copy from its peers.</p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="../productdocs/database/getting-started.html">Get started</a>
@@ -82,7 +82,7 @@
             <dt>node_loss</dt><dd>re-reads S3, no peer stream</dd>
             <dt>client</dt><dd>CQL native protocol</dd>
           </dl>
-          <div class="specimen-ft">Losing a node is a cache miss, not a restore. <b>Protocol negotiation caps at v4</b>; v5 clients fall back, which every compliant driver does transparently.</div>
+          <div class="specimen-ft">When a node fails, its replacement reads straight from object storage. <b>Protocol negotiation caps at v4</b>; v5 clients fall back, which every compliant driver does transparently.</div>
         </div>
       </div>
       <div aria-hidden="true"></div>
@@ -95,7 +95,7 @@
     <p class="section-label">The Problem</p>
     <h2 class="section-title">Backup and recovery costs<br>deserve their own design</h2>
     <p class="section-subtitle">
-      In many Cassandra-style deployments, snapshots, cross-region replicas, and backup retention can become material cost centers. Exact numbers depend on retention policy, region, cloud provider, request volume, and recovery objectives, so Ferrosa frames object storage as a design option to evaluate rather than a guaranteed savings claim.
+      In many Cassandra-style deployments, snapshots, cross-region replicas, and backup retention can become material cost centers. Exact numbers depend on retention policy, region, cloud provider, request volume, and recovery objectives, so Ferrosa Database presents object storage as a design option to evaluate against your own costs.
     </p>
 
     <div class="pain-points">
@@ -110,13 +110,13 @@
         <div class="pain-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 9.4 V6.1 H19.7 V9.3 H3.9"/><path d="M4.6 13.2 V10.0 H19.3 V13.4 H4.1"/><path d="M4.2 17.4 V14.2 H19.8 V17.2 H4.5"/></svg></div>
         <h3>Replication and Retention Multiply Storage</h3>
         <p>
-          Replica factor, snapshots, and cross-region copies all multiply storage footprint. Ferrosa's storage model is intended to reduce some duplicate durable copies by making object storage the primary durable layer, but the economics need workload-specific validation.
+          Replica factor, snapshots, and cross-region copies all multiply storage footprint. Ferrosa Database is designed to reduce duplicate durable copies by making object storage the primary durable layer.
         </p>
       </div>
       <div class="pain-card">
         <div class="pain-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.7 4.2 A7.8 7.8 0 1 1 10.7 4.45"/><path d="M12.1 6.8 V12.3 L16.2 14.3"/><path d="M12 2.4 V4.3"/></svg></div>
         <h3>GC Pauses Kill Your P99</h3>
-        <p>Java's garbage collector causes unpredictable tail latency spikes. Rust removes JVM GC from Ferrosa itself, but tail latency still depends on workload, I/O, cache behavior, and clustering.</p>
+        <p>Java's garbage collector causes unpredictable tail latency spikes. Rust removes JVM GC from Ferrosa Database itself, but tail latency still depends on workload, I/O, cache behavior, and clustering.</p>
       </div>
       <div class="pain-card">
         <div class="pain-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.3 3.5 H17.6"/><path d="M6.6 20.5 H17.9"/><path d="M7.5 3.2 V6.7 L11.9 11.9 L7.8 17.2 V20.8"/><path d="M16.5 3.3 V6.6 L12.1 11.95 L16.4 17.4 V20.7"/><path d="M9.5 17.3 H14.6"/></svg></div>
@@ -214,9 +214,9 @@
 
 <section id="features">
   <p class="section-label centered">Core Capabilities</p>
-  <h2 class="section-title centered">Everything you need.<br>Nothing you don't.</h2>
+  <h2 class="section-title centered">One database for AI-native workloads.</h2>
   <p class="section-subtitle centered">
-    One database for AI-native workloads. Search, vectors, graph, SPARQL, transactions, and CDC — unified on S3.
+    Search, vectors, graph, SPARQL, transactions and CDC, unified on S3.
     Cypher + Bolt and SPARQL are documented as database query surfaces, but they do not need to crowd the top navigation.
   </p>
 
@@ -227,12 +227,12 @@
         <div class="feature-icon s3"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 6.6 H20.6"/><path d="M5.0 6.8 L7.2 20.4 H16.8 L19.1 6.7"/><path d="M6.2 12.8 H17.9"/></svg></div>
         <h3>Evaluate Object-Storage-Based Recovery Costs</h3>
         <p>
-          Ferrosa is designed so object storage is the durable layer rather than a secondary backup target. That can reduce duplicated block-storage snapshots in some deployments, especially when lifecycle policies move older recovery data to colder classes. The actual cost profile depends on region, retention window, request volume, cache hit rate, and restore expectations.
+          Ferrosa Database is designed so object storage is the primary durable layer. That can reduce duplicated block-storage snapshots in some deployments, especially when lifecycle policies move older recovery data to colder classes. The actual cost profile depends on region, retention window, request volume, cache hit rate, and restore expectations.
         </p>
         <p style="margin-top: 0.75rem;">
           A planned control surface sets retention policy:
           <code style="font-size: 0.875rem;">ferrosa-ctl storage retention set --years 1</code>.
-          Ferrosa can use S3 Lifecycle rules to tier archives through Standard, Infrequent Access, and Glacier-style classes. Preview documentation should treat published cloud prices as inputs to your own model rather than fixed Ferrosa savings.
+          Ferrosa Database can use S3 Lifecycle rules to tier archives through Standard, Infrequent Access, and Glacier-style classes. Use published cloud prices as inputs to your own cost model.
         </p>
         <span class="metric">Recovery cost depends on provider, retention, requests, and restore targets</span>
       </div>
@@ -242,7 +242,7 @@
             <tr style="border-bottom: 1px solid var(--border);">
               <th style="text-align: left; padding: 0.5rem; color: var(--text-muted); font-weight: 600;">10 TB Recovery</th>
               <th style="text-align: right; padding: 0.5rem; color: var(--text-muted); font-weight: 600;">Cassandra</th>
-              <th style="text-align: right; padding: 0.5rem; color: var(--accent); font-weight: 600;">Ferrosa</th>
+              <th style="text-align: right; padding: 0.5rem; color: var(--accent); font-weight: 600;">Ferrosa Database</th>
             </tr>
           </thead>
           <tbody>
@@ -280,19 +280,19 @@
         <div class="feature-icon s3"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 6.6 H20.6"/><path d="M5.0 6.8 L7.2 20.4 H16.8 L19.1 6.7"/><path d="M6.2 12.8 H17.9"/></svg></div>
         <h3>S3-Backed Storage</h3>
         <p>
-          Durable storage lives in S3. Local NVMe is a hot cache, not a commitment.
+          Durable storage lives in S3. Local NVMe serves as a hot cache.
           Nodes can be treated more ephemerally than block-storage-bound designs, but recovery time depends on schema, cache warmth, object-store latency, and cluster state.
         </p>
         <p style="margin-top: 0.75rem;">
           NVMe is a bounded cache layer, S3 is the unbounded durable store. Data that doesn't
           fit on NVMe lives in S3 and gets pulled through on demand. The
           <code style="font-size: 0.875rem;">local_cache_max_bytes</code> config controls how much
-          NVMe is used. Size your local disks for your working set, not your total dataset.
+          NVMe is used. Size your local disks for your working set.
         </p>
         <p style="margin-top: 0.75rem;">
           Point-in-time recovery retention is one command:
           <code style="font-size: 0.875rem;">ferrosa-ctl storage retention set --years 1</code>.
-          Ferrosa configures S3 Lifecycle rules that tier your commit log archives through
+          Ferrosa Database configures S3 Lifecycle rules that tier your commit log archives through
           Standard, Infrequent Access, and Glacier automatically. A full year of point-in-time
           recovery cost can be modeled from your lifecycle policy. Cold SSTables may transition to
           cheaper storage classes, but restore latency, request charges, and cache misses must be considered before choosing a tiering policy.
@@ -346,7 +346,7 @@
       <div class="feature-icon rust"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.6 7.8 A4.3 4.3 0 1 1 11.3 7.95"/><path d="M12 10.5 A1.5 1.5 0 1 1 11.7 10.55"/><path d="M16.3 12 H18.7"/><path d="M15.05 8.95 L16.8 7.2"/><path d="M12 7.6 V5.2"/><path d="M8.95 8.95 L7.2 7.25"/><path d="M7.7 12 H5.3"/><path d="M8.95 15.05 L7.25 16.8"/><path d="M12 16.3 V18.7"/><path d="M15.05 15.05 L16.75 16.7"/></svg></div>
       <h3>Rust-Native Performance</h3>
       <p>
-        No JVM. No garbage collector. No stop-the-world pauses.
+        Ferrosa Database runs without a JVM or garbage collector, so it has no stop-the-world pauses.
         Lock-free reads via ArcSwap, sharded memtables with nanosecond-level write locks,
         async I/O on Tokio. Predictable latency from the first request to the billionth.
       </p>
@@ -358,12 +358,12 @@
       <div class="feature-icon cql"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5 H20.6 V17.8 H3.6 V5.9"/><path d="M8.9 6.4 V18.0"/><path d="M11.6 9.9 H18.1"/><path d="M11.4 13.5 H17.2"/></svg></div>
       <h3>Drop-In CQL Compatibility</h3>
       <p>
-        CQL protocol v4 — the same wire protocol your drivers already speak.
+        CQL protocol v4, the same wire protocol your drivers already speak.
         Python, Java, Go, Rust (cdrs-tokio), and Node.js drivers connect without code changes.
-        DDL, DML, prepared statements, batch operations, lightweight transactions
+        Supported: DDL, DML, prepared statements, batch operations, lightweight transactions
         (IF NOT EXISTS, IF conditions), system keyspaces, ALLOW FILTERING,
         toJson(), counter increment/decrement, collection types (map, set, list)
-        with full UPDATE +/- operators and collection bind values in prepared statements — all there.
+        with full UPDATE +/- operators and collection bind values in prepared statements.
       </p>
       <span class="metric">CQL v4/v5 · Bolt v5 · SPARQL 1.1 · 0 driver changes required</span>
     </div>
@@ -389,13 +389,12 @@
         <div class="feature-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.6 2.9 L6.6 13.4 H11.9 L10.2 21.2 L17.5 10.5 H12.1 L13.2 4.2"/></svg></div>
         <h3>Experimental Subscriptions</h3>
         <p>
-          Ferrosa includes parser and storage-observer work for table subscriptions.
+          Ferrosa Database includes parser and storage-observer work for table subscriptions.
           Treat arbitrary-query CQL/Cypher streaming as proposed or partially covered until
           the verification plans land.
         </p>
         <p style="margin-top: 0.75rem;">
-          The developer-preview docs keep these examples visible as design targets, not
-          production CDC guarantees.
+          These examples are design targets; production CDC guarantees are still to come.
         </p>
         <span class="metric">SUBSCRIBE table-name EVERY 5s · experimental</span>
       </div>
@@ -433,7 +432,7 @@
           See the <a href="../productdocs/database/vector-indexes.html">Vector Indexes reference &amp; evaluation</a>.
         </p>
         <p style="margin-top: 0.75rem;">
-          Indexes are storage-attached — built asynchronously after SSTable flush to keep
+          Indexes are storage-attached and built asynchronously after SSTable flush to keep
           write-path impact bounded. Full-text indexes use inverted-index sidecar files with
           a pluggable analyzer pipeline (tokenizer, stop words, Porter stemmer).
           Per-index staleness tracking and operational metrics
@@ -478,8 +477,7 @@
         <div class="feature-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2 L4.5 6.2 c0 6.9 3.0 11.7 7.5 14.5 4.5-2.8 7.5-7.7 7.4-14.6 L12.4 3.0"/><path d="M8.8 11.1 L12.0 14.0 L15.5 9.5"/></svg></div>
         <h3>Strict Serializable Transactions</h3>
         <p>
-          Distributed transactions with strict serializability via the Accord consensus protocol —
-          not Paxos, not 2PC. Multi-partition atomic operations with all-or-nothing semantics.
+          Distributed transactions with strict serializability via the Accord consensus protocol. Multi-partition atomic operations with all-or-nothing semantics.
           INSERT IF NOT EXISTS, UPDATE/DELETE IF conditions, and batch compare-and-set
           all work out of the box. Cross-shard transactions coordinate automatically.
         </p>
@@ -497,13 +495,13 @@
           <a href="https://github.com/ferrosadb/ferrosa/blob/main/deploy/fly-accord-elle/CERTIFICATION.md">certification record</a>
           and <a href="https://github.com/ferrosadb/ferrosa/blob/main/specs/reference/testing-methodology-and-results-2026-07.md">methodology</a>.
           The separate six-node dual-DC nightly injects <code>dc-partition+dc-slow</code> and verifies
-          bank conservation; it is not an Elle certification. Fault-injected and multi-DC Elle
+          bank conservation and is separate from the Elle certification. Fault-injected and multi-DC Elle
           certification remain pending.
         </p>
         <p style="margin-top: 0.75rem; font-size: 0.875rem; color: var(--text-secondary);">
           The same recorded methodology includes a Fly write-path A/B on the stated workload: steady
           throughput moved from 7,520 to 11,148 writes/s and write p99 from 43.9 ms to 16.5 ms.
-          These are benchmark observations for that environment, not a capacity guarantee.
+          These are benchmark observations for that environment and workload.
         </p>
       </div>
       <div class="code-demo" style="margin: 0; border: none;">
@@ -536,7 +534,7 @@
         (<code>storage.pin = nvme</code>) keeps SSTables on local disk, bypassing S3 entirely.
         Ideal for session caches, materialized views, and lookup tables that tolerate node loss.
         Optional <code>pin_max_bytes</code> cap evicts oldest SSTables when the budget is exceeded.
-        <code>ALTER TABLE</code> toggles pin mode on live tables — unpinning automatically uploads
+        <code>ALTER TABLE</code> toggles pin mode on live tables; unpinning automatically uploads
         existing SSTables to S3.
       </p>
       <span class="metric">sub-ms reads · per-table config · max_bytes cap · ALTER TABLE toggle</span>
@@ -547,11 +545,11 @@
       <div class="feature-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.2 4.5 A6.1 6.1 0 1 1 9.4 4.8"/><path d="M15.0 15.1 L20.6 20.9"/></svg></div>
       <h3>Full-Text Search</h3>
       <p>
-        Built-in inverted index with BM25 ranked retrieval — no external search engine needed.
+        Built-in inverted index with BM25 ranked retrieval, so you need no external search engine.
         Create a full-text index on any text column and query with boolean operators
         (AND, OR, NOT), phrase matching, and prefix wildcards. Pluggable analyzer pipeline:
         tokenizer, stop-word filter, Porter stemmer. Sidecar index files are built on flush
-        and merged during compaction — off the foreground write acknowledgment path.
+        and merged during compaction, outside the foreground write acknowledgment path.
       </p>
       <span class="metric">BM25 ranking · AND/OR/NOT/prefix · pluggable analyzers · async index build</span>
     </div>
@@ -573,8 +571,7 @@
       <div class="feature-icon observe"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.4 7.2 V19.8 H20.5"/><path d="M8.2 19.6 V14.0"/><path d="M12.3 19.7 V9.6"/><path d="M16.6 19.6 V11.8"/></svg></div>
       <h3>Built-In Observability</h3>
       <p>
-        Self-hosted distributed tracing, metrics, and query analysis — no external
-        tools required. 25+ tracing spans across CQL, consensus, storage, and network
+        Self-hosted distributed tracing, metrics, and query analysis, with no external tools required. 25+ tracing spans across CQL, consensus, storage, and network
         paths. Slow query detection with parameterized logging. Query fingerprint
         tracking for automatic optimization recommendations. Per-client billing
         metering. On-demand flame charts for CPU hot path analysis. All data in
@@ -634,7 +631,7 @@
         and the <code>ferrosa-ctl repair</code> CLI reconciles replicas that have diverged
         beyond the hinted-handoff window. A bounded-memory streaming digest builds the
         Merkle comparison incrementally, so the repair path scales to tables larger than
-        a node's memory. Repair is manual today — there is no scheduler — and consistency
+        a node's memory. Repair is manual today, with no scheduler, and consistency
         under repair has not yet been Jepsen-verified.
       </p>
       <span class="metric">manual /repair · ferrosa-ctl repair · streaming Merkle digest</span>
@@ -647,7 +644,7 @@
       <p>
         Memtable backpressure, configurable via <code>FERROSA_MEMTABLE_BACKPRESSURE_BYTES</code>,
         bounds in-memory write buffers under sustained write workloads. When the configured
-        threshold is reached, writers slow rather than letting memtables grow without limit,
+        threshold is reached, writers slow down so memtables stay bounded,
         keeping memory pressure predictable while flush and compaction drain the queue.
       </p>
       <span class="metric">configurable byte budget · bounded memtable growth</span>
@@ -671,8 +668,7 @@
       <h3>Prometheus Metrics</h3>
       <p>
         Native <code>/metrics</code> endpoint exposes cluster health, query latencies,
-        storage utilization, and connection counts in Prometheus format. No sidecar exporter
-        needed — scrape directly from each Ferrosa node. Integrates with Grafana, Datadog,
+        storage utilization, and connection counts in Prometheus format. Scrape each Ferrosa Database node directly, with no sidecar exporter. Integrates with Grafana, Datadog,
         and any Prometheus-compatible monitoring stack.
       </p>
       <span class="metric">native /metrics · no exporter · Grafana-ready</span>
@@ -683,7 +679,7 @@
       <div class="feature-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.6 7.8 A4.3 4.3 0 1 1 11.3 7.95"/><path d="M12 10.5 A1.5 1.5 0 1 1 11.7 10.55"/><path d="M16.3 12 H18.7"/><path d="M15.05 8.95 L16.8 7.2"/><path d="M12 7.6 V5.2"/><path d="M8.95 8.95 L7.2 7.25"/><path d="M7.7 12 H5.3"/><path d="M8.95 15.05 L7.25 16.8"/><path d="M12 16.3 V18.7"/><path d="M15.05 15.05 L16.75 16.7"/></svg></div>
       <h3>WebAssembly Functions</h3>
       <p>
-        User-defined functions execute as sandboxed WebAssembly — no Java, no JavaScript.
+        User-defined functions execute as sandboxed WebAssembly.
         Upload a compiled WASM binary to a table, reference it in CREATE FUNCTION with an AS clause.
         Write functions in Rust (preferred), C, Go, or any language that compiles to WASM.
         Full Wasmtime integration with WIT contract, compilation caching, and sandbox enforcement.
@@ -697,9 +693,9 @@
 <!-- ═══════════════════ Code Demo ═══════════════════ -->
 <section>
   <p class="section-label centered">See It In Action</p>
-  <h2 class="section-title centered">Same CQL. Same drivers.<br>Better everything else.</h2>
+  <h2 class="section-title centered">Keep your CQL and your drivers.</h2>
   <p class="section-subtitle centered" style="margin-bottom: 3rem;">
-    Your existing application code works unchanged. Just point your driver at Ferrosa.
+    Your existing application code works unchanged. Just point your driver at Ferrosa Database.
   </p>
 
   <div class="code-demo">
@@ -867,16 +863,16 @@ user = session.execute(stmt, [user_id])
 <div class="comparison" id="compare">
   <section>
     <p class="section-label centered">How We Compare</p>
-    <h2 class="section-title centered">Ferrosa vs. the alternatives</h2>
+    <h2 class="section-title centered">Ferrosa Database vs. the alternatives</h2>
     <p class="section-subtitle centered">
-      Search, vectors, graph, SPARQL, transactions, CDC. One database. AI native.
+      Search, vectors, graph, SPARQL, transactions, and CDC in one AI-native database.
     </p>
 
     <table class="comparison-table">
       <thead>
         <tr>
           <th></th>
-          <th class="ferrosa-col">Ferrosa</th>
+          <th class="ferrosa-col">Ferrosa Database</th>
           <th>Cassandra</th>
           <th>ScyllaDB</th>
           <th>DynamoDB</th>
@@ -1152,9 +1148,9 @@ user = session.execute(stmt, [user_id])
   <div class="use-cases">
     <div class="use-case">
       <p class="use-case-label migrate">Migration</p>
-      <h3>CQL compatible — no rewriting</h3>
+      <h3>CQL compatible, with no rewriting</h3>
       <p>
-        Same CQL protocol, same drivers, same consistency model. Import existing SSTables directly.
+        The CQL protocol, drivers, and consistency model stay the same. Import existing SSTables directly.
         Migrate one keyspace at a time with dual-read verification. Your application never knows the difference.
       </p>
     </div>
@@ -1163,17 +1159,16 @@ user = session.execute(stmt, [user_id])
       <h3>Dev to production without re-architecting</h3>
       <p>
         Start with a single node on your laptop. Add a second node for high availability
-        with automatic pair mode. Scale to 3+ nodes and Ferrosa forms a multi-node cluster with
+        with automatic pair mode. Scale to 3+ nodes and Ferrosa Database forms a multi-node cluster with
         Raft consensus, tunable consistency levels, hinted handoff, and node lifecycle
-        management. Same binary, same config format — just add nodes.
+        management. The binary and config format stay the same as you add nodes.
       </p>
     </div>
     <div class="use-case">
       <p class="use-case-label graph-uc">Graph + Relational</p>
       <h3>One database for tables and relationships</h3>
       <p>
-        Stop running separate databases for each workload. Ferrosa speaks CQL for your transactional workloads
-        and Cypher for graph traversals — same tables, same cluster, same operational surface.
+        Stop running separate databases for each workload. Ferrosa Database speaks CQL for your transactional workloads and Cypher for graph traversals, on the same tables, cluster, and operational surface.
       </p>
     </div>
   </div>
@@ -1183,10 +1178,10 @@ user = session.execute(stmt, [user_id])
 <div class="comparison" id="progress">
   <section>
     <p class="section-label centered">Grow With You</p>
-    <h2 class="section-title centered">One binary. Every scale.</h2>
+    <h2 class="section-title centered">One binary at every scale.</h2>
     <p class="section-subtitle centered">
       Start on your laptop, then evaluate cluster features as they harden.
-      The same Ferrosa binary exposes single-node, pair-mode, and cluster-mode paths, but production hardening is still in progress.
+      The same Ferrosa Database binary exposes single-node, pair-mode, and cluster-mode paths, but production hardening is still in progress.
     </p>
 
     <div class="use-cases" style="margin-top: 3rem;">
@@ -1194,7 +1189,7 @@ user = session.execute(stmt, [user_id])
         <p class="use-case-label migrate">1 Node</p>
         <h3>Development &amp; prototyping</h3>
         <p>
-          Run a single Ferrosa node locally. Common CQL driver paths and graph endpoints are
+          Run a single Ferrosa Database node locally. Common CQL driver paths and graph endpoints are
           available for developer-preview testing without cluster setup or coordination overhead.
           Validate compatibility before moving an application between tiers.
         </p>
@@ -1203,7 +1198,7 @@ user = session.execute(stmt, [user_id])
         <p class="use-case-label cloud">2 Nodes</p>
         <h3>High availability with pair mode</h3>
         <p>
-          Add a second node and Ferrosa automatically enters pair mode — synchronous replication
+          Add a second node and Ferrosa Database automatically enters pair mode — synchronous replication
           with operator-driven failover paths. All 11 DDL operations replicate automatically: CREATE, ALTER,
           and DROP for keyspaces, tables, and roles, plus GRANT and REVOKE. Schema catch-up
           on rejoin, operator switchover, and force-promote for split-brain recovery.
@@ -1231,7 +1226,7 @@ user = session.execute(stmt, [user_id])
   <p class="section-label centered">Download</p>
   <h2 class="section-title centered">Developer Preview</h2>
   <p class="section-subtitle centered" style="margin-bottom: 3rem;">
-    Ferrosa is under active development. Use the hosted setup script for the current developer-preview install path.
+    Ferrosa Database is under active development. Use the hosted setup script for the current developer-preview install path.
   </p>
 
   <div style="max-width: 700px; margin: 0 auto;">
@@ -1246,7 +1241,7 @@ user = session.execute(stmt, [user_id])
       </a>
       <a href="examples/index.html" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; text-decoration: none; transition: border-color 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
         <h4 style="font-size: 0.9375rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Examples &amp; Tutorials</h4>
-        <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0; line-height: 1.6;">Step-by-step walkthroughs for IoT, analytics, e-commerce, and 10 more use cases — with runnable CQL scripts.</p>
+        <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0; line-height: 1.6;">Step-by-step walkthroughs for IoT, analytics, e-commerce, and 10 more use cases, with runnable CQL scripts.</p>
       </a>
       <a href="../productdocs/database/cql-compatibility.html" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; text-decoration: none; transition: border-color 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
         <h4 style="font-size: 0.9375rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">CQL Compatibility</h4>
@@ -1258,7 +1253,7 @@ user = session.execute(stmt, [user_id])
       </a>
       <a href="../productdocs/database/migration.html" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; text-decoration: none; transition: border-color 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
         <h4 style="font-size: 0.9375rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Migration Guide</h4>
-        <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0; line-height: 1.6;">CQL, Cypher, SPARQL, and vector search — one database for all your workloads.</p>
+        <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0; line-height: 1.6;">CQL, Cypher, SPARQL, and vector search in one database for all your workloads.</p>
       </a>
     </div>
   </div>
@@ -1268,7 +1263,7 @@ user = session.execute(stmt, [user_id])
 <section class="cta-section" id="get-started">
   <h2>Ready to leave GC pauses behind?</h2>
   <p>
-    Ferrosa is in active development. Developer-preview binary releases are available via the hosted setup script.
+    Ferrosa Database is in active development. Developer-preview binary releases are available via the hosted setup script.
   </p>
   <div class="cta-actions">
     <a href="../productdocs/database/getting-started.html" class="btn btn-primary">Read the Docs</a>

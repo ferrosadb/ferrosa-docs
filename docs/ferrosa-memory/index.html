@@ -76,7 +76,7 @@
 <p class="eyebrow">MCP-native memory server</p>
 <h1>Knowledge that survives <em>the session, and the model.</em></h1>
 <p class="lede">A session ends and its context goes with it. The next one rebuilds the same understanding from scratch, at the same token cost, and arrives at a slightly different answer.</p>
-<p class="lede">Ferrosa Memory is where that understanding lives instead &mdash; typed, bi-temporal, exportable, and open source, running next to your agent, as a shared service, or in a container.</p>
+<p class="lede">Ferrosa Memory is where that understanding lives: typed, bi-temporal and exportable, running next to your agent, as a shared service or in a container.</p>
 <div class="hero-actions">
 <a class="btn btn-primary" href="getting-started.html">Install locally</a>
 <a class="btn btn-secondary" href="how-it-works.html">Read the architecture</a>
@@ -91,7 +91,7 @@
 <dt>valid_until</dt><dd class="val">&mdash; &nbsp;<span class="state state-current">STILL OPEN</span></dd>
 </dl>
 <div class="specimen-ft">Eleven weeks and four sessions later, still queryable and still attached to the
-entity it belongs to. <b>A decision an agent made about your project is a fact about your project</b> &mdash;
+entity it belongs to. <b>A decision an agent made about your project is a fact about your project</b>,
 and it is the kind that scrolls out of a chat log.</div>
 </div>
 </div>
@@ -105,8 +105,8 @@ and it is the kind that scrolls out of a chat log.</div>
     <h2 class="section-title">A thin memory layer over database, graph, and inference.</h2>
     <div class="two-col">
       <div>
-        <p style="color:var(--text-secondary);">Agents talk to Ferrosa Memory through a small set of MCP tools — ingest, retrieve, link, explain, and forget. The memory layer owns memory <em>semantics</em>: entities, folds, temporal facts, retrieval outcomes, intentions, skills, Datalog rules, and explanations.</p>
-        <p style="color:var(--text-secondary); margin-top:1rem;">Underneath, Ferrosa Database provides CQL storage, vector indexes, graph traversal, and durable S3-backed tiering. A background "dream cycle" consolidates new memories — discovering connections, scoring importance, and decaying stale recall — while you sleep.</p>
+        <p style="color:var(--text-secondary);">Agents talk to Ferrosa Memory through a small set of MCP tools: ingest, retrieve, link, explain, and forget. The memory layer owns memory <em>semantics</em>: entities, folds, temporal facts, retrieval outcomes, intentions, skills, Datalog rules, and explanations.</p>
+        <p style="color:var(--text-secondary); margin-top:1rem;">Underneath, Ferrosa Database provides CQL storage, vector indexes, graph traversal, and durable S3-backed tiering. A background "dream cycle" consolidates new memories while you sleep: it discovers connections, scores importance and lets stale recall fade.</p>
         <p style="margin-top:1.5rem;"><a href="how-it-works.html" class="btn btn-secondary">Read the full architecture →</a></p>
       </div>
       <div>
@@ -180,10 +180,10 @@ and it is the kind that scrolls out of a chat log.</div>
     <div class="section-label cool">Recent improvements</div>
     <h2 class="section-title">Recall you can trust, and memory you can remove.</h2>
     <div class="doc-grid">
-      <div class="doc-card"><span class="tag">forget</span><h3>Auditable forgetting</h3><p>Propose candidates, see the blast radius (edges, temporal chains, derived facts), then confirm a reversible retraction or a hard delete — all recorded in an append-only forget journal with crash recovery.</p></div>
+      <div class="doc-card"><span class="tag">forget</span><h3>Auditable forgetting</h3><p>Propose candidates, see the blast radius (edges, temporal chains, derived facts), then confirm a reversible retraction or a hard delete. Every step is recorded in an append-only forget journal with crash recovery.</p></div>
       <div class="doc-card"><span class="tag">recall</span><h3>Recall-relevance hardening</h3><p>Source-aware relevance guards, lexical-overlap checks, authority/PageRank adjustments, and workspace filtering so hooks prefer silence over noisy context. Native full-text indexing speeds lexical recall.</p></div>
       <div class="doc-card"><span class="tag">session</span><h3>Durable session tasks</h3><p>First-class task state — focus stack, working set, and recovery hints — survives restarts and supports multi-agent handoff, so an interrupted agent can resume where it left off.</p></div>
-      <div class="doc-card"><span class="tag">hooks</span><h3>Workspace-isolated hooks</h3><p>Session-start recall derives stable, workspace-specific sessions instead of leaking process-global state, and fallback recall stays semantic/procedural — never raw episodic transcript.</p></div>
+      <div class="doc-card"><span class="tag">hooks</span><h3>Workspace-isolated hooks</h3><p>Session-start recall derives stable, workspace-specific sessions with no process-global state, and fallback recall stays semantic or procedural, with no raw episodic transcript.</p></div>
     </div>
     <div class="note">Run it locally or self-hosted; keep the workbench and visualization surfaces operator-only unless you configure TLS, auth, and tenant isolation.</div>
   </section>
@@ -191,7 +191,7 @@ and it is the kind that scrolls out of a chat log.</div>
 
 <section id="compare">
   <div class="section-label cool">How it compares</div>
-  <h2 class="section-title">Built for structure, not just similarity.</h2>
+  <h2 class="section-title">Built for structure as well as similarity.</h2>
   <p class="section-subtitle">Vector stores answer &ldquo;what looks similar?&rdquo; That is a useful signal and a poor ranking. In Ferrosa Memory <strong>similarity is three of seventeen weighted channels</strong> &mdash; lexical BM25 and full-text carry exactly as much weight, alongside phonetic matching, graph authority, workspace affinity and recency.</p>
   <table class="comparison-table">
     <thead>
@@ -216,7 +216,7 @@ and it is the kind that scrolls out of a chat log.</div>
 <section id="research">
   <div class="section-label">Research foundation</div>
   <h2 class="section-title">Engineering informed by the memory literature.</h2>
-  <p class="section-subtitle">Ferrosa Memory is product engineering, not a paper implementation — but the design draws on recent and classic work on agent memory, virtual context, graph retrieval, prompt compression, Datalog-style inference, and memory evaluation.</p>
+  <p class="section-subtitle">Ferrosa Memory's design draws on recent and classic work on agent memory, virtual context, graph retrieval, prompt compression, Datalog-style inference, and memory evaluation.</p>
   <div class="reference-table-wrap">
     <table class="reference-table">
       <caption>Selected references from the local research corpus. Links point to canonical arXiv records.</caption>
@@ -239,7 +239,7 @@ and it is the kind that scrolls out of a chat log.</div>
 
 <section id="get-started" class="cta-section">
   <h2>Give your agents memory worth keeping.</h2>
-  <p>Start local, inspect memory in the workbench, and watch raw context become linked, durable, queryable memory. Self-hosted today — from a single workgroup machine to a replicated cluster on the distributed Ferrosa store. A managed service is on the roadmap.</p>
+  <p>Start local, inspect memory in the workbench, and watch raw context become linked, durable, queryable memory. Self-hosted today, from a single workgroup machine to a replicated cluster on the distributed Ferrosa store. A managed service is on the roadmap.</p>
   <div class="hero-actions">
     <a href="how-it-works.html" class="btn btn-primary">How it works</a>
     <a href="getting-started.html" class="btn btn-secondary">Set up locally</a>
